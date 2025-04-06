@@ -18,3 +18,13 @@ Para configurar el servidor, debes crear un archivo `.env` en la raíz del proye
 ```bash
   PORT=8080
   MONGO_URL=mongodb://localhost:27017/alejandria
+```
+
+## Instalar paqueterias
+```bash
+   npm install
+```
+
+## Ejecutar
+```bash
+   npm run dev
