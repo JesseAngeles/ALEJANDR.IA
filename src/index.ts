@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 import connectDB from './Config/DatabaseConnection';
+
 //TODO importar rutas
 import routerUser from './Routes/User';
 
