@@ -1,7 +1,7 @@
 import pandas as pd
 import google.generativeai as genai
 
-genai.configure(api_key="AIzaSyDbhaLZGrQawLI1mO2sVB-fzk10yqI0hUs")  # Reemplaza con API key
+genai.configure(api_key="")  # Reemplaza con API key
 model = genai.GenerativeModel('gemini-1.5-pro-latest')
 
 df = pd.read_csv("Dataset.csv", encoding='latin-1')
