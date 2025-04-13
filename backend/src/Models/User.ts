@@ -1,27 +1,56 @@
-import { User } from "../Interfaces/User"
-import DirectionSchema from "./Direction"
-import PaymentSchema from "./Payment"
-import mongoose from "mongoose"
+import mongoose, { Schema, Document, Types } from "mongoose";
+import bcrypt from "bcryptjs";
+import { User } from "../Interfaces/User";
+import { directionSchema } from "./Direction";
 
-const { Schema } = mongoose
+// Extiende Document para que tenga métodos de Mongoose como `save`, `isModified`, etc.
+interface UserDocument extends User, Document {
+    comparePassword(candidatePassword: string): Promise<boolean>;
+}
 
-const userSchema = new Schema<User>({
+const userSchema = new Schema<UserDocument>({
     name: {
-        type: Schema.Types.String,
+        type: String, 
         required: true
     },
     email: {
-        type: Schema.Types.String,
-        required: true
+        type: String,
+        required: true,
+        unique: true 
     },
     password: {
-        type: Schema.Types.String,
+        type: String,
         required: true
     },
     active: {
-        type: Schema.Types.Boolean,
+        type: Boolean,
         required: true
-    }
-})
+    },
+    directions: [{
+        type: [directionSchema], 
+        required: false
+    }]
+});
 
-export default mongoose.model<User>('users', userSchema)
+// Hashear la contraseña
+userSchema.pre("save", async function (next) {
+    const user = this as UserDocument;
+
+    if (!user.isModified("password")) return next();
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+        next();
+    } catch (error) {
+        console.log(`Error hashing password: ${error}`);
+        next();
+    }
+});
+
+// Comparar contraseñas
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+    return await bcrypt.compare(candidatePassword, this.password)
+};
+
+export default mongoose.model<UserDocument>("users", userSchema);
