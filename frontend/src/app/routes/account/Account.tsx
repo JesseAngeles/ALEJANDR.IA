@@ -90,4 +90,4 @@ const Account: React.FC = () => {
   );
 };
 
-export {Account};
+export { Account };

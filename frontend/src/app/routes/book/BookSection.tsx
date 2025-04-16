@@ -55,11 +55,10 @@ const BookSection: React.FC<Props> = ({ tituloSeccion = '', libros }) => {
             {/* Botón de favorito */}
             <button
               onClick={() => toggleFavorito(libro.id)}
-              className={`absolute top-2 right-2 text-lg ${
-                favoritos.includes(libro.id)
+              className={`absolute top-2 right-2 text-lg ${favoritos.includes(libro.id)
                   ? 'text-cyan-500'
                   : 'text-gray-400 hover:text-cyan-500'
-              }`}
+                }`}
             >
               <FaHeart />
             </button>
