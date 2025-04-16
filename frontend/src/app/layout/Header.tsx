@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaHeart, FaShoppingCart, FaUser } from "react-icons/fa";
 import { MdMenu } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
   const [mostrarMenu, setMostrarMenu] = useState(false);
   const contenedorRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -86,7 +88,7 @@ const Header: React.FC = () => {
         </button>
         <button className="flex items-center gap-1 px-3 hover:text-blue-600">
           <FaShoppingCart />
-          <span className="hidden sm:inline">Carrito</span>
+          <span onClick={() => navigate('/cart')} className="hidden sm:inline">Carrito</span>
         </button>
       </div>
     </header>

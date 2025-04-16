@@ -13,7 +13,7 @@ const Cvc: React.FC = () => {
     };
 
     if (!purchase.paymentMethod) {
-        return <p className="text-center text-red-500">No payment method selected.</p>;
+        return <p>No payment method selected.</p>;
     }
 
     return <CvcForm card={purchase.paymentMethod} onContinue={handleContinue} />;
