@@ -39,25 +39,25 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
 
       {/* Title */}
       <h2 className="text-center text-[#820000] text-lg font-semibold mb-6">
-        Order summary
+        Resumen del pedido
       </h2>
 
       {/* Order Info */}
       <div className="space-y-4 text-sm">
         <div className="flex justify-between">
-          <span className="font-semibold">Total items:</span>
+          <span className="font-semibold">Total de productos:</span>
           <span>{totalItems}</span>
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="font-semibold">Shipping address:</span>
+          <span className="font-semibold">Dirección de envío:</span>
           <span className="text-sm">
             {address.referenceName} — {address.fullAddress}
           </span>
         </div>
 
         <div className="flex flex-col md:flex-row md:justify-between gap-1 items-start md:items-center">
-          <span className="font-semibold">Payment method:</span>
+          <span className="font-semibold">Forma de pago:</span>
           <div className="flex items-center gap-2">
             <img
               src={getCardLogo(paymentMethod.brand)}
@@ -65,14 +65,14 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
               className="w-8 h-auto"
             />
             <span className="text-sm font-medium">
-              Ending in {paymentMethod.last4} {paymentMethod.bank}
+              Terminada en {paymentMethod.last4} {paymentMethod.bank}
             </span>
           </div>
         </div>
 
         {/* Product list */}
         <div className="border-t pt-4">
-          <h3 className="font-semibold text-base mb-2">Products:</h3>
+          <h3 className="font-semibold text-base mb-2">Productos:</h3>
           <ul className="space-y-4">
             {cart.map((book) => (
               <li
@@ -119,7 +119,7 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
           onClick={handleConfirm}
           className="bg-[#007B83] hover:bg-[#00666e] text-white px-6 py-2 rounded"
         >
-          Confirm purchase
+          Confirmar compra
         </button>
       </div>
     </div>

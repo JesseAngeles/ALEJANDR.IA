@@ -32,7 +32,7 @@ const Payment: React.FC = () => {
     return (
         <div className="max-w-2xl mx-auto px-4 py-8">
             <h2 className="text-center text-[#820000] text-lg font-semibold mb-6">
-                Choose your payment method
+                Elige tu forma de pago
             </h2>
 
             <PaymentMethods methods={methods} onSelect={handleSelect} />

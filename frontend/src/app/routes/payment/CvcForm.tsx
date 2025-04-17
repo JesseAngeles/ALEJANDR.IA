@@ -25,22 +25,22 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
     return (
         <div className="max-w-xl mx-auto px-4 py-8">
             <h2 className="text-center text-[#820000] text-lg font-semibold mb-6">
-                Choose your payment method
+                Elige tu forma de pago
             </h2>
 
             <div className="bg-white shadow-md border rounded px-6 py-6">
                 <button onClick={() => navigate(-1)} className="flex items-center text-sm text-black mb-4 hover:underline">
                     <FaArrowLeft className="mr-2" />
-                    Back
+                    Regresar
                 </button>
 
-                <h3 className="text-lg font-bold mb-2">Enter security code</h3>
+                <h3 className="text-lg font-bold mb-2">Ingresa el código de seguridad</h3>
 
                 <div className="flex items-center mb-4 gap-2">
                     <img src={getCardLogo(card.brand)} alt={card.brand} className="w-10 h-6" />
                     <div>
                         <p className="text-sm">
-                            Ending in <span className="font-semibold">{card.last4}</span>
+                            Terminada en <span className="font-semibold">{card.last4}</span>
                         </p>
                         <p className="text-xs text-gray-600">{card.bank}</p>
                     </div>
@@ -66,7 +66,7 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
                         onClick={handleContinue}
                         className="bg-[#007B83] hover:bg-[#00666e] text-white px-6 py-2 rounded"
                     >
-                        Continue
+                        Continuar
                     </button>
                 </div>
             </div>
