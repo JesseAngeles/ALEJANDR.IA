@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { PaymentMethod } from "@/assets/types/card";
+import { getCardLogo } from "@/app/utils/getCardLogo";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
     card: PaymentMethod;
@@ -18,6 +20,8 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
         }
     };
 
+    const navigate = useNavigate();
+
     return (
         <div className="max-w-xl mx-auto px-4 py-8">
             <h2 className="text-center text-[#820000] text-lg font-semibold mb-6">
@@ -25,7 +29,7 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
             </h2>
 
             <div className="bg-white shadow-md border rounded px-6 py-6">
-                <button className="flex items-center text-sm text-black mb-4 hover:underline">
+                <button onClick={() => navigate(-1)} className="flex items-center text-sm text-black mb-4 hover:underline">
                     <FaArrowLeft className="mr-2" />
                     Back
                 </button>
@@ -33,7 +37,7 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
                 <h3 className="text-lg font-bold mb-2">Enter security code</h3>
 
                 <div className="flex items-center mb-4 gap-2">
-                    <img src={card.logo} alt={card.brand} className="w-10 h-6" />
+                    <img src={getCardLogo(card.brand)} alt={card.brand} className="w-10 h-6" />
                     <div>
                         <p className="text-sm">
                             Ending in <span className="font-semibold">{card.last4}</span>
@@ -43,7 +47,7 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
                 </div>
 
                 <div className="flex justify-center mb-6">
-                    <img src="/card-cvc.png" alt="CVC location on card" className="w-40 h-auto" />
+                    <img src="/src/assets/icons/cvc.webp" alt="CVC location on card" className="w-40 h-auto" />
                 </div>
 
                 <div className="text-center mb-6">

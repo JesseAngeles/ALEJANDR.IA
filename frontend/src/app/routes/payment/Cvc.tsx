@@ -1,5 +1,5 @@
 import React from "react";
-import { CvcForm } from "@/app/routes/shopping/CvcForm";
+import { CvcForm } from "@/app/routes/payment/CvcForm";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
 import { useNavigate } from "react-router-dom";
 
