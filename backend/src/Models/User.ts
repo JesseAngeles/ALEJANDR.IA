@@ -1,9 +1,10 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
-import bcrypt from "bcryptjs";
-import { User } from "../Interfaces/User";
-import { directionSchema } from "./Direction";
+import mongoose, { Schema, Document } from "mongoose"
+import bcrypt from "bcryptjs"
+import { User } from "../Interfaces/User"
 
-// Extiende Document para que tenga métodos de Mongoose como `save`, `isModified`, etc.
+import { directionSchema } from "./Direction"
+import { cardSchema } from "./Card"
+
 interface UserDocument extends User, Document {
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -27,7 +28,11 @@ const userSchema = new Schema<UserDocument>({
         required: true
     },
     directions: [{
-        type: [directionSchema], 
+        type: directionSchema, 
+        required: false
+    }],
+    cards: [{
+        type: cardSchema,
         required: false
     }]
 });

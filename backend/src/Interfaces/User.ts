@@ -1,5 +1,5 @@
 import { Direction } from "./Direction"
-// import { Payment } from "./Payment"
+import { Card } from "./Card"
 
 export interface User {
     name: string
@@ -7,5 +7,5 @@ export interface User {
     password: string
     active: boolean
     directions: Direction[]
-    // paymentMethods:  
+    cards: Card[]
 }
