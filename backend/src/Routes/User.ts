@@ -1,13 +1,14 @@
-import { Router } from "express";
-import { loginUser, addUser, deleteUser, getAllUsers, getUserById, updateUser } from "../Controllers/User";
+import { Router } from "express"
+import { loginUser, addUser, deleteUser, getAllUsers, getUserById, updateUser } from "../Controllers/User"
 import { addDirection, deleteDirection, getDirectionById, getDirections, updateDirection } from "../Controllers/Direction"
 import { addCard, deleteCard, getCardById, getCards } from "../Controllers/Card"
 
-import { authenticateToken } from "../Middleware/jwt";
-import { validateRequest } from "../Middleware/ValidateRequest";
+import { authenticateToken } from "../Middleware/jwt"
+import { validateRequest } from "../Middleware/ValidateRequest"
 
-import { ValCardSchema } from "../Validations/Card";
-import { ValDirectionSchema } from "../Validations/Direction";
+import { ValCardSchema } from "../Validations/Card"
+import { ValDirectionSchema } from "../Validations/Direction"
+import { ValUserSchema } from "../Validations/User"
 
 
 const routerUser = Router()
@@ -16,11 +17,11 @@ const routerUser = Router()
 routerUser.post('/login', loginUser)
 
 // CRUD user
-routerUser.post('', addUser);
-routerUser.get('', getAllUsers);
-routerUser.get('/:id', getUserById);
-routerUser.put('/:id', authenticateToken, updateUser);
-routerUser.delete('/:id', authenticateToken, deleteUser);
+routerUser.post('', validateRequest(ValUserSchema),addUser)
+routerUser.get('', getAllUsers)
+routerUser.get('/:id', getUserById)
+routerUser.put('/:id', authenticateToken, validateRequest(ValUserSchema),updateUser)
+routerUser.delete('/:id', authenticateToken, deleteUser)
 
 // CRUD Directions
 routerUser.post('/:id/direction', authenticateToken, validateRequest(ValDirectionSchema),addDirection)

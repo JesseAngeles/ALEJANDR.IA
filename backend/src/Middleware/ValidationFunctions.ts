@@ -1,5 +1,3 @@
-import { Card } from "../Interfaces/Card";
-
 // Función para validar el formato de una tarjeta bancaria
 export function luhn(numero: string): boolean {
     // 1. Solo dígitos.
@@ -26,17 +24,4 @@ export function luhn(numero: string): boolean {
 
     // 4. Verifica si la suma es múltiplo de 10
     return suma % 10 === 0;
-}
-
-export function returnCard(card: Card | undefined): any {
-    if (!card)
-        return null
-
-    return {
-        "_id": card._id,
-        "titular" : card.titular,
-        "last4": card.number.slice(-4),
-        "expirationMonth": card.expirationMonth,
-        "expirationYear": card.expirationYear
-    }
 }

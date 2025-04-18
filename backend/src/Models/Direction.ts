@@ -7,7 +7,6 @@ const { Schema } = mongoose
 export const directionSchema = new Schema<Direction>({
     name: {
         type: Schema.Types.String,
-        unique:true,
         required: true
     },
     number: {

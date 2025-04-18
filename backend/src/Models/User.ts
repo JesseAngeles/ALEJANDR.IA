@@ -1,23 +1,24 @@
-import mongoose, { Schema, Document } from "mongoose"
+import mongoose, { Schema, Document, Types } from "mongoose"
 import bcrypt from "bcryptjs"
 import { User } from "../Interfaces/User"
 
 import { directionSchema } from "./Direction"
 import { cardSchema } from "./Card"
 
-interface UserDocument extends User, Document {
+interface UserDocument extends Omit<User, '_id'>, Document {
+    _id: Types.ObjectId
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<UserDocument>({
     name: {
-        type: String, 
+        type: String,
         required: true
     },
     email: {
         type: String,
         required: true,
-        unique: true 
+        unique: true
     },
     password: {
         type: String,
@@ -27,15 +28,15 @@ const userSchema = new Schema<UserDocument>({
         type: Boolean,
         required: true
     },
-    directions: [{
-        type: directionSchema, 
+    directions: {
+        type: [directionSchema],
         required: false
-    }],
-    cards: [{
-        type: cardSchema,
+    },
+    cards: {
+        type: [cardSchema],
         required: false
-    }]
-});
+    }
+})
 
 // Hashear la contraseña
 userSchema.pre("save", async function (next) {

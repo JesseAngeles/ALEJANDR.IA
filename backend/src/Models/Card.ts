@@ -6,7 +6,6 @@ const { Schema } = mongoose
 export const cardSchema = new Schema<Card>({
     titular: {
         type: Schema.Types.String,
-        unique: true,
         required: true
     },
     number: {

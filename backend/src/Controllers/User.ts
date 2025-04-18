@@ -1,12 +1,12 @@
 import { Request, Response } from "express"
 import users from "../Models/User"
 import { generateJWT } from "../Middleware/jwt"
+import { returnUser, returnFullUser } from "../Middleware/ReturnFunctions"
 
+// LOGIN
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body
-
-        // TODO validaciones
 
         const user = await users.findOne({ email })
         if (!user || !await user.comparePassword(password)) {
@@ -23,45 +23,36 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-// Crear nuevo usuario
 export const addUser = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, email, password } = req.body
-        const active: boolean = true
+        const user = req.body
+        user.directions = []
+        user.cards = []
 
-        // TODO validaciones
-
-        // TODO cifrado de contraseña
-
-        const newUser = new users({ name, email, password, active })
+        const newUser = await new users(user)
         const addUser = await newUser.save()
-        const { password: _, ...userWithoutPassword } = addUser.toObject();
 
-        res.status(200).json(userWithoutPassword)
+        res.status(200).json(returnUser(addUser))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
     }
 }
 
-// Obtener a todos los usuarios
 export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
     try {
         const allUsers = await users.find()
 
-        res.status(200).send(allUsers)
+        res.status(200).send(allUsers.map(returnUser))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
     }
 }
 
-// Obtener a usuario por ID
 export const getUserById = async (req: Request, res: Response): Promise<void> => {
     try {
         const id: String = req.params.id
-
-        // TODO validaciones
 
         const user = await users.findById(id)
         if (!user) {
@@ -69,20 +60,17 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
             return
         }
 
-        res.status(200).json(user)
+        res.status(200).json(returnFullUser(user))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
     }
 }
 
-// Actualizar la información por ID
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     try {
         const id: string = req.params.id;
         const { name, email, password, active } = req.body;
-
-        // TODO validaciones
 
         const user: any = await users.findById(id)
         if (!user) {
@@ -96,21 +84,17 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         user.active = active
 
         const updateUser = await user.save()
-        const returnUser = await users.findById(updateUser._id)
 
-        res.status(200).json(returnUser);
+        res.status(200).json(returnUser(updateUser));
     } catch (error) {
         console.error(`Error (Controllers/user/update): ${error}`);
         res.status(500).send(`Server error: ${error}`);
     }
 }
 
-// Eliminar información por ID
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {
         const id: string = req.params.id;
-
-        // TODO validaciones
 
         const user = await users.findById(id)
         if (!user) {
@@ -120,7 +104,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
 
         await users.findByIdAndDelete(id)
 
-        res.status(200).json(user)
+        res.status(200).json(returnUser(user))
     } catch (error) {
         console.error(`Error (Controllers/user/drop): ${error}`);
         res.status(500).send(`Server error: ${error}`);

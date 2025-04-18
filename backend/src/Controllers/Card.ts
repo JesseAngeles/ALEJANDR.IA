@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import users from "../Models/User"
 import { Types } from "mongoose"
-import { returnCard } from "../Middleware/ValidationFunctions"
+import { returnCard } from "../Middleware/ReturnFunctions"
 
 export const addCard = async (req: Request, res: Response): Promise<void> => {
     try {

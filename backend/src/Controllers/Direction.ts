@@ -1,14 +1,12 @@
 import { Request, Response } from "express";
 import users from "../Models/User";
 import { Types } from "mongoose";
+import { returnDirection } from "../Middleware/ReturnFunctions"
 
-// Añadir dirección
 export const addDirection = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId: string = req.params.id
         const direction = req.body
-
-        // TODO direction validation
 
         const user = await users.findById(userId)
         if (!user) {
@@ -18,7 +16,7 @@ export const addDirection = async (req: Request, res: Response): Promise<void> =
 
         user.directions.push(direction)
         await user.save()
-        res.status(200).json(user)
+        res.status(200).json(returnDirection(direction))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
@@ -35,7 +33,7 @@ export const getDirections = async (req: Request, res: Response): Promise<void> 
             return
         }
 
-        res.status(200).json(user.directions)
+        res.status(200).json(user.directions.map(returnDirection))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
@@ -54,7 +52,7 @@ export const getDirectionById = async (req: Request, res: Response): Promise<voi
         }
 
         const direction = (user.directions as Types.DocumentArray<any>).id(directionId);
-        res.status(200).json(direction)
+        res.status(200).json(returnDirection(direction))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
@@ -67,8 +65,6 @@ export const updateDirection = async (req: Request, res: Response): Promise<void
         const userId: string = req.params.id
         const directionId = req.params.direction
         const newDirection = req.body
-
-        // TODO direction validation
 
         const user = await users.findById(userId)
         if (!user) {
@@ -85,7 +81,7 @@ export const updateDirection = async (req: Request, res: Response): Promise<void
         direction.state = newDirection.state
 
         await user.save()
-        res.status(200).json(direction)
+        res.status(200).json(returnDirection(direction))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
@@ -96,8 +92,6 @@ export const deleteDirection = async (req: Request, res: Response): Promise<void
     try {
         const userId: string = req.params.id
         const directionId = req.params.direction
-
-        // TODO direction validation
 
         const user = await users.findById(userId)
         if (!user) {
@@ -114,8 +108,7 @@ export const deleteDirection = async (req: Request, res: Response): Promise<void
         user.directions = user.directions.filter(dir => dir._id.toString() !== directionId);
         await user.save();
 
-        await user.save()
-        res.status(200).json(direction)
+        res.status(200).json(returnDirection(direction))
     } catch (error) {
         console.log(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`)
