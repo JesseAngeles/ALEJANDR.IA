@@ -17,16 +17,9 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
       });
 
       const addedBook = await newBook.save();
-      const returnBook = await Book.findById(addedBook._id).select({ 
-          title: 1, 
-          author: 1, 
-          price: 1, 
-          ISBN: 1,
-          rating: 1,
-          reviews: 1,
-          createdAt: 1,
-          updatedAt: 1
-      });
+      const returnBook = await Book.findById(addedBook._id).select(
+          'title author price ISBN rating reviews createdAt updatedAt'
+      );
 
       res.status(200).json(returnBook);
   } catch (error) {
@@ -38,6 +31,7 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
       }
   }
 };
+
 
 export const getBooks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
