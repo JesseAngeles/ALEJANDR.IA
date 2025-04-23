@@ -9,8 +9,9 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         const { email, password } = req.body
 
         const user = await users.findOne({ email })
+
         if (!user || !await user.comparePassword(password)) {
-            res.status(404).send('User not found')
+            res.status(404).send('Invalid email or password')
             return
         }
 

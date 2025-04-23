@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose"
 import bcrypt from "bcryptjs"
-import { User } from "../Interfaces/User"
+import { User, roles } from "../Interfaces/User"
 
 import { directionSchema } from "./Direction"
 import { cardSchema } from "./Card"
@@ -12,21 +12,27 @@ interface UserDocument extends Omit<User, '_id'>, Document {
 
 const userSchema = new Schema<UserDocument>({
     name: {
-        type: String,
+        type: Schema.Types.String,
         required: true
     },
     email: {
-        type: String,
+        type: Schema.Types.String,
         required: true,
         unique: true
     },
     password: {
-        type: String,
+        type: Schema.Types.String,
         required: true
     },
     active: {
-        type: Boolean,
+        type: Schema.Types.Boolean,
         required: true
+    },
+    role: {
+        type: Schema.Types.String,
+        enum: Object.values(roles),
+        required: true,
+        default: roles.user
     },
     directions: {
         type: [directionSchema],
@@ -38,21 +44,23 @@ const userSchema = new Schema<UserDocument>({
     }
 })
 
-// Hashear la contraseña
 userSchema.pre("save", async function (next) {
     const user = this as UserDocument;
 
-    if (!user.isModified("password")) return next();
+    if (user.role === roles.admin && (user.directions?.length || user.cards?.length))
+        return next(new Error("Admins do not have directions or cards"))
+
+    if (!user.isModified("password")) return next()
 
     try {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-        next();
+        const salt = await bcrypt.genSalt(10)
+        user.password = await bcrypt.hash(user.password, salt)
+        next()
     } catch (error) {
-        console.log(`Error hashing password: ${error}`);
-        next();
+        console.log(`Error hashing password: ${error}`)
+        next()
     }
-});
+})
 
 // Comparar contraseñas
 userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {

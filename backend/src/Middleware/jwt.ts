@@ -1,16 +1,16 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express"
+import jwt from "jsonwebtoken"
 
-import { JwtPayload } from "../Interfaces/JwtPayload";
+import { JwtPayload } from "../Interfaces/JwtPayload"
 
 const JWT_SECRET: string = process.env.JWT_SECRET!
-const EXPIRATION_JWT_TOKEN="1h"
+const EXPIRATION_JWT_TOKEN = "1h"
 
 
 declare global {
     namespace Express {
         interface Request {
-            user?: JwtPayload;
+            user?: JwtPayload
         }
     }
 }
@@ -19,7 +19,8 @@ export const generateJWT = (user: any) => {
     const payload = {
         id: user._id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        role: user.role
     }
 
     const token = jwt.sign(payload, JWT_SECRET, {
@@ -39,11 +40,24 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-        req.user = decoded 
+        const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload
+        req.user = decoded
         next()
     } catch (error) {
-        console.log(`Error: ${error}`);
+        console.log(`Error: ${error}`)
         res.status(403).send("Invalid/expired token")
+    }
+}
+
+export const authorizeRole = (...allowedRoles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction): void => {
+        const user = req.user
+
+        if (!user || !allowedRoles.includes(user.role)) {
+            res.status(403).json({ message: "Access denied" })
+            return
+        }
+
+        return next()
     }
 }
