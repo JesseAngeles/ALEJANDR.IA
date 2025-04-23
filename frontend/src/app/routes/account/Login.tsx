@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -27,11 +28,14 @@ const Login: React.FC = () => {
     }
   };
 
+  const navigate = useNavigate();
+    
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-4">
       {/* Botón regresar */}
       <button
-        onClick={() => alert('Regresar')}
+        onClick={() => navigate("/")}
         className="self-start mb-4 text-sm flex items-center gap-2"
       >
         <span className="text-xl">←</span> Regresar
@@ -95,7 +99,7 @@ const Login: React.FC = () => {
       <div className="mt-6 text-center">
         <p className="text-sm font-medium">¿No tienes cuenta?</p>
         <button
-          onClick={() => alert('Redirigir a registro')}
+          onClick={() => navigate("/registro")}
           className="text-cyan-700 font-semibold hover:underline"
         >
           Registrate
@@ -105,4 +109,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export { Login } ;
