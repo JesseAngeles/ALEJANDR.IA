@@ -7,6 +7,7 @@ import connectDB from './Config/DatabaseConnection'
 //TODO importar rutas
 import routerUser from './Routes/User'
 import routerAdmin from './Routes/Admin'
+import routerBook from './Routes/Book' 
 
 dotenv.config()
 connectDB()
@@ -20,6 +21,7 @@ app.use(cors())
 //TODO Rutas
 app.use('/user', routerUser)
 app.use('/admin', routerAdmin)
+app.use('/book',routerBook)
 
 // Iniciar el servidor
 app.listen(port, () => {
