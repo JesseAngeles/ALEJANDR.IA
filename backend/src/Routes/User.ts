@@ -10,7 +10,6 @@ import { ValCardSchema } from "../Validations/Card"
 import { ValDirectionSchema } from "../Validations/Direction"
 import { ValUserSchema } from "../Validations/User"
 
-
 const routerUser = Router()
 
 // Login user

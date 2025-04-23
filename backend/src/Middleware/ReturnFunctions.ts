@@ -1,4 +1,6 @@
 import { Card } from "../Interfaces/Card"
+import { Cart } from "../Interfaces/Cart"
+import { Collection } from "../Interfaces/Collection"
 import { Direction } from "../Interfaces/Direction"
 
 export function returnCard(card: Card | undefined): any {
@@ -53,4 +55,16 @@ export function returnFullUser(user: any | undefined): any {
         "cards": user.cards,
         "directions": user.directions
     }
+}
+
+export function returnCollection(collection: Collection | undefined): any {
+    if (!collection) return null
+    const { name, books } = collection
+    return { name, books }
+}
+
+export function returnCart(cart: Cart | undefined): any {
+    if (!cart) return null
+    const { books } = cart
+    return { books }
 }

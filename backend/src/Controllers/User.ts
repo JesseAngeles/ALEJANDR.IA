@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import users from "../Models/User"
 import { generateJWT } from "../Middleware/jwt"
 import { returnUser, returnFullUser } from "../Middleware/ReturnFunctions"
+import Collection from "../Models/Collection"
 
 // LOGIN
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
@@ -29,6 +30,9 @@ export const addUser = async (req: Request, res: Response): Promise<void> => {
         const user = req.body
         user.directions = []
         user.cards = []
+        user.cart = []
+        const seeLaterCollection = new Collection({ name: "Ver más tarde" })
+        user.collections = [seeLaterCollection]
 
         const newUser = await new users(user)
         const addUser = await newUser.save()
