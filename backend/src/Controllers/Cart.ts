@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import users from "../Models/User"
+import { cartItemModel } from "../Models/Cart"
 
 export const setBookToCart = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -13,12 +14,12 @@ export const setBookToCart = async (req: Request, res: Response): Promise<void> 
             return
         }
 
-        const existingItem = user.cart.find((item: any) => item.bookId.toString() === bookId)
+        const existingItem = user.cart.items.find((item: any) => item.bookId.toString() === bookId)
 
         if (existingItem) {
-            existingItem.quantity = quantity
+            existingItem.quantity = Number(quantity)
         } else {
-            user.cart.push({ bookId, quantity })
+            user.cart.items.push(new cartItemModel({ bookId, quantity }))
         }
 
         await user.save()
@@ -40,7 +41,7 @@ export const deleteBookFromCart = async (req: Request, res: Response): Promise<v
             return
         }
 
-        user.cart = user.cart.filter((item: any) => item.bookId.toString() !== bookId)
+        user.cart.items = user.cart.items.filter((item: any) => item.bookId.toString() !== bookId)
         await user.save()
 
         res.status(200).json(user.cart)
@@ -60,7 +61,7 @@ export const emptyCart = async (req: Request, res: Response): Promise<void> => {
             return
         }
 
-        user.cart = []
+        user.cart.items = []
         await user.save()
 
         res.status(200).json({ message: "Carrito vaciado con éxito" })

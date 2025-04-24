@@ -65,6 +65,6 @@ export function returnCollection(collection: Collection | undefined): any {
 
 export function returnCart(cart: Cart | undefined): any {
     if (!cart) return null
-    const { books } = cart
-    return { books }
+    const { items } = cart
+    return { items }
 }
