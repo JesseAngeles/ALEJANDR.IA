@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 
 import { Schema, model } from 'mongoose'
 import { Book } from '../Interfaces/Book'
@@ -57,20 +56,3 @@ BookSchema.pre('save', function (next) {
 })
 
 export default model<Book>('Book', BookSchema)
-=======
-import mongoose from "mongoose"
-import { Book } from "../Interfaces/Book"
-
-const { Schema } = mongoose
-
-export const bookSchema = new Schema<Book>({
-    id: { type: Number, required: true, },
-    titulo: { type: String, required: true, },
-    autor: { type: String, required: true, },
-    precio: { type: Number, required: true, },
-    imagen: { type: String, required: true, },
-    cantidad: { type: Number, required: true, },
-});
-
-export default mongoose.model<Book>("Book", bookSchema);
->>>>>>> Stashed changes

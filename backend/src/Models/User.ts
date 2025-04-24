@@ -5,7 +5,7 @@ import { User, roles } from "../Interfaces/User"
 import { directionSchema } from "./Direction"
 import { cardSchema } from "./Card"
 import { collectionSchema } from "./Collection"
-import { CartSchema } from "./Cart"
+import { cartSchema } from "./Cart"
 
 interface UserDocument extends Omit<User, '_id'>, Document {
     _id: Types.ObjectId
@@ -49,7 +49,7 @@ const userSchema = new Schema<UserDocument>({
         required: false
     },
     cart: {
-        type: CartSchema,
+        type: cartSchema,
         required: false
     }
 })

@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import { Review } from "./Review"
 
 export interface Book {
@@ -11,13 +10,3 @@ export interface Book {
   reviews: Review[]
   reviewSumary: string
 }
-=======
-export interface Book {
-    id: Number;
-    titulo: String;
-    autor: String;
-    precio: Number;
-    imagen: String;
-    cantidad: Number;
-}
->>>>>>> Stashed changes
