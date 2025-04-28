@@ -1,6 +1,9 @@
 export type Address = {
     id: number;
-    name: string;
+    referenceName: string;
+    street: string;
+    state: string;
+    city: string;
+    zip: string;
     fullAddress: string;
-    estimatedDate: string;
 };

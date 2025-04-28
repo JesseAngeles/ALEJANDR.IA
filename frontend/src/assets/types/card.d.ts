@@ -3,5 +3,4 @@ export type PaymentMethod = {
     brand: "VISA" | "MasterCard";
     last4: string;
     bank: string;
-    logo: string;
 };

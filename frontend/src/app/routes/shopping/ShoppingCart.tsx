@@ -7,28 +7,70 @@ import { useNavigate } from "react-router-dom";
 
 const ShoppingCart: React.FC = () => {
   const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [recentlyRemoved, setRecentlyRemoved] = useState<Book | null>(null);
+  const [undoCountdown, setUndoCountdown] = useState<number>(0);
+  const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null);
   const { setPurchase } = usePurchase();
   const navigate = useNavigate();
+  const [undoInterval, setUndoInterval] = useState<NodeJS.Timeout | null>(null);
 
-  const updateQuantity = (id: number, change: number) => {
-    setBooks((prev) =>
-      prev.map((book) =>
-        book.id === id
-          ? { ...book, cantidad: Math.max(1, book.cantidad + change) }
-          : book
-      )
-    );
+
+  const handleRemove = (bookToRemove: Book) => {
+    setBooks((prev) => prev.filter((book) => book.id !== bookToRemove.id));
+    setRecentlyRemoved(bookToRemove);
+    setUndoCountdown(3); // segundos
+
+    // Limpia cualquier timer previo
+    if (undoInterval) clearInterval(undoInterval);
+
+    const interval = setInterval(() => {
+      setUndoCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setRecentlyRemoved(null); // se borra si no se deshace
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    setUndoInterval(interval);
   };
 
-  const removeBook = (id: number) => {
-    setBooks((prev) => prev.filter((book) => book.id !== id));
+
+  const handleUndo = () => {
+    if (recentlyRemoved) {
+      setBooks((prev) => [...prev, recentlyRemoved]);
+      setRecentlyRemoved(null);
+      setUndoCountdown(0);
+      if (undoInterval) clearInterval(undoInterval);
+    }
+  };
+
+
+  const updateQuantity = (id: number, change: number) => {
+    setBooks((prev) => {
+      const updated = prev.map((book) =>
+        book.id === id
+          ? { ...book, cantidad: book.cantidad + change }
+          : book
+      );
+
+      const target = updated.find((book) => book.id === id);
+      if (target && target.cantidad <= 0) {
+        handleRemove(target);
+        return updated.filter((book) => book.id !== id);
+      }
+
+      return updated;
+    });
   };
 
   const totalItems = books.reduce((acc, book) => acc + book.cantidad, 0);
   const subtotal = books.reduce((acc, book) => acc + book.precio * book.cantidad, 0);
 
   const proceedToCheckout = () => {
-    setPurchase((prev) => ({ ...prev, carrito: books }));
+    setPurchase((prev) => ({ ...prev, cart: books }));
     navigate("/address");
   };
 
@@ -36,17 +78,37 @@ const ShoppingCart: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Title */}
       <h1 className="text-white bg-[#820000] text-center py-3 text-xl font-bold rounded-t">
-        Shopping Cart
+        Mi carrito
       </h1>
 
       {/* Cart Table */}
       <div className="bg-white rounded-b overflow-hidden shadow">
         <div className="grid grid-cols-5 text-center font-semibold border-b p-4">
-          <div className="col-span-2 text-left">Product</div>
-          <div>Price</div>
-          <div>Quantity</div>
+          <div className="col-span-2 text-left">Producto</div>
+          <div>Precio</div>
+          <div>Cantidad</div>
           <div>Subtotal</div>
         </div>
+
+        {/* Undo banner */}
+        {recentlyRemoved && (
+          <div className="grid grid-cols-5 items-center border-b p-4 text-sm text-center bg-gray-50">
+            <div className="col-span-3 text-left text-gray-700 font-semibold">
+              Producto eliminado...
+              <div className="text-xs font-normal text-gray-500">
+                Tiempo restante: {undoCountdown} segundos
+              </div>
+            </div>
+            <div className="col-span-2 flex justify-end">
+              <button
+                onClick={handleUndo}
+                className="bg-[#007B83] hover:bg-[#00666e] text-white text-sm px-4 py-2 rounded"
+              >
+                Deshacer
+              </button>
+            </div>
+          </div>
+        )}
 
         {books.map((book) => (
           <div
@@ -56,7 +118,7 @@ const ShoppingCart: React.FC = () => {
             {/* Product */}
             <div className="col-span-2 flex items-center gap-4">
               <button
-                onClick={() => removeBook(book.id)}
+                onClick={() => handleRemove(book)}
                 className="text-gray-500 hover:text-red-600"
               >
                 <FaTimes />
@@ -106,11 +168,11 @@ const ShoppingCart: React.FC = () => {
       <div className="flex justify-end mt-6">
         <div className="border rounded w-full max-w-sm p-4">
           <div className="flex justify-between mb-2 text-sm">
-            <span className="font-semibold">Total items:</span>
+            <span className="font-semibold">Total de productos:</span>
             <span className="text-[#007B83]">{totalItems}</span>
           </div>
           <div className="flex justify-between mb-4 text-sm">
-            <span className="font-semibold">Subtotal:</span>
+            <span className="font-semibold">Subtotal de compra:</span>
             <span className="text-[#007B83] font-medium">${subtotal.toFixed(2)}</span>
           </div>
           <hr className="mb-4" />
@@ -118,7 +180,7 @@ const ShoppingCart: React.FC = () => {
             onClick={proceedToCheckout}
             className="w-full bg-[#007B83] text-white py-2 rounded hover:bg-[#00666e] transition"
           >
-            Proceed to checkout
+            Realizar el pago
           </button>
         </div>
       </div>
