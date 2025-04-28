@@ -11,7 +11,8 @@ export const cardSchema = new Schema<Card>({
     number: {
         type: Schema.Types.String,
         unique: true,
-        required: true
+        required: true,
+        sparse: true
     },
     expirationMonth: {
         type: Schema.Types.Number,

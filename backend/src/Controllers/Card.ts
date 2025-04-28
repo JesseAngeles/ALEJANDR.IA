@@ -5,7 +5,12 @@ import { returnCard } from "../Middleware/ReturnFunctions"
 
 export const addCard = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
         const card = req.body
 
         if (!Types.ObjectId.isValid(userId)) {
@@ -31,7 +36,12 @@ export const addCard = async (req: Request, res: Response): Promise<void> => {
 
 export const getCards = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
 
         if (!Types.ObjectId.isValid(userId)) {
             res.status(400).send('Invalid user ID')
@@ -55,7 +65,12 @@ export const getCards = async (req: Request, res: Response): Promise<void> => {
 
 export const getCardById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
         const cardId: string = req.params.card
 
         if (!Types.ObjectId.isValid(userId)) {
@@ -84,7 +99,12 @@ export const getCardById = async (req: Request, res: Response): Promise<void> =>
 
 export const deleteCard = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
         const cardId: string = req.params.card
 
         if (!Types.ObjectId.isValid(userId)) {

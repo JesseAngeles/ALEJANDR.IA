@@ -39,7 +39,8 @@ export function returnUser(user: any | undefined): any {
         "_id": user._id,
         "name": user.name,
         "email": user.email,
-        "active": user.active
+        "active": user.active,
+        "role": user.role
     }
 }
 
@@ -53,7 +54,9 @@ export function returnFullUser(user: any | undefined): any {
         "email": user.email,
         "active": user.active,
         "cards": user.cards,
-        "directions": user.directions
+        "directions": user.directions,
+        "collectios": user.collections,
+        "cart": user.cart
     }
 }
 

@@ -5,9 +5,14 @@ import { returnDirection } from "../Middleware/ReturnFunctions"
 
 export const addDirection = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
-        const direction = req.body
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
 
+        const userId: string = req.user.id
+        const direction = req.body
+        
         const user = await users.findById(userId)
         if (!user) {
             res.status(404).send(`user not found`)
@@ -25,7 +30,12 @@ export const addDirection = async (req: Request, res: Response): Promise<void> =
 
 export const getDirections = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
 
         const user = await users.findById(userId)
         if (!user) {
@@ -42,7 +52,12 @@ export const getDirections = async (req: Request, res: Response): Promise<void> 
 
 export const getDirectionById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
         const directionId = req.params.direction
 
         const user = await users.findById(userId)
@@ -62,7 +77,12 @@ export const getDirectionById = async (req: Request, res: Response): Promise<voi
 
 export const updateDirection = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
         const directionId = req.params.direction
         const newDirection = req.body
 
@@ -90,7 +110,12 @@ export const updateDirection = async (req: Request, res: Response): Promise<void
 
 export const deleteDirection = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId: string = req.params.id
+        if (!req.user) {
+            res.status(401).send(`Unauthorized: No user find in token`)
+            return
+        }
+
+        const userId: string = req.user.id
         const directionId = req.params.direction
 
         const user = await users.findById(userId)

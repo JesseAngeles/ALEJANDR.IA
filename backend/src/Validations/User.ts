@@ -17,11 +17,7 @@ export const ValUserSchema = z.object({
         .regex(
             /(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?]).+/,
             'Password must contain at least one uppercase letter and one special character'
-        ),
-    active: z
-        .boolean({
-            required_error: 'Active status is required'
-        })
+        )
 })
 
 export type User = z.infer<typeof ValUserSchema>
