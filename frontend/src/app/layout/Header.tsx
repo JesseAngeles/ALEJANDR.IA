@@ -88,7 +88,7 @@ const Header: React.FC = () => {
             <div>
               <h4 className="font-semibold border-b mb-1">No Ficción</h4>
               <ul className="space-y-1">
-              <li><a href="#" className="hover:text-blue-600">Ciencias Políticas</a></li>
+                <li><a href="#" className="hover:text-blue-600">Ciencias Políticas</a></li>
                 <li><a href="#" className="hover:text-blue-600">Economía</a></li>
                 <li><a href="#" className="hover:text-blue-600">Filosofía</a></li>
                 <li><a href="#" className="hover:text-blue-600">Lingüistica</a></li>
@@ -160,22 +160,22 @@ const Header: React.FC = () => {
           <span className="hidden sm:inline">Mi cuenta</span>
         </button>
         <button
-  className="flex items-center gap-1 px-3 hover:text-blue-600"
-  onClick={() => {
-    if (estaLogueado) {
-      navigate("/mis-favoritos");
-    } else {
-      setMostrarAvisoFavoritos(true);
-    }
-  }}
->
-  <FaHeart />
-  <span className="hidden sm:inline">Favoritos</span>
-</button>
+          className="flex items-center gap-1 px-3 hover:text-blue-600"
+          onClick={() => {
+            if (estaLogueado) {
+              navigate("/mis-favoritos");
+            } else {
+              setMostrarAvisoFavoritos(true);
+            }
+          }}
+        >
+          <FaHeart />
+          <span className="hidden sm:inline">Favoritos</span>
+        </button>
 
         <button className="flex items-center gap-1 px-3 hover:text-blue-600">
           <FaShoppingCart />
-          <span className="hidden sm:inline">Carrito</span>
+          <span onClick={() => navigate('/cart')} className="hidden sm:inline">Carrito</span>
         </button>
 
         {/* Menú desplegable para iniciar/registrar */}
@@ -198,24 +198,24 @@ const Header: React.FC = () => {
         )}
       </div>
       {mostrarAvisoFavoritos && !estaLogueado && (
-  <div className="absolute top-full right-16 bg-white shadow-md border mt-2 w-64 rounded z-50 p-4">
-    <p className="text-sm font-semibold mb-2 text-center">
-      Inicia sesión o regístrate para acceder a <span className="text-cyan-700 font-bold">Mis Favoritos</span>
-    </p>
-    <button
-      onClick={() => navigate("/login")}
-      className="w-full bg-cyan-700 text-white text-sm py-1 rounded mb-2 hover:bg-cyan-800 transition"
-    >
-      Iniciar sesión
-    </button>
-    <button
-      onClick={() => navigate("/registro")}
-      className="w-full bg-cyan-100 text-cyan-800 text-sm py-1 rounded hover:bg-cyan-200 transition"
-    >
-      Registrarse
-    </button>
-  </div>
-)}
+        <div className="absolute top-full right-16 bg-white shadow-md border mt-2 w-64 rounded z-50 p-4">
+          <p className="text-sm font-semibold mb-2 text-center">
+            Inicia sesión o regístrate para acceder a <span className="text-cyan-700 font-bold">Mis Favoritos</span>
+          </p>
+          <button
+            onClick={() => navigate("/login")}
+            className="w-full bg-cyan-700 text-white text-sm py-1 rounded mb-2 hover:bg-cyan-800 transition"
+          >
+            Iniciar sesión
+          </button>
+          <button
+            onClick={() => navigate("/registro")}
+            className="w-full bg-cyan-100 text-cyan-800 text-sm py-1 rounded hover:bg-cyan-200 transition"
+          >
+            Registrarse
+          </button>
+        </div>
+      )}
 
     </header>
   );
