@@ -67,7 +67,7 @@ const Header: React.FC = () => {
             <MdMenu />
           </button>
           <span className="text-sm font-semibold">Categorías</span>
-          <h1 className="text-2xl font-bold ml-4">ALEJANDR.IA</h1>
+          <h1 className="text-2xl font-serif ml-4">ALEJANDR.IA</h1>
         </div>
 
         {mostrarMenu && (
@@ -113,7 +113,7 @@ const Header: React.FC = () => {
           <button className="text-cyan-700 px-4" onClick={() => irAResultados(buscar)}>
             Buscar
           </button>
-          <button className="text-gray-500 text-lg pr-3" onClick={() => irAResultados(buscar)}>
+          <button className="text-gray-500 text-lg pr-3" onClick={() => navigate("/busqueda")}>
             <FaSearch />
           </button>
         </div>
