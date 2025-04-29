@@ -1,9 +1,14 @@
-import { Direction } from "../Interfaces/Direction"
 import mongoose from "mongoose"
+import { Direction } from "../Interfaces/Direction"
+
 
 const { Schema } = mongoose
 
-const directionSchema = new Schema<Direction>({
+export const directionSchema = new Schema<Direction>({
+    name: {
+        type: Schema.Types.String,
+        required: true
+    },
     number: {
         type: Schema.Types.String,
         required: true
@@ -22,8 +27,8 @@ const directionSchema = new Schema<Direction>({
     },
     state: {
         type: Schema.Types.String,
-        required:true
+        required: true
     }
 })
 
-export default mongoose.model<Direction>('directions',directionSchema)
+export default mongoose.model<Direction>('directions', directionSchema)
