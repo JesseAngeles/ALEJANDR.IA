@@ -13,7 +13,7 @@ type PurchaseData = {
 type PurchaseContextType = {
     purchase: PurchaseData;
     setPurchase: React.Dispatch<React.SetStateAction<PurchaseData>>;
-    resetPurchase: () => void; // ✅ AGREGADO
+    resetPurchase: () => void;
 };
 
 const PurchaseContext = createContext<PurchaseContextType | undefined>(undefined);

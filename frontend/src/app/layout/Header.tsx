@@ -23,8 +23,7 @@ const Header: React.FC = () => {
   const [mostrarAvisoFavoritos, setMostrarAvisoFavoritos] = useState(false);
 
 
-  const estaLogueado = false; // ⚠️ reemplaza por lógica real
-
+  const estaLogueado = true;
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -150,7 +149,7 @@ const Header: React.FC = () => {
           className="flex items-center gap-1 px-3 hover:text-blue-600"
           onClick={() => {
             if (estaLogueado) {
-              navigate("/mi-cuenta");
+              navigate("/account/profile");
             } else {
               setMostrarOpcionesCuenta((prev) => !prev);
             }
