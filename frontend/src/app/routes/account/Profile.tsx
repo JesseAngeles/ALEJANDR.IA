@@ -1,36 +1,26 @@
+// src/app/routes/account/Account.tsx
 import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { AccountSidebar } from "@/app/routes/account/AccountSideBar";
 
-const Account: React.FC = () => {
+const Profile: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Regresar */}
-      <button className="flex items-center text-sm text-black mb-6 hover:underline">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center text-sm text-black mb-6 hover:underline"
+      >
         <FaArrowLeft className="mr-2" />
         Regresar
       </button>
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
-        <aside className="w-full md:w-64 border rounded bg-gray-100 p-4 text-sm">
-          <ul className="space-y-2">
-            <li className="text-[#820000] font-semibold border-l-4 border-[#820000] pl-2">
-              Mi perfil
-            </li>
-            <li className="hover:font-medium cursor-pointer border-l-4 border-transparent hover:border-gray-400 pl-2">
-              Mis métodos de pago
-            </li>
-            <li className="hover:font-medium cursor-pointer border-l-4 border-transparent hover:border-gray-400 pl-2">
-              Mis direcciones de envío
-            </li>
-            <li className="hover:font-medium cursor-pointer border-l-4 border-transparent hover:border-gray-400 pl-2">
-              Mi historial de pedidos
-            </li>
-            <li className="hover:font-medium cursor-pointer border-l-4 border-transparent hover:border-gray-400 pl-2">
-              Mis favoritos
-            </li>
-          </ul>
-        </aside>
+        <AccountSidebar />
 
         {/* Formulario */}
         <section className="flex-1">
@@ -90,4 +80,4 @@ const Account: React.FC = () => {
   );
 };
 
-export { Account };
+export { Profile };
