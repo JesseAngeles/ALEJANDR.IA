@@ -8,6 +8,8 @@ import connectDB from './Config/DatabaseConnection'
 import routerUser from './Routes/User'
 import routerAdmin from './Routes/Admin'
 import routerBook from './Routes/Book' 
+import routerCart from './Routes/Cart'
+import routerCollection from './Routes/Collection'
 
 dotenv.config()
 connectDB()
@@ -22,6 +24,8 @@ app.use(cors())
 app.use('/user', routerUser)
 app.use('/admin', routerAdmin)
 app.use('/book',routerBook)
+app.use('/cart', routerCart)
+app.use('/collection', routerCollection)
 
 // Iniciar el servidor
 app.listen(port, () => {
