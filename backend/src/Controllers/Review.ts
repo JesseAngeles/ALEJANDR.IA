@@ -43,10 +43,10 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
             res.status(404).send("Book not found")
             return
         }
-
+        
         const review:Review = (book.reviews as Types.DocumentArray<any>).id(reviewId)
         if (!review) {
-            res.status(404).send(`Card not found`)
+            res.status(404).send(`Review not found`)
             return
         }
 

@@ -38,6 +38,10 @@ export const ValBookSchema = z.object({
   reviews: z
     .array(ReviewSchema)
     .optional(),
+    
+  image: z
+  .string()
+  .url('Image must be a valid URL'),
 })
 
 export type Book = z.infer<typeof ValBookSchema>

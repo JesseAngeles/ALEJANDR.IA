@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createBook, getBooks, getBookById, updateBook, deleteBook } from '../Controllers/Book'
+import { createBook, getBooks, getBookById, updateBook, deleteBook, getRecommendedBooks } from '../Controllers/Book'
 import { authenticateToken, authorizeRole } from '../Middleware/jwt'
 import { validateRequest } from '../Middleware/ValidateRequest'
 import { ValBookSchema } from '../Validations/Book'
@@ -7,15 +7,16 @@ import { createComment, deleteComment } from '../Controllers/Review'
 
 const routerBook = Router()
 
-// CRUD
+// CRUD (title, author, price, ISBN, stock, image)
 routerBook.post('/', authenticateToken, authorizeRole("admin"), validateRequest(ValBookSchema), createBook)
 routerBook.get('/', getBooks)
-routerBook.get('/:ISBN', getBookById)
+routerBook.get('/recommended', getRecommendedBooks)
+routerBook.get('/:ISBN', getBookById)  
 routerBook.put('/:ISBN', authenticateToken, authorizeRole("admin"), validateRequest(ValBookSchema), updateBook)
 routerBook.delete('/:ISBN', authenticateToken, authorizeRole("admin"), deleteBook)
 
-// OPINIONES
-routerBook.post('/:ISBN', authenticateToken, createComment)
-routerBook.delete('/:ISBN/:reviewId', authenticateToken, deleteComment)
+// OPINIONES (comment, rating)
+routerBook.post('/opinion/:ISBN', authenticateToken, authorizeRole("user"), createComment)
+routerBook.delete('/opinion/:ISBN/:reviewId', authenticateToken, deleteComment)
 
 export default routerBook

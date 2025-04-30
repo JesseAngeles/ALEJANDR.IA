@@ -9,4 +9,5 @@ export interface Book {
   rating: number 
   reviews: Review[]
   reviewSumary: string
+  image: string
 }
