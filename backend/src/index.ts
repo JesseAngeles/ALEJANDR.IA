@@ -10,6 +10,7 @@ import routerAdmin from './Routes/Admin'
 import routerBook from './Routes/Book' 
 import routerCart from './Routes/Cart'
 import routerCollection from './Routes/Collection'
+import routerDiscount from './Routes/Discount'
 
 dotenv.config()
 connectDB()
@@ -26,6 +27,7 @@ app.use('/admin', routerAdmin)
 app.use('/book',routerBook)
 app.use('/cart', routerCart)
 app.use('/collection', routerCollection)
+app.use('/discount', routerDiscount)
 
 // Iniciar el servidor
 app.listen(port, () => {
