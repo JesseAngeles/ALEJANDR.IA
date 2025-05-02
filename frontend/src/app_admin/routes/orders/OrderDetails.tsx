@@ -43,7 +43,7 @@ const OrderDetails: React.FC = () => {
         className="flex items-center text-sm text-black hover:underline mb-4"
       >
         <FaArrowLeft className="mr-2 text-black" />
-        <span className="text-red-700 font-medium">Regresar</span>
+        <span className="text-black font-medium">Regresar</span>
       </button>
 
       <h2 className="text-xl font-semibold text-[#820000] text-center mb-6">

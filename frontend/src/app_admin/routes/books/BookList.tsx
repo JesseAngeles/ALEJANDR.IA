@@ -1,27 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { fetchBooks, deleteBook } from "app_admin/services/bookService"; 
 const BookList: React.FC = () => {
   const navigate = useNavigate();
+  const [books, setBooks] = useState<any[]>([]);
 
-  const books = [
-    {
-      id: 1,
-      title: "UN FUEGO AZUL",
-      author: "PEDRO FEIJOO",
-      isbn: "0-7645-2641-3",
-      price: 569,
-      stock: 20,
-    },
-    {
-      id: 2,
-      title: "ERES TODO PARA MÍ",
-      author: "SYLVIA DAY",
-      isbn: "0-9876-5432-1",
-      price: 569,
-      stock: 13,
-    },
-  ];
+  useEffect(() => {
+    // Cargar los libros cuando el componente se monta
+    const loadBooks = async () => {
+      try {
+        const booksData = await fetchBooks();
+        setBooks(booksData);
+      } catch (error) {
+        console.error("Error al obtener los libros", error);
+      }
+    };
+
+    loadBooks();
+  }, []); // Dependencia vacía para que solo se ejecute una vez al montar el componente
+
+  // Función para eliminar un libro
+  const handleDelete = async (isbn: string) => {
+    try {
+      await deleteBook(isbn); 
+      setBooks(books.filter((book) => book.isbn !== isbn)); 
+      alert("Libro eliminado correctamente");
+    } catch (error) {
+      console.error("Error al eliminar el libro", error);
+      alert("Hubo un error al eliminar el libro");
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -44,31 +52,38 @@ const BookList: React.FC = () => {
         </thead>
         <tbody>
           {books.map((book) => (
-            <tr key={book.id} className="border-t">
+            <tr key={book.isbn} className="border-t">
               <td className="p-2">{book.title}</td>
               <td className="p-2">{book.author}</td>
               <td className="p-2">{book.isbn}</td>
               <td className="p-2 text-teal-600 font-semibold">${book.price}.00</td>
               <td className="p-2">{book.stock}</td>
-              <td className="p-2 text-[#820000]">
+              <td className="p-2 text-[#820000] text-center">
                 <button
                   className="mr-3 hover:underline"
-                  onClick={() => navigate(`/admin/libros/editar/${book.id}`, { state: book })}
+                  onClick={() => navigate(`/admin/libros/editar/${book.isbn}`, { state: book })}
                 >
                   Editar
                 </button>
-                <button className="hover:underline">Eliminar</button>
+                <button
+                  className="hover:underline text-red-500"
+                  onClick={() => handleDelete(book.isbn)} // Llamada a la función de eliminación
+                >
+                  Eliminar
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button
-        onClick={() => navigate("/admin/libros/agregar")}
-        className="mt-4 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded"
-      >
-        Añadir libro
-      </button>
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => navigate("/admin/libros/agregar")}
+          className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded"
+        >
+          Añadir libro
+        </button>
+      </div>
     </div>
   );
 };
