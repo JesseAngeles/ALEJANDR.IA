@@ -15,6 +15,7 @@ import { BooksByStatus } from "./routes/reports/BooksByStatus";
 import { ReportsLayout } from "./routes/reports/ReportsLayout"; // nuevo layout para reportes
 import { OrderDetails } from "./routes/orders/OrderDetails";
 
+
 export const adminRouter = createBrowserRouter([
   {
     path: "/admin/login",
@@ -35,6 +36,7 @@ export const adminRouter = createBrowserRouter([
       { path: "pedidos", element: <OrderList /> },
       { path: "clientes", element: <CustomerList /> },
       { path: "pedidos/:id", element: <OrderDetails /> },
+  
       {
         path: "reportes",
         element: <ReportsLayout />, 

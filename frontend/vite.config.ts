@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'app_admin': path.resolve(__dirname, './src/app_admin'),
     },
   },
   build: {
