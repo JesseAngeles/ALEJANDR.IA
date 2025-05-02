@@ -1,22 +1,23 @@
-// src/app/domain/services/paymentService.ts
 import type { PaymentMethod } from "@/assets/types/card";
+import { apiFetch } from "@/app/utils/apiFetch";
 
-let paymentStorage: PaymentMethod[] = [];
+const API = "http://localhost:8080/user/card";
 
 export const paymentService = {
     getAll: async (): Promise<PaymentMethod[]> => {
-        return paymentStorage;
+        return await apiFetch(API);
     },
 
     add: async (method: PaymentMethod): Promise<void> => {
-        paymentStorage.push(method);
+        await apiFetch(API, {
+            method: "POST",
+            body: JSON.stringify(method),
+        });
     },
 
-    remove: async (id: number): Promise<void> => {
-        paymentStorage = paymentStorage.filter((m) => m.id !== id);
-    },
-
-    resetMock: (data: PaymentMethod[]) => {
-        paymentStorage = [...data];
+    remove: async (id: string): Promise<void> => {
+        await apiFetch(`${API}/${id}`, {
+            method: "DELETE",
+        });
     },
 };

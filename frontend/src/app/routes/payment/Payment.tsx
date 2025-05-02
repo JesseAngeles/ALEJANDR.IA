@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PaymentMethods } from "@/app/routes/payment/PaymentMethods";
-import { paymentMethods as initialMethods } from "@/assets/data/cards";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { PaymentMethod } from "@/assets/types/card";
+import { paymentService } from "@/app/domain/service/paymentService";
 import { Link } from "react-router-dom";
 
 const Payment: React.FC = () => {
@@ -11,19 +11,29 @@ const Payment: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [methods, setMethods] = useState<PaymentMethod[]>(initialMethods);
+    const [methods, setMethods] = useState<PaymentMethod[]>([]);
+
+    useEffect(() => {
+        loadPaymentMethods();
+    }, []);
+
+    const loadPaymentMethods = async () => {
+        const data = await paymentService.getAll();
+        setMethods(data);
+    };
 
     const handleSelect = (card: PaymentMethod) => {
         setPurchase((prev) => ({ ...prev, paymentMethod: card }));
         navigate("/cvc");
     };
 
-    const handleAddMethod = (newCard: PaymentMethod) => {
-        setMethods((prev) => [...prev, newCard]);
+    const handleAddMethod = async (newCard: PaymentMethod) => {
+        await paymentService.add(newCard);
+        await loadPaymentMethods();
         navigate("/payment");
     };
 
-    // Soporte para redireccionar desde /payment/add
+    // Soporte para ruta /payment/add
     if (location.pathname === "/payment/add") {
         const AddPaymentMethod = require("./AddPaymentMethod").default;
         return <AddPaymentMethod onAdd={handleAddMethod} />;

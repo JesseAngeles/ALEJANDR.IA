@@ -18,7 +18,7 @@ const AddressesAccount: React.FC = () => {
         setAddresses(data);
     };
 
-    const handleRemove = async (id: number) => {
+    const handleRemove = async (id: string) => {
         await addressService.remove(id);
         loadAddresses();
     };
@@ -45,16 +45,16 @@ const AddressesAccount: React.FC = () => {
                     <div className="space-y-4">
                         {addresses.map((addr) => (
                             <div
-                                key={addr.id}
+                                key={addr._id}
                                 className="flex justify-between items-center bg-gray-50 border rounded px-4 py-3 text-sm"
                             >
                                 <div>
-                                    <p className="font-semibold">{addr.referenceName}</p>
-                                    <p className="text-sm text-gray-700">{addr.fullAddress}</p>
+                                    <p className="font-semibold">{addr.name}</p>
+                                    <p className="text-sm text-gray-700">{`${addr.street} ${addr.number}, ${addr.zip_code}, ${addr.city}, ${addr.state}`}</p>
                                 </div>
 
                                 <button
-                                    onClick={() => handleRemove(addr.id)}
+                                    onClick={() => handleRemove(addr._id)}
                                     className="text-red-600 text-sm flex items-center gap-1 hover:underline"
                                 >
                                     <FaTrash className="text-xs" /> Eliminar

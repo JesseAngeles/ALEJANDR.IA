@@ -52,7 +52,7 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
         <div className="flex flex-col gap-1">
           <span className="font-semibold">Dirección de envío:</span>
           <span className="text-sm">
-            {address.referenceName} — {address.fullAddress}
+            {address.name} — {`${address.street} ${address.number}, ${address.zip_code}, ${address.city}, ${address.state}`}
           </span>
         </div>
 
@@ -65,7 +65,7 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
               className="w-8 h-auto"
             />
             <span className="text-sm font-medium">
-              Terminada en {paymentMethod.last4} {paymentMethod.bank}
+              Terminada en {paymentMethod.last4} {paymentMethod.brand}
             </span>
           </div>
         </div>
