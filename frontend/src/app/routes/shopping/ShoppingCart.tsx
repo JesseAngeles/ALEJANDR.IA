@@ -2,30 +2,62 @@ import React, { useEffect, useState } from "react";
 import { FaPlus, FaMinus, FaTimes } from "react-icons/fa";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
 import { useNavigate } from "react-router-dom";
-import type { Book } from "@/assets/types/book";
 import { cartService } from "@/app/domain/service/cartService";
+import type { Book } from "@/assets/types/book";
+
+interface BookConCantidad extends Book {
+  cantidad: number;
+  id: string;
+}
+
+interface CartItem {
+  bookId: string;
+  quantity: number;
+}
+
+function adaptarLibro(raw: any, cantidad: number): BookConCantidad {
+  return {
+    id: raw.id,
+    titulo: raw.title,
+    autor: raw.author,
+    precio: raw.price,
+    imagen: raw.image,
+    cantidad,
+    ISBN: raw.ISBN,
+  };
+}
 
 const ShoppingCart: React.FC = () => {
-  const [books, setBooks] = useState<Book[]>([]);
+  const [books, setBooks] = useState<BookConCantidad[]>([]);
   const [recentlyRemoved, setRecentlyRemoved] = useState<Book | null>(null);
   const [undoCountdown, setUndoCountdown] = useState<number>(0);
   const [undoInterval, setUndoInterval] = useState<NodeJS.Timeout | null>(null);
   const { setPurchase } = usePurchase();
   const navigate = useNavigate();
 
+  // ✅ Definimos la función fuera del useEffect
+  const loadCart = async () => {
+    try {
+      const cart = await cartService.getCart();
+      const librosConDatos = await Promise.all(
+        cart.items.map(async (item: CartItem) => {
+          const raw = await cartService.getBookById(item.bookId);
+          return adaptarLibro(raw, item.quantity);
+        })
+      );
+      setBooks(librosConDatos);
+    } catch (error) {
+      console.error("Error al cargar el carrito:", error);
+    }
+  };
+
   useEffect(() => {
     loadCart();
   }, []);
 
-  const loadCart = async () => {
-    const libros = await cartService.getBooksWithDetails();
-    setBooks(libros);
-  };
-
-  const handleRemove = async (book: Book) => {
-    await cartService.removeFromCart(book.ISBN);
-    setBooks((prev) => prev.filter((b) => b.ISBN !== book.ISBN));
-    setRecentlyRemoved(book);
+  const handleRemove = (bookToRemove: BookConCantidad) => {
+    setBooks((prev) => prev.filter((book) => book.id !== bookToRemove.id));
+    setRecentlyRemoved(bookToRemove);
     setUndoCountdown(3);
 
     if (undoInterval) clearInterval(undoInterval);

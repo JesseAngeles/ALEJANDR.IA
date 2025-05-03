@@ -1,29 +1,68 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BookSection from '../book/BookSection'
 import Recomendacion from '../book/Recomendation_week'
 import CategoriasDestacadas from '../category/Categories'
-import AlasOnix from '@/assets/img/portada_libro.jpg'
-import RebeccaYarros from "@/assets/img/Rebecca_Yarros.jpg"
-import { librosEjemplo } from '@/assets/data/example'
 
+interface Book {
+    _id: string;
+    title: string;
+    image: string;
+    author: string;
+    category: string;
+    price: number;
+    rating: number;
+    stock: number;
+    ISBN: string;
+    sinopsis: string; 
+  }
+ 
 function HomePage() {
     const [count, setCount] = useState(0)
     const navigate = useNavigate();
+
+    const [books, setBooks] = useState<Book[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [recommendedBook, setRecommendedBook] = useState<Book | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:8080/book/')
+      .then(res => res.json())
+      .then(data => {
+        setBooks(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching books:', err);
+        setError('No se pudieron cargar los libros.');
+        setLoading(false);
+      });
+  }, []);
+
+
+
+    useEffect(() => {
+        fetch('http://localhost:8080/book/9780547739465') //Cambiar por un endpoint de recomendación semanal
+            .then(res => res.json())
+            .then(data => setRecommendedBook(data))
+        .catch(err => console.error('Error fetching recommended book:', err));
+    }, []);
+
+
+
+  //if (loading) return <p>Cargando libros...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
+
     return (
         <>
-            <Recomendacion
-                imagenLibro={AlasOnix}
-                imagenAutora={RebeccaYarros}
-                tituloLibro="Alas de Onix"
-                nombreAutora="Rebeca Yarros"
-                onClick={() => navigate('/libro/alas-de-onix')}
-            />
+            
 
             <main className="flex-grow p-6">
-
-                <BookSection tituloSeccion="Novedades" libros={librosEjemplo} />
-                <BookSection tituloSeccion="Lo mas visto" libros={librosEjemplo} />
+                {recommendedBook && (<Recomendacion book={recommendedBook} />)}
+                <BookSection tituloSeccion="Novedades" books={books} />
+                <BookSection tituloSeccion="Lo mas visto" books={books} />
                 <CategoriasDestacadas />
             </main>
         </>
