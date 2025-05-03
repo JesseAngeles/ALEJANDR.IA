@@ -8,8 +8,7 @@ export const USER = {
   id: "608eb546663c2c12f1d2e731",
   email: "alejandria.contactanos@gmail.com",
   name: "AlejandrIA",
-  role: "admin",
-  
+  role: "admin"
 };
 
 export const addAdmin = async (adminData: any) => {
@@ -28,12 +27,11 @@ export const addAdmin = async (adminData: any) => {
 
 export const getUsers = async () => {
   const response = await fetch(API_URL, {
-    method: 'POST',
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': TOKEN,
-    },
-    body: JSON.stringify({ user: USER }), // 👈 importante que sea un objeto con key `user`
+    } 
   });
 
   if (!response.ok) {
