@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+/* import React, { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { AccountSidebar } from "@/app/routes/account/AccountSideBar";
-import { orderHistoryService, type OrderHistoryItem } from "@/app/domain/service/orderHistoryService";
+import { orderHistoryService, type OrderHistoryItem } from "@/app/domain/service/cartService";
 
 const statusColor = {
     Entregado: "text-green-600",
@@ -25,7 +25,6 @@ const OrderHistoryAccount: React.FC = () => {
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
-            {/* Back */}
             <button
                 onClick={() => navigate(-1)}
                 className="flex items-center text-sm text-black mb-6 hover:underline"
@@ -35,10 +34,8 @@ const OrderHistoryAccount: React.FC = () => {
             </button>
 
             <div className="flex flex-col md:flex-row gap-8">
-                {/* Sidebar */}
                 <AccountSidebar />
 
-                {/* Content */}
                 <section className="flex-1">
                     <h2 className="text-2xl font-bold text-[#820000] mb-6">Mi historial de pedidos</h2>
 
@@ -78,3 +75,4 @@ const OrderHistoryAccount: React.FC = () => {
 };
 
 export { OrderHistoryAccount };
+ */

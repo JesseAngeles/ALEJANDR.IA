@@ -37,13 +37,12 @@ export const getRecommendedBooks = async (req: Request, res: Response): Promise<
 		const returnBooks = [
 			{
 				name: "colleccion 1",
-				books: books.slice(0, midpoint) 
+				books: books.slice(0, midpoint)
 			},
 			{
 				name: "colección 2",
-				books: books.slice(midpoint) 
+				books: books.slice(midpoint)
 			}]
-			
 		res.status(200).json(returnBooks)
 	} catch (error) {
 		res.status(500).send(`Server error: ${error}`)

@@ -17,7 +17,7 @@ import { AddPaymentMethod } from "./routes/payment/AddPaymentMethod";
 import { AddDeliveryAddress } from "./routes/address/AddDeliveryAddress";
 import { PaymentMethodsAccount } from "./routes/account/PaymentMethodsAccount";
 import { AddressesAccount } from "./routes/account/AddressesAccount";
-import { OrderHistoryAccount } from "./routes/account/OrderHistoryAccount";
+//import { OrderHistoryAccount } from "./routes/account/OrderHistoryAccount";
 import { ProtectedRoute } from "./ProtectedRoute"; // 👈 nuevo
 
 export const router = createBrowserRouter([
@@ -123,12 +123,12 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "account/history",
+        /*path: "account/history",
         element: (
           <ProtectedRoute>
             <OrderHistoryAccount />
           </ProtectedRoute>
-        ),
+        ),*/
       },
     ],
   },

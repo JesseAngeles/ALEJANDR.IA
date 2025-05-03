@@ -1,33 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPlus, FaMinus, FaTimes } from "react-icons/fa";
-import { Book } from "@/assets/types/book";
-import { initialBooks } from "@/assets/data/books_cart";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
 import { useNavigate } from "react-router-dom";
+import type { Book } from "@/assets/types/book";
+import { cartService } from "@/app/domain/service/cartService";
 
 const ShoppingCart: React.FC = () => {
-  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [books, setBooks] = useState<Book[]>([]);
   const [recentlyRemoved, setRecentlyRemoved] = useState<Book | null>(null);
   const [undoCountdown, setUndoCountdown] = useState<number>(0);
-  const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [undoInterval, setUndoInterval] = useState<NodeJS.Timeout | null>(null);
   const { setPurchase } = usePurchase();
   const navigate = useNavigate();
-  const [undoInterval, setUndoInterval] = useState<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    loadCart();
+  }, []);
 
-  const handleRemove = (bookToRemove: Book) => {
-    setBooks((prev) => prev.filter((book) => book.id !== bookToRemove.id));
-    setRecentlyRemoved(bookToRemove);
-    setUndoCountdown(3); // segundos
+  const loadCart = async () => {
+    const libros = await cartService.getBooksWithDetails();
+    setBooks(libros);
+  };
 
-    // Limpia cualquier timer previo
+  const handleRemove = async (book: Book) => {
+    await cartService.removeFromCart(book.ISBN);
+    setBooks((prev) => prev.filter((b) => b.ISBN !== book.ISBN));
+    setRecentlyRemoved(book);
+    setUndoCountdown(3);
+
     if (undoInterval) clearInterval(undoInterval);
 
     const interval = setInterval(() => {
       setUndoCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          setRecentlyRemoved(null); // se borra si no se deshace
+          setRecentlyRemoved(null);
           return 0;
         }
         return prev - 1;
@@ -37,33 +44,27 @@ const ShoppingCart: React.FC = () => {
     setUndoInterval(interval);
   };
 
-
-  const handleUndo = () => {
+  const handleUndo = async () => {
     if (recentlyRemoved) {
-      setBooks((prev) => [...prev, recentlyRemoved]);
+      await cartService.addToCart(recentlyRemoved.ISBN, recentlyRemoved.cantidad);
+      await loadCart();
       setRecentlyRemoved(null);
       setUndoCountdown(0);
       if (undoInterval) clearInterval(undoInterval);
     }
   };
 
+  const updateQuantity = async (isbn: string, change: number) => {
+    const target = books.find((b) => b.ISBN === isbn);
+    if (!target) return;
 
-  const updateQuantity = (id: number, change: number) => {
-    setBooks((prev) => {
-      const updated = prev.map((book) =>
-        book.id === id
-          ? { ...book, cantidad: book.cantidad + change }
-          : book
-      );
-
-      const target = updated.find((book) => book.id === id);
-      if (target && target.cantidad <= 0) {
-        handleRemove(target);
-        return updated.filter((book) => book.id !== id);
-      }
-
-      return updated;
-    });
+    const newQty = target.cantidad + change;
+    if (newQty <= 0) {
+      await handleRemove(target);
+    } else {
+      await cartService.addToCart(isbn, newQty);
+      await loadCart();
+    }
   };
 
   const totalItems = books.reduce((acc, book) => acc + book.cantidad, 0);
@@ -76,12 +77,10 @@ const ShoppingCart: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Title */}
       <h1 className="text-white bg-[#820000] text-center py-3 text-xl font-bold rounded-t">
         Mi carrito
       </h1>
 
-      {/* Cart Table */}
       <div className="bg-white rounded-b overflow-hidden shadow">
         <div className="grid grid-cols-5 text-center font-semibold border-b p-4">
           <div className="col-span-2 text-left">Producto</div>
@@ -90,7 +89,6 @@ const ShoppingCart: React.FC = () => {
           <div>Subtotal</div>
         </div>
 
-        {/* Undo banner */}
         {recentlyRemoved && (
           <div className="grid grid-cols-5 items-center border-b p-4 text-sm text-center bg-gray-50">
             <div className="col-span-3 text-left text-gray-700 font-semibold">
@@ -112,10 +110,9 @@ const ShoppingCart: React.FC = () => {
 
         {books.map((book) => (
           <div
-            key={book.id}
+            key={book.ISBN}
             className="grid grid-cols-5 items-center gap-4 text-sm border-b p-4"
           >
-            {/* Product */}
             <div className="col-span-2 flex items-center gap-4">
               <button
                 onClick={() => handleRemove(book)}
@@ -123,40 +120,31 @@ const ShoppingCart: React.FC = () => {
               >
                 <FaTimes />
               </button>
-              <img
-                src={book.imagen}
-                alt={book.titulo}
-                className="w-12 h-16 object-cover"
-              />
+              <img src={book.imagen} alt={book.titulo} className="w-12 h-16 object-cover" />
               <div>
                 <p className="font-semibold text-sm">{book.titulo}</p>
                 <p className="text-xs text-gray-500">{book.autor}</p>
               </div>
             </div>
 
-            {/* Price */}
-            <div className="text-center font-medium">
-              ${book.precio.toFixed(2)}
-            </div>
+            <div className="text-center font-medium">${book.precio.toFixed(2)}</div>
 
-            {/* Quantity */}
             <div className="flex items-center justify-center space-x-2">
               <button
-                onClick={() => updateQuantity(book.id, -1)}
+                onClick={() => updateQuantity(book.ISBN, -1)}
                 className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
               >
                 <FaMinus className="text-xs" />
               </button>
               <span className="w-4 text-center">{book.cantidad}</span>
               <button
-                onClick={() => updateQuantity(book.id, 1)}
+                onClick={() => updateQuantity(book.ISBN, 1)}
                 className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
               >
                 <FaPlus className="text-xs" />
               </button>
             </div>
 
-            {/* Subtotal */}
             <div className="text-[#007B83] font-semibold text-center">
               ${(book.precio * book.cantidad).toFixed(2)}
             </div>
@@ -164,7 +152,6 @@ const ShoppingCart: React.FC = () => {
         ))}
       </div>
 
-      {/* Summary */}
       <div className="flex justify-end mt-6">
         <div className="border rounded w-full max-w-sm p-4">
           <div className="flex justify-between mb-2 text-sm">

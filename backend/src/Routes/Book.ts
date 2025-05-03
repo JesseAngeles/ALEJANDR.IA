@@ -11,7 +11,7 @@ const routerBook = Router()
 routerBook.post('/', authenticateToken, authorizeRole("admin"), validateRequest(ValBookSchema), createBook)
 routerBook.get('/', getBooks)
 routerBook.get('/recommended', getRecommendedBooks)
-routerBook.get('/:ISBN', getBookById)  
+routerBook.get('/:ISBN', getBookById)
 routerBook.put('/:ISBN', authenticateToken, authorizeRole("admin"), validateRequest(ValBookSchema), updateBook)
 routerBook.delete('/:ISBN', authenticateToken, authorizeRole("admin"), deleteBook)
 

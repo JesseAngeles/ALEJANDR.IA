@@ -22,7 +22,7 @@ const AddDeliveryAddress: React.FC = () => {
             return;
         }
 
-        const newAddress: Omit<Address, "_id"> = {
+        const newAddress = {
             name,
             number,
             street,
@@ -31,8 +31,13 @@ const AddDeliveryAddress: React.FC = () => {
             zip_code: parseInt(zip_code),
         };
 
-        await addressService.add(newAddress as Address);
-        navigate("/address");
+        try {
+            await addressService.add(newAddress as Address);
+            navigate("/address");
+        } catch (error) {
+            console.error("Error al agregar dirección:", error);
+            alert("No se pudo guardar la dirección.");
+        }
     };
 
     return (
