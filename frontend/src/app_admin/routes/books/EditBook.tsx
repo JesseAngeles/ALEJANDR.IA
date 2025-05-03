@@ -4,19 +4,17 @@ import { fetchBookByISBN, updateBook } from "app_admin/services/bookService";
 import { FaArrowLeft } from "react-icons/fa";
 
 const EditBook: React.FC = () => {
-  const { id } = useParams(); // id es el ISBN
+  const { id } = useParams(); // id = ISBN
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     title: "",
     author: "",
-    isbn: "",
+    ISBN: "",
     category: "",
-    publisher: "",
-    year: "",
-    size: "",
-    pages: "",
-    binding: "",
+    price: "",
+    stock: "",
+    image: "",
   });
 
   useEffect(() => {
@@ -25,15 +23,13 @@ const EditBook: React.FC = () => {
     fetchBookByISBN(id)
       .then((book) => {
         setForm({
-          title: book.title,
-          author: book.author,
-          isbn: book.isbn,
+          title: book.title || "",
+          author: book.author || "",
+          ISBN: book.ISBN || "",
           category: book.category || "",
-          publisher: book.publisher || "",
-          year: book.year || "",
-          size: book.size || "",
-          pages: book.pages || "",
-          binding: book.binding || "",
+          price: book.price?.toString() || "",
+          stock: book.stock?.toString() || "",
+          image: book.image || "",
         });
       })
       .catch((error) => {
@@ -49,10 +45,18 @@ const EditBook: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateBook(form.isbn, form);
+      await updateBook(form.ISBN, {
+        title: form.title,
+        author: form.author,
+        category: form.category,
+        price: Number(form.price),
+        stock: Number(form.stock),
+        image: form.image,
+        ISBN: form.ISBN, 
+      });
       alert("Libro actualizado exitosamente");
       navigate("/admin/libros");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al actualizar el libro:", error);
       alert("Hubo un error al actualizar el libro.");
     }
@@ -74,74 +78,15 @@ const EditBook: React.FC = () => {
 
       <h2 className="text-2xl font-bold text-[#820000] mb-6">Editar libro</h2>
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Nombre del libro"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="author"
-          value={form.author}
-          onChange={handleChange}
-          placeholder="Autor"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="isbn"
-          value={form.isbn}
-          onChange={handleChange}
-          placeholder="ISBN"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          placeholder="Categoría"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="publisher"
-          value={form.publisher}
-          onChange={handleChange}
-          placeholder="Editorial"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="year"
-          value={form.year}
-          onChange={handleChange}
-          placeholder="Año de edición"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="size"
-          value={form.size}
-          onChange={handleChange}
-          placeholder="Medidas"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="pages"
-          value={form.pages}
-          onChange={handleChange}
-          placeholder="Número de páginas"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="binding"
-          value={form.binding}
-          onChange={handleChange}
-          placeholder="Encuadernación"
-          className="w-full border rounded px-3 py-2"
-        />
+        <input name="title" value={form.title} onChange={handleChange} placeholder="Nombre del libro" className="w-full border rounded px-3 py-2" />
+        <input name="author" value={form.author} onChange={handleChange} placeholder="Autor" className="w-full border rounded px-3 py-2" />
+        <input name="ISBN" value={form.ISBN} onChange={handleChange} placeholder="ISBN" className="w-full border rounded px-3 py-2" />
+        <input name="category" value={form.category} onChange={handleChange} placeholder="Categoría" className="w-full border rounded px-3 py-2" />
+        <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="Precio" className="w-full border rounded px-3 py-2" />
+        <input name="stock" type="number" value={form.stock} onChange={handleChange} placeholder="Stock" className="w-full border rounded px-3 py-2" />
+        <input name="image" value={form.image} onChange={handleChange} placeholder="URL de la portada (opcional)" className="w-full border rounded px-3 py-2" />
 
-        <button
-          type="submit"
-          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded"
-        >
+        <button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded">
           Guardar cambios
         </button>
       </form>
