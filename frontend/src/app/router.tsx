@@ -1,11 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 import { RootLayout } from "./layout/RootLayout";
 import { HomePage } from "./routes/home/HomePage";
+import { Profile } from "./routes/account/Profile";
 import { ShoppingCart } from "./routes/shopping/ShoppingCart";
 import { DeliveryAddress } from "./routes/address/DeliveryAddress";
-import { AddDeliveryAddress } from "./routes/address/AddDeliveryAddress";
 import { Payment } from "./routes/payment/Payment";
-import { AddPaymentMethod } from "./routes/payment/AddPaymentMethod";
 import { Cvc } from "./routes/payment/Cvc";
 import { Summary } from "./routes/shopping/Summary";
 import { Login } from "./routes/account/Login";
@@ -14,10 +13,12 @@ import { Favoritos } from "./routes/favorites/favoritos";
 import { BookDetails } from "./routes/book/book_details/BookDetail";
 import { Search } from "./routes/search/Search";
 import { PurchaseConfirmation } from "./routes/shopping/PurchaseConfirmation";
-import { Profile } from "./routes/account/Profile";
+import { AddPaymentMethod } from "./routes/payment/AddPaymentMethod";
+import { AddDeliveryAddress } from "./routes/address/AddDeliveryAddress";
 import { PaymentMethodsAccount } from "./routes/account/PaymentMethodsAccount";
 import { AddressesAccount } from "./routes/account/AddressesAccount";
 import { OrderHistoryAccount } from "./routes/account/OrderHistoryAccount";
+import { ProtectedRoute } from "./ProtectedRoute"; // 👈 nuevo
 
 export const router = createBrowserRouter([
   {
@@ -25,35 +26,109 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "cart", element: <ShoppingCart /> },
-      { path: "address", element: <DeliveryAddress /> },
-      { path: "address/add", element: <AddDeliveryAddress /> },
-      { path: "payment", element: <Payment /> },
-      { path: "payment/add", element: <AddPaymentMethod /> },
-      { path: "cvc", element: <Cvc /> },
-      { path: "summary", element: <Summary /> },
       { path: "login", element: <Login /> },
       { path: "registro", element: <Registro /> },
-      { path: "mis-favoritos", element: <Favoritos /> },
       { path: "libro", element: <BookDetails /> },
       { path: "busqueda", element: <Search /> },
-      { path: "confirmation", element: <PurchaseConfirmation /> },
+      { path: "mis-favoritos", element: <Favoritos /> },
 
       {
+        path: "cart",
+        element: (
+          <ProtectedRoute>
+            <ShoppingCart />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "address",
+        element: (
+          <ProtectedRoute>
+            <DeliveryAddress />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "address/add",
+        element: (
+          <ProtectedRoute>
+            <AddDeliveryAddress />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "payment",
+        element: (
+          <ProtectedRoute>
+            <Payment />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "payment/add",
+        element: (
+          <ProtectedRoute>
+            <AddPaymentMethod />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cvc",
+        element: (
+          <ProtectedRoute>
+            <Cvc />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "summary",
+        element: (
+          <ProtectedRoute>
+            <Summary />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "confirmation",
+        element: (
+          <ProtectedRoute>
+            <PurchaseConfirmation />
+          </ProtectedRoute>
+        ),
+      },
+
+      // Zona privada de cuenta
+      {
         path: "account/profile",
-        element: <Profile />,
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "account/payment",
-        element: <PaymentMethodsAccount />,
+        element: (
+          <ProtectedRoute>
+            <PaymentMethodsAccount />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "account/addresses",
-        element: <AddressesAccount />,
+        element: (
+          <ProtectedRoute>
+            <AddressesAccount />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "account/history",
-        element: <OrderHistoryAccount />,
+        element: (
+          <ProtectedRoute>
+            <OrderHistoryAccount />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

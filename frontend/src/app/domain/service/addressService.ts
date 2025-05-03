@@ -1,32 +1,30 @@
-// src/app/domain/services/addressService.ts
 import type { Address } from "@/assets/types/address";
-import { addresses as initialData } from "@/assets/data/addresses";
+import { apiFetch } from "@/app/utils/apiFetch";
 
-let addressStorage: Address[] = [];
+const API = "http://localhost:8080/user/direction";
 
 export const addressService = {
     getAll: async (): Promise<Address[]> => {
-        if (addressStorage.length === 0) {
-            addressStorage = [...initialData];
-        }
-        return addressStorage;
+        return await apiFetch(API);
     },
 
     add: async (address: Address): Promise<void> => {
-        addressStorage.push(address);
+        await apiFetch(API, {
+            method: "POST",
+            body: JSON.stringify(address),
+        });
     },
 
-    update: async (updated: Address): Promise<void> => {
-        addressStorage = addressStorage.map((a) =>
-            a.id === updated.id ? updated : a
-        );
+    update: async (address: Address): Promise<void> => {
+        await apiFetch(`${API}/${address._id}`, {
+            method: "PUT",
+            body: JSON.stringify(address),
+        });
     },
 
-    remove: async (id: number): Promise<void> => {
-        addressStorage = addressStorage.filter((a) => a.id !== id);
-    },
-
-    resetMock: (data: Address[]) => {
-        addressStorage = [...data];
+    remove: async (id: string): Promise<void> => {
+        await apiFetch(`${API}/${id}`, {
+            method: "DELETE",
+        });
     },
 };

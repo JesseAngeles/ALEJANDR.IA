@@ -57,12 +57,12 @@ const DeliveryAddress: React.FC = () => {
             <div className="space-y-4">
                 {addressList.map((addr) => (
                     <div
-                        key={addr.id}
+                        key={addr._id}
                         className="border rounded bg-gray-50 p-4 flex justify-between items-start text-sm"
                     >
                         <div>
-                            <p className="font-semibold">{addr.referenceName}</p>
-                            <p className="text-gray-700">{addr.fullAddress}</p>
+                            <p className="font-semibold">{addr.name}</p>
+                            <p className="text-gray-700">{`${addr.street} ${addr.number}, ${addr.zip_code}, ${addr.city}, ${addr.state}`}</p>
                         </div>
                         <button
                             className="text-[#820000] font-semibold hover:underline"
