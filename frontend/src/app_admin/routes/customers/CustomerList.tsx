@@ -1,35 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getUsers, USER } from "app_admin/services/adminService";
 
 const CustomerList: React.FC = () => {
-  const customers = [
-    { name: "Ana Pérez", email: "ana@gmail.com", phone: "55-12345-678", date: "2024-12-01", orders: 3, spent: 1589 },
-    { name: "Juan Gómez", email: "juan@gmail.com", phone: "55-876543221", date: "2025-01-10", orders: 1, spent: 499 },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const data = await getUsers();
+        setUsers(data);
+      } catch (err) {
+        console.error("Error al obtener los usuarios:", err);
+        setError(true);
+      }
+    };
+
+    loadUsers();
+  }, []);
+
+  if (!USER || USER.role !== "admin") {
+    return <div className="text-center text-red-600 py-10">Acceso denegado</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 py-10">No se pudieron cargar los usuarios</div>;
+  }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold text-[#820000] mb-6">Clientes</h2>
-      <input type="text" placeholder="Buscar clientes" className="mb-4 w-full border px-3 py-2 rounded" />
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <h2 className="text-2xl font-bold text-[#820000] mb-6">Clientes registrados</h2>
       <table className="w-full text-left border">
         <thead className="bg-gray-100">
           <tr>
             <th className="p-2">Nombre</th>
-            <th className="p-2">Correo</th>
-            <th className="p-2">Teléfono</th>
-            <th className="p-2">Registro</th>
-            <th className="p-2">Pedidos</th>
-            <th className="p-2">Total gastado</th>
+            <th className="p-2">Email</th>
+            <th className="p-2">Activo</th>
+            <th className="p-2">Rol</th>
           </tr>
         </thead>
         <tbody>
-          {customers.map((c, i) => (
-            <tr key={i} className="border-t">
-              <td className="p-2">{c.name}</td>
-              <td className="p-2">{c.email}</td>
-              <td className="p-2">{c.phone}</td>
-              <td className="p-2">{c.date}</td>
-              <td className="p-2">{c.orders}</td>
-              <td className="p-2 text-teal-600 font-semibold">${c.spent}.00</td>
+          {users.map((user) => (
+            <tr key={user._id} className="border-t">
+              <td className="p-2">{user.name}</td>
+              <td className="p-2">{user.email}</td>
+              <td className="p-2">{user.active ? "Sí" : "No"}</td>
+              <td className="p-2">{user.role}</td>
             </tr>
           ))}
         </tbody>

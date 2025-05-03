@@ -1,49 +1,48 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createBook } from "app_admin/services/bookService"; 
+import { createBook } from "app_admin/services/bookService";
 import { FaArrowLeft } from "react-icons/fa";
 
 const AddBook: React.FC = () => {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
     title: "",
     author: "",
-    isbn: "",
+    ISBN: "",
     category: "",
-    publisher: "",
-    year: "",
-    size: "",
-    pages: "",
-    binding: "",
+    price: "",
+    stock: "",
+    image: "", // Opcional
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const newBook = await createBook(form);
-      console.log("Libro creado exitosamente:", newBook);
+      await createBook({
+        ...form,
+        price: Number(form.price),
+        stock: Number(form.stock),
+      });
+      alert("Libro añadido correctamente");
       navigate("/admin/libros");
     } catch (error) {
-      console.error("Error al crear el libro:", error);
-      alert("Hubo un error al crear el libro.");
+      console.error("Error al añadir el libro:", error);
+      alert("Hubo un error al añadir el libro.");
     }
   };
 
   return (
-  <div className="max-w-5xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center text-sm text-black hover:underline mb-4"
+        className="flex items-center text-sm text-black mb-6 hover:underline"
       >
         <FaArrowLeft className="mr-2 text-black" />
-        <span className="text-black font-medium">Regresar</span>
+        Regresar
       </button>
 
       <h2 className="text-2xl font-bold text-[#820000] mb-6">Añadir libro</h2>
@@ -63,8 +62,8 @@ const AddBook: React.FC = () => {
           className="w-full border rounded px-3 py-2"
         />
         <input
-          name="isbn"
-          value={form.isbn}
+          name="ISBN"
+          value={form.ISBN}
           onChange={handleChange}
           placeholder="ISBN"
           className="w-full border rounded px-3 py-2"
@@ -77,48 +76,35 @@ const AddBook: React.FC = () => {
           className="w-full border rounded px-3 py-2"
         />
         <input
-          name="publisher"
-          value={form.publisher}
+          name="price"
+          type="number"
+          value={form.price}
           onChange={handleChange}
-          placeholder="Editorial"
+          placeholder="Precio"
           className="w-full border rounded px-3 py-2"
         />
         <input
-          name="year"
-          value={form.year}
+          name="stock"
+          type="number"
+          value={form.stock}
           onChange={handleChange}
-          placeholder="Año de edición"
+          placeholder="Stock"
           className="w-full border rounded px-3 py-2"
         />
         <input
-          name="size"
-          value={form.size}
+          name="image"
+          value={form.image}
           onChange={handleChange}
-          placeholder="Medidas"
+          placeholder="URL de la portada (opcional)"
           className="w-full border rounded px-3 py-2"
         />
-        <input
-          name="pages"
-          value={form.pages}
-          onChange={handleChange}
-          placeholder="Número de páginas"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="binding"
-          value={form.binding}
-          onChange={handleChange}
-          placeholder="Encuadernación"
-          className="w-full border rounded px-3 py-2"
-        />
-        <div className="flex justify-center mt-4">
+
         <button
           type="submit"
           className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded"
         >
           Guardar libro
         </button>
-        </div>
       </form>
     </div>
   );
