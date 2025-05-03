@@ -155,13 +155,9 @@ export const multipleUser = async (req: Request, res: Response): Promise<void> =
 //! Función para realizar pruebas sobre la consulta de usuarios
 export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const short = req.body.short || false
         const allUsers = await users.find()
 
-        if (short)
-            res.status(200).send(allUsers.map(returnUser))
-        else
-            res.status(200).send(allUsers)
+        res.status(200).send(allUsers)
 
     } catch (error) {
         console.log(`Error: ${error}`)

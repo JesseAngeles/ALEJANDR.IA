@@ -23,7 +23,7 @@ export const addAdmin = async (req: Request, res: Response): Promise<void> => {
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const findRole = req.body.role || "user"
+        const findRole = "user"
         const allUsers = await users.find({ role: findRole })
 
         res.status(200).send(allUsers.map(returnUser))
