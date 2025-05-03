@@ -14,8 +14,9 @@ interface Book {
     rating: number;
     stock: number;
     ISBN: string;
+    sinopsis: string; 
   }
-
+ 
 function HomePage() {
     const [count, setCount] = useState(0)
     const navigate = useNavigate();

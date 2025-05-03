@@ -13,7 +13,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+ 
     // Validaciones
     const erroresActuales = {
       email: email.trim() === '',

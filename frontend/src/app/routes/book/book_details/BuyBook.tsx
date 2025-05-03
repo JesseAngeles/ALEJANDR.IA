@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCart } from "@/app/domain/context/CartContext";
 
 interface Book {
   _id: string;
@@ -15,25 +16,25 @@ interface Book {
 
 type Props = {
   book: Book;
-  enCarrito: boolean;
-  onAgregarAlCarrito: () => void;
-  onEliminarDelCarrito: () => void;
 };
 
-const CompraLibro: React.FC<Props> = ({
-  book,
-  enCarrito,
-  onAgregarAlCarrito,
-  onEliminarDelCarrito,
-}) => {
-  console.log("Props recibidos en CompraLibro:", {
-    book,
-    enCarrito,
-    onAgregarAlCarrito,
-    onEliminarDelCarrito,
-  });
-
+const CompraLibro: React.FC<Props> = ({ book }) => {
   const disponible = book.stock > 0;
+  const { isInCart, addToCart, removeFromCart } = useCart();
+  const enCarrito = isInCart(book._id); // directamente del contexto
+
+  const handleToggleCarrito = async () => {
+    try {
+      if (enCarrito) {
+        await removeFromCart(book.ISBN);
+      } else {
+        await addToCart(book.ISBN);
+      }
+    } catch (error) {
+      console.error("Error al modificar el carrito:", error);
+      alert("Hubo un problema al actualizar el carrito.");
+    }
+  };
 
   return (
     <div className="px-6 py-10">
@@ -68,34 +69,25 @@ const CompraLibro: React.FC<Props> = ({
               <button className="bg-cyan-700 text-white px-6 py-2 text-base rounded hover:bg-cyan-800 transition">
                 Comprar
               </button>
-              {enCarrito ? (
-                <button
-                  onClick={onEliminarDelCarrito}
-                  className="bg-cyan-100 text-cyan-800 px-6 py-2 text-base rounded hover:bg-cyan-200 transition"
-                >
-                  Eliminar del carrito
-                </button>
-              ) : (
-                <button
-                  onClick={onAgregarAlCarrito}
-                  className="bg-cyan-100 text-cyan-800 px-6 py-2 text-base rounded hover:bg-cyan-200 transition"
-                >
-                  Agregar al carrito
-                </button>
-              )}
+              <button
+                onClick={handleToggleCarrito}
+                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white ${
+                  enCarrito ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-600 hover:bg-cyan-700'
+                }`}
+              >
+                {enCarrito ? 'Eliminar del carrito' : 'Añadir al carrito'}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Sinopsis */}
-<div className="mt-8">
-  <h3 className="text-xl font-bold text-red-800 mb-2">SINOPSIS</h3>
-  <hr className="border-t border-gray-300 mb-4" />
-  <p className="text-base text-gray-800 leading-relaxed whitespace-pre-line">
-    {book.sinopsis}
-  </p>
-</div>
-
+        <div className="mt-8">
+          <h3 className="text-xl font-bold text-red-800 mb-2">SINOPSIS</h3>
+          <hr className="border-t border-gray-300 mb-4" />
+          <p className="text-base text-gray-800 leading-relaxed whitespace-pre-line">
+            {book.sinopsis}
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -4,9 +4,34 @@ import { Book } from "@/assets/types/book";
 import { initialBooks } from "@/assets/data/books_cart";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { cartService } from "@/app/domain/service/cartService";
+
+
+function adaptarLibro(raw: any, cantidad: number): BookConCantidad {
+  return {
+    id: 0,
+    titulo: raw.title,
+    autor: raw.author,
+    precio: raw.price,
+    imagen: raw.image,
+    cantidad,
+  };
+}
+
+
+interface BookConCantidad extends Book {
+  cantidad: number;
+}
+
+interface CartItem {
+  bookId: string;
+  quantity: number;
+}
+
 
 const ShoppingCart: React.FC = () => {
-  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [books, setBooks] = useState<BookConCantidad[]>([]);
   const [recentlyRemoved, setRecentlyRemoved] = useState<Book | null>(null);
   const [undoCountdown, setUndoCountdown] = useState<number>(0);
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -15,7 +40,29 @@ const ShoppingCart: React.FC = () => {
   const [undoInterval, setUndoInterval] = useState<NodeJS.Timeout | null>(null);
 
 
-  const handleRemove = (bookToRemove: Book) => {
+  useEffect(() => {
+    const cargarCarrito = async () => {
+      try {
+        const cart = await cartService.getCart(); // ← retorna el objeto con items
+        const librosConDatos = await Promise.all(
+          cart.items.map(async (item: CartItem) => {
+            const raw = await cartService.getBookById(item.bookId);
+            return adaptarLibro(raw, item.quantity);
+          })
+        );
+        
+        setBooks(librosConDatos);
+      } catch (error) {
+        console.error("Error al cargar el carrito:", error);
+      }
+    };
+  
+    cargarCarrito();
+  }, []);
+  
+
+
+  const handleRemove = (bookToRemove: BookConCantidad) => {
     setBooks((prev) => prev.filter((book) => book.id !== bookToRemove.id));
     setRecentlyRemoved(bookToRemove);
     setUndoCountdown(3); // segundos

@@ -19,7 +19,7 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
 	}
 }
 
-
+ 
 export const getBooks = async (req: Request, res: Response): Promise<void> => {
 	try {
 		const books = await Book.find()
@@ -102,7 +102,30 @@ export const updateBook = async (req: Request, res: Response): Promise<void> => 
 	}
 }
 
-
+export const getBookByObjectId = async (req: Request, res: Response): Promise<void> => {
+	try {
+	  const { id } = req.params;
+  
+	  const book = await Book.findById(id);
+	  if (!book) {
+		res.status(404).json({
+		  error: 'Libro no encontrado',
+		  suggestion: 'Verifica que el ID sea correcto'
+		});
+		return;
+	  }
+  
+	  res.status(200).json(book);
+	} catch (error: unknown) {
+	  console.error('Error en getBookByObjectId:', error);
+	  const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+	  res.status(500).json({
+		error: 'Error al obtener el libro por ID',
+		details: errorMessage
+	  });
+	}
+  };
+  
 
 export const deleteBook = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 	try {

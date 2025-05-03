@@ -25,11 +25,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const token = tokenService.getToken();
         if (token) {
+          try {
             const payload = tokenService.decodeToken(token);
-            setUser(payload);
+            const isExpired = payload.exp * 1000 < Date.now();
+            if (!isExpired) {
+              setUser(payload);
+            } else {
+              tokenService.removeToken();
+            }
+          } catch (err) {
+            tokenService.removeToken();
+          }
         }
         setLoading(false);
-    }, []);
+      }, []);
+      
 
     const login = async (email: string, password: string) => {
         const token = await authService.login(email, password);

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaHeart, FaShoppingCart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-
+import { useCart } from "@/app/domain/context/CartContext";
 
 
 interface Book {
@@ -22,9 +22,7 @@ interface BookSectionProps {
   books: Book[];
 }
 
-
-
-  const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) => {
+const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) => {
   const [favoritos, setFavoritos] = useState<string[]>([]);
   const navigate = useNavigate();
 
@@ -34,12 +32,28 @@ interface BookSectionProps {
     );
   };
 
-
-
   const handleLibroClick = (libro: Book) => {
     navigate(`/book/${libro.ISBN}`);
   };
+
+  const { cart, isInCart, addToCart, removeFromCart } = useCart();
+
+
+  const handleToggleCarrito = async (libro: Book) => {
+    const id = libro._id; // 👈 usar el _id del libro
+    try {
+      if (isInCart(id)) {
+        await removeFromCart(libro.ISBN);
+      } else {
+        await addToCart(libro.ISBN);
+      }
+    } catch (error) {
+      console.error("Error al modificar el carrito:", error);
+    }
+  };
   
+  
+
 
   return (
     <section className="my-8">
@@ -52,11 +66,7 @@ interface BookSectionProps {
             key={libro._id}
             className="group relative w-44 flex-shrink-0 border rounded-lg shadow-sm overflow-hidden pb-12"
           >
-            {/* Imagen + texto como botón */}
-            <button
-              onClick={() => handleLibroClick(libro)}
-              className="w-full text-left"
-            >
+            <button onClick={() => handleLibroClick(libro)} className="w-full text-left">
               <img src={libro.image} alt={libro.title} className="w-full h-60 object-cover" />
               <div className="p-2">
                 <h3 className="text-sm font-semibold truncate">{libro.title}</h3>
@@ -65,22 +75,29 @@ interface BookSectionProps {
               </div>
             </button>
 
-            {/* Botón de favorito */}
             <button
               onClick={() => toggleFavorito(libro._id)}
-              className={`absolute top-2 right-2 text-lg ${favoritos.includes(libro._id)
+              className={`absolute top-2 right-2 text-lg ${
+                favoritos.includes(libro._id)
                   ? 'text-cyan-500'
                   : 'text-gray-400 hover:text-cyan-500'
-                }`}
+              }`}
             >
               <FaHeart />
             </button>
 
-            {/* Botón de carrito corregido (fuera del área de contenido) */}
             <div className="absolute bottom-2 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
-              <button className="bg-cyan-600 text-white text-xs px-3 py-1 rounded-md flex items-center">
-                Añadir al carrito <FaShoppingCart className="ml-2" />
-              </button>
+            <button
+  onClick={() => handleToggleCarrito(libro)}
+  className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${
+    isInCart(libro._id) ? 'bg-red-600' : 'bg-cyan-600'
+  }`}
+>
+  {isInCart(libro._id) ? 'Eliminar del carrito' : 'Añadir al carrito'}
+  <FaShoppingCart className="ml-2" />
+</button>
+
+
             </div>
           </div>
         ))}
