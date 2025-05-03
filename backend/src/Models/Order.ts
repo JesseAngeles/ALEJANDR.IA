@@ -1,0 +1,32 @@
+import { Schema, model } from 'mongoose'
+import { Order } from '../Interfaces/Order'
+import { cartItemSchema } from './Cart'
+
+const OrderSchema = new Schema<Order>({
+    date: {
+        type: Schema.Types.Date,
+        required: true,
+    },
+    client: {
+        type: Schema.Types.ObjectId,
+        required: true,
+    },
+    total: {
+        type: Schema.Types.Number,
+        required: true,
+    },
+    state: {
+        type: Schema.Types.String,
+        required: true,
+    },
+    items: {
+        type: [cartItemSchema],
+        required: true,
+    },
+    noItems: {
+        type: Schema.Types.Number,
+        required: true,
+    },
+})
+
+export default model<Order>('Order', OrderSchema)
