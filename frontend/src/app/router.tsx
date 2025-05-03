@@ -28,7 +28,8 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: "login", element: <Login /> },
       { path: "registro", element: <Registro /> },
-      { path: "libro", element: <BookDetails /> },
+      { path: "mis-favoritos", element: <Favoritos /> },
+      { path: "book/:isbn", element: <BookDetails /> },
       { path: "busqueda", element: <Search /> },
       { path: "mis-favoritos", element: <Favoritos /> },
 
