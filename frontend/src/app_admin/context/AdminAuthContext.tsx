@@ -1,39 +1,43 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState } from 'react';
 
+// Definir el tipo del contexto
 interface AuthContextType {
-  isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
+  token: string | null;
+  login: (token: string) => void;
   logout: () => void;
+}
+
+// Definir el tipo de las props de AdminAuthProvider, incluyendo children
+interface AdminAuthProviderProps {
+  children: React.ReactNode;  // Se asegura de que 'children' sea un tipo de ReactNode
 }
 
 const AdminAuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const useAuth = () => {
+  const context = useContext(AdminAuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
-  const login = (email: string, password: string): boolean => {
-    if (email === "alejandria.contactanos@gmail.com" && password === "Alejandriamail") {
-      setIsAuthenticated(true);
-      return true;
-    }
-    return false;
+export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }) => {
+  const [token, setToken] = useState<string | null>(localStorage.getItem('jwt_token'));
+
+  const login = (newToken: string) => {
+    localStorage.setItem('jwt_token', newToken);
+    setToken(newToken);
   };
-  
+
   const logout = () => {
-    setIsAuthenticated(false);
+    localStorage.removeItem('jwt_token');
+    setToken(null);
   };
 
   return (
-    <AdminAuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AdminAuthContext.Provider value={{ token, login, logout }}>
       {children}
     </AdminAuthContext.Provider>
   );
 };
-
-const useAdminAuth = () => {
-  const context = useContext(AdminAuthContext);
-  if (!context) throw new Error("useAdminAuth must be used within AdminAuthProvider");
-  return context;
-};
-
-export { AdminAuthProvider, useAdminAuth };

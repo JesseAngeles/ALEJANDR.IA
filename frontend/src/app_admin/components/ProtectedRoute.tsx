@@ -1,15 +1,20 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-import { useAdminAuth } from "@/app_admin/context/AdminAuthContext";
+import React, { useContext } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AdminAuthContext';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAdminAuth();
+interface ProtectedRouteProps {
+  element: JSX.Element; // Este es el componente a renderizar
+}
 
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
+  const { token } = useAuth(); // Obtén el token del contexto
+
+  // Si no hay token, redirige a la página de login
+  if (!token) {
+    return <Navigate to="/admin/login" />;
   }
 
-  return <>{children}</>;
+  return element; // Si hay token, renderiza el componente
 };
 
 export { ProtectedRoute };

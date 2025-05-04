@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchBooks, deleteBook } from "app_admin/services/bookService";
+import { useAuth } from "@/app_admin/context/AdminAuthContext"; 
 
 const BookList: React.FC = () => {
   const navigate = useNavigate();
+  const { token } = useAuth(); 
   const [books, setBooks] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const loadBooks = async () => {
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
       try {
-        const booksData = await fetchBooks();
+        const booksData = await fetchBooks(token); 
         console.log("Libros recibidos:", booksData);
         setBooks(booksData);
       } catch (error) {
@@ -19,11 +25,15 @@ const BookList: React.FC = () => {
     };
 
     loadBooks();
-  }, []);
+  }, [token]); 
 
   const handleDelete = async (isbn: string) => {
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
     try {
-      await deleteBook(isbn);
+      await deleteBook(isbn, token); 
       setBooks(books.filter((book) => book.ISBN !== isbn));
       alert("Libro eliminado correctamente");
     } catch (error) {
@@ -104,3 +114,4 @@ const BookList: React.FC = () => {
 };
 
 export { BookList };
+

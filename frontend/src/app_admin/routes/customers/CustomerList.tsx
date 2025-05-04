@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { getUsers, USER } from "app_admin/services/adminService";
+import { useAuth } from "@/app_admin/context/AdminAuthContext";
+import { getUsers } from "app_admin/services/adminService"; 
 
 const CustomerList: React.FC = () => {
+  const { token } = useAuth(); 
   const [users, setUsers] = useState<any[]>([]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     const loadUsers = async () => {
+      if (!token) {
+        console.error("Token no disponible");
+        setError(true);
+        return;
+      }
+
       try {
-        const data = await getUsers();
+        const data = await getUsers(token); 
         setUsers(data);
       } catch (err) {
         console.error("Error al obtener los usuarios:", err);
@@ -17,9 +25,9 @@ const CustomerList: React.FC = () => {
     };
 
     loadUsers();
-  }, []);
+  }, [token]); 
 
-  if (!USER || USER.role !== "admin") {
+  if (!token) {
     return <div className="text-center text-red-600 py-10">Acceso denegado</div>;
   }
 

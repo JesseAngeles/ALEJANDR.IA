@@ -1,9 +1,9 @@
 import React from "react";
-import { useAdminAuth } from "@/app_admin/context/AdminAuthContext";
+import { useAuth } from "@/app_admin/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 
 const AdminHome: React.FC = () => {
-  const { logout } = useAdminAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {

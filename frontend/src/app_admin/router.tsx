@@ -24,9 +24,7 @@ export const adminRouter = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <ProtectedRoute>
-        <AdminFooter />
-      </ProtectedRoute>
+      <ProtectedRoute element={<AdminFooter />} />
     ),
     children: [
       { index: true, element: <AdminHome /> },
