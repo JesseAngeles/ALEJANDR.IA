@@ -3,7 +3,7 @@ const API_URL = 'http://localhost:8080/book';
 export const fetchBooks = async (token: string) => {
   const response = await fetch(API_URL, {
     headers: {
-      'Authorization': `Bearer ${token}`, // Ahora el token es pasado dinámicamente
+      'Authorization': `Bearer ${token}`, 
     },
   });
   if (!response.ok) throw new Error('Error al obtener los libros');
@@ -13,7 +13,7 @@ export const fetchBooks = async (token: string) => {
 export const fetchBookByISBN = async (isbn: string, token: string) => {
   const response = await fetch(`${API_URL}/${isbn}`, {
     headers: {
-      'Authorization': `Bearer ${token}`, // Ahora el token es pasado dinámicamente
+      'Authorization': `Bearer ${token}`, 
     },
   });
   if (!response.ok) throw new Error('Error al obtener el libro');
@@ -56,7 +56,7 @@ export const deleteBook = async (isbn: string, token: string) => {
   const response = await fetch(`${API_URL}/${isbn}`, {
     method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${token}`, // Ahora el token es pasado dinámicamente
+      'Authorization': `Bearer ${token}`, 
     },
   });
   if (!response.ok) throw new Error('Error al eliminar el libro');
