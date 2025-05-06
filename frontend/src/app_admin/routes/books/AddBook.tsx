@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createBook } from "app_admin/services/bookService";
 import { FaArrowLeft } from "react-icons/fa";
+import { useAuth } from "@/app_admin/context/AdminAuthContext"; 
 
 const AddBook: React.FC = () => {
   const navigate = useNavigate();
+  const { token } = useAuth(); 
   const [form, setForm] = useState({
     title: "",
     author: "",
@@ -12,7 +14,7 @@ const AddBook: React.FC = () => {
     category: "",
     price: "",
     stock: "",
-    image: "", // Opcional
+    image: "", 
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,12 +23,19 @@ const AddBook: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!token) {
+      console.error("No token found");
+      alert("Debe estar autenticado para agregar un libro.");
+      return;
+    }
+
     try {
       await createBook({
         ...form,
         price: Number(form.price),
         stock: Number(form.stock),
-      });
+      }, token); 
       alert("Libro añadido correctamente");
       navigate("/admin/libros");
     } catch (error) {
@@ -111,3 +120,4 @@ const AddBook: React.FC = () => {
 };
 
 export { AddBook };
+

@@ -5,7 +5,7 @@ import { addAdmin, getUsers } from "../Controllers/Admin"
 const routerAdmin = Router()
 
 routerAdmin.post('', authenticateToken, authorizeRole("admin"), addAdmin)
-routerAdmin.get('', authenticateToken, authorizeRole("admin"), getUsers)
+routerAdmin.get('', authenticateToken, getUsers)
 
 
 export default routerAdmin
