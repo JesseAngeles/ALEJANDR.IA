@@ -29,13 +29,17 @@ function adaptarLibro(raw: any, cantidad: number): BookConCantidad {
 
 const ShoppingCart: React.FC = () => {
   const [books, setBooks] = useState<BookConCantidad[]>([]);
-  const [recentlyRemoved, setRecentlyRemoved] = useState<Book | null>(null);
+  const [recentlyRemovedList, setRecentlyRemovedList] = useState<{
+    book: BookConCantidad;
+    countdown: number;
+    intervalId: NodeJS.Timeout;
+  }[]>([]);
+  
   const [undoCountdown, setUndoCountdown] = useState<number>(0);
   const [undoInterval, setUndoInterval] = useState<NodeJS.Timeout | null>(null);
   const { setPurchase } = usePurchase();
   const navigate = useNavigate();
 
-  // ✅ Definimos la función fuera del useEffect
   const loadCart = async () => {
     try {
       const cart = await cartService.getCart();
@@ -55,36 +59,54 @@ const ShoppingCart: React.FC = () => {
     loadCart();
   }, []);
 
-  const handleRemove = (bookToRemove: BookConCantidad) => {
-    setBooks((prev) => prev.filter((book) => book.id !== bookToRemove.id));
-    setRecentlyRemoved(bookToRemove);
-    setUndoCountdown(3);
-
-    if (undoInterval) clearInterval(undoInterval);
-
-    const interval = setInterval(() => {
-      setUndoCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setRecentlyRemoved(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    setUndoInterval(interval);
-  };
-
-  const handleUndo = async () => {
-    if (recentlyRemoved) {
-      await cartService.addToCart(recentlyRemoved.ISBN, recentlyRemoved.cantidad);
-      await loadCart();
-      setRecentlyRemoved(null);
-      setUndoCountdown(0);
-      if (undoInterval) clearInterval(undoInterval);
+  const handleRemove = async (bookToRemove: BookConCantidad) => {
+    try {
+      await cartService.removeFromCart(bookToRemove.ISBN);
+      setBooks((prev) => prev.filter((book) => book.ISBN !== bookToRemove.ISBN));
+  
+      let countdown = 5;
+      const intervalId = setInterval(() => {
+        setRecentlyRemovedList((prevList) => {
+          return prevList.map((item) =>
+            item.book.ISBN === bookToRemove.ISBN
+              ? { ...item, countdown: item.countdown - 1 }
+              : item
+          ).filter((item) => {
+            if (item.book.ISBN === bookToRemove.ISBN && item.countdown <= 0) {
+              clearInterval(item.intervalId);
+              return false;
+            }
+            return true;
+          });
+        });
+      }, 1000);
+  
+      setRecentlyRemovedList((prevList) => [
+        ...prevList,
+        { book: bookToRemove, countdown, intervalId },
+      ]);
+    } catch (error) {
+      console.error("Error al eliminar el libro del carrito:", error);
+      alert("No se pudo eliminar el libro del carrito.");
     }
   };
+  
+  
+
+  const handleUndo = async (isbn: string) => {
+    const item = recentlyRemovedList.find((r) => r.book.ISBN === isbn);
+    if (!item) return;
+  
+    clearInterval(item.intervalId);
+  
+    await cartService.addToCart(item.book.ISBN, item.book.cantidad);
+    await loadCart();
+  
+    setRecentlyRemovedList((prevList) =>
+      prevList.filter((r) => r.book.ISBN !== isbn)
+    );
+  };
+  
 
   const updateQuantity = async (isbn: string, change: number) => {
     const target = books.find((b) => b.ISBN === isbn);
@@ -109,6 +131,12 @@ const ShoppingCart: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      <button
+        onClick={() => navigate("/")}
+        className="text-base mb-6 flex items-center gap-2"
+      >
+        <span className="text-2xl">←</span> Regresar
+      </button>
       <h1 className="text-white bg-[#820000] text-center py-3 text-xl font-bold rounded-t">
         Mi carrito
       </h1>
@@ -121,24 +149,28 @@ const ShoppingCart: React.FC = () => {
           <div>Subtotal</div>
         </div>
 
-        {recentlyRemoved && (
-          <div className="grid grid-cols-5 items-center border-b p-4 text-sm text-center bg-gray-50">
-            <div className="col-span-3 text-left text-gray-700 font-semibold">
-              Producto eliminado...
-              <div className="text-xs font-normal text-gray-500">
-                Tiempo restante: {undoCountdown} segundos
-              </div>
-            </div>
-            <div className="col-span-2 flex justify-end">
-              <button
-                onClick={handleUndo}
-                className="bg-[#007B83] hover:bg-[#00666e] text-white text-sm px-4 py-2 rounded"
-              >
-                Deshacer
-              </button>
-            </div>
-          </div>
-        )}
+        {recentlyRemovedList.map((item) => (
+  <div
+    key={item.book.ISBN}
+    className="grid grid-cols-5 items-center border-b p-4 text-sm text-center bg-gray-50"
+  >
+    <div className="col-span-3 text-left text-gray-700 font-semibold">
+      Se eliminó <span className="italic">{item.book.titulo}</span>
+      <div className="text-xs font-normal text-gray-500">
+        Tiempo restante: {item.countdown} segundos
+      </div>
+    </div>
+    <div className="col-span-2 flex justify-end">
+      <button
+        onClick={() => handleUndo(item.book.ISBN)}
+        className="bg-[#007B83] hover:bg-[#00666e] text-white text-sm px-4 py-2 rounded"
+      >
+        Deshacer
+      </button>
+    </div>
+  </div>
+))}
+
 
         {books.map((book) => (
           <div

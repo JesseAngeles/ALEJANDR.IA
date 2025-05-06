@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from "@/app/domain/context/CartContext";
+import { FaPlus, FaHeart } from "react-icons/fa";
+
 
 interface Book {
   _id: string;
@@ -19,9 +21,16 @@ type Props = {
 };
 
 const CompraLibro: React.FC<Props> = ({ book }) => {
+  const [favoritos, setFavoritos] = useState<string[]>([]);
   const disponible = book.stock > 0;
   const { isInCart, addToCart, removeFromCart } = useCart();
   const enCarrito = isInCart(book._id); // directamente del contexto
+
+  const toggleFavorito = (id: string) => {
+    setFavoritos((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   const handleToggleCarrito = async () => {
     try {
@@ -65,18 +74,33 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
               <p className="text-sm text-gray-700 italic">Libro agregado al carrito</p>
             )}
 
-            <div className="flex gap-4 flex-wrap">
-              <button className="bg-cyan-700 text-white px-6 py-2 text-base rounded hover:bg-cyan-800 transition">
+            <div className="flex gap-4 flex-wrap relative">
+              <button
+                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white bg-cyan-600 hover:bg-cyan-700`}
+              >
                 Comprar
               </button>
               <button
                 onClick={handleToggleCarrito}
-                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white ${
-                  enCarrito ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-600 hover:bg-cyan-700'
-                }`}
+                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white ${enCarrito ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-600 hover:bg-cyan-700'
+                  }`}
               >
                 {enCarrito ? 'Eliminar del carrito' : 'Añadir al carrito'}
               </button>
+
+              <button
+  onClick={() => toggleFavorito(book._id)}
+  className={`mt-4 px-4 py-2 rounded-md font-semibold flex items-center justify-center ${
+    favoritos.includes(book._id)
+      ? 'text-cyan-600'
+      : 'text-gray-400 hover:text-cyan-600'
+  }`}
+  title="Agregar a favoritos"
+>
+  <FaHeart className="text-3xl" />
+</button>
+
+
             </div>
           </div>
         </div>

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import BookSection from '../book/BookSection'
 import Recomendacion from '../book/Recomendation_week'
 import CategoriasDestacadas from '../category/Categories'
+import { useCart } from "@/app/domain/context/CartContext";
+
 
 interface Book {
     _id: string;
@@ -16,6 +18,9 @@ interface Book {
     ISBN: string;
     sinopsis: string; 
   }
+
+
+
  
 function HomePage() {
     const [count, setCount] = useState(0)
@@ -25,6 +30,14 @@ function HomePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [recommendedBook, setRecommendedBook] = useState<Book | null>(null);
+    const { fetchCart } = useCart();
+
+useEffect(() => {
+  fetchCart(); // sincroniza el estado del carrito al volver a home
+}, []);
+
+
+    
 
   useEffect(() => {
     fetch('http://localhost:8080/book/')
