@@ -1,7 +1,7 @@
 import { tokenService } from "@/app/utils/tokenService";
 import { forceLogout } from "@/app/utils/logoutHelper";
 
-const API_URL = "http://localhost:8080/cart"; 
+const API_URL = "http://localhost:8080/cart";
 
 export const cartService = {
   getCart: async () => {
@@ -14,9 +14,9 @@ export const cartService = {
     });
 
     if (res.status === 401) {
-        forceLogout();
-        throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
-      }
+      forceLogout();
+      throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
+    }
 
     if (!res.ok) throw new Error("Error al obtener el carrito");
     return await res.json();
@@ -34,9 +34,9 @@ export const cartService = {
     });
 
     if (res.status === 401) {
-        forceLogout();
-        throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
-      }
+      forceLogout();
+      throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
+    }
 
     if (!res.ok) throw new Error("Error al agregar el libro al carrito");
     return await res.json();
@@ -52,9 +52,9 @@ export const cartService = {
     });
 
     if (res.status === 401) {
-        forceLogout();
-        throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
-      }
+      forceLogout();
+      throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
+    }
 
     if (!res.ok) throw new Error("Error al eliminar el libro del carrito");
     return await res.json();
@@ -70,9 +70,9 @@ export const cartService = {
     });
 
     if (res.status === 401) {
-        forceLogout();
-        throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
-      }
+      forceLogout();
+      throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
+    }
 
     if (!res.ok) throw new Error("Error al vaciar el carrito");
     return await res.json();
@@ -88,9 +88,9 @@ export const cartService = {
     });
 
     if (res.status === 401) {
-        forceLogout();
-        throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
-      }
+      forceLogout();
+      throw new Error("Sesión expirada. Por favor inicia sesión de nuevo.");
+    }
 
     if (!res.ok) throw new Error("Error al crear el ticket");
     return await res.json();
@@ -113,8 +113,5 @@ export const cartService = {
     if (!res.ok) throw new Error("Error al obtener el libro por ID");
     return await res.json();
   },
-
-
-  
 
 };

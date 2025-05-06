@@ -2,6 +2,7 @@ import { Card } from "../Interfaces/Card"
 import { Cart } from "../Interfaces/Cart"
 import { Collection } from "../Interfaces/Collection"
 import { Direction } from "../Interfaces/Direction"
+import { getCardBrand } from "./GetCardBrand"
 
 export function returnCard(card: Card | undefined): any {
     if (!card)
@@ -12,7 +13,8 @@ export function returnCard(card: Card | undefined): any {
         "titular": card.titular,
         "last4": card.number.slice(-4),
         "expirationMonth": card.expirationMonth,
-        "expirationYear": card.expirationYear
+        "expirationYear": card.expirationYear,
+        "type": getCardBrand(card.number),
     }
 }
 
