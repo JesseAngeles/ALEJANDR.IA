@@ -8,17 +8,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "axios": "^1.9.0",
-=======
     "jwt-decode": "^4.0.0",
->>>>>>> 2e76eeaabd019e133be1a1685f85b40f3138a88e
     "lucide-react": "^0.488.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-icons": "^4.12.0",
     "react-router-dom": "^7.5.0",
-    "recharts": "^2.15.2"
+    "recharts": "^2.15.2",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
