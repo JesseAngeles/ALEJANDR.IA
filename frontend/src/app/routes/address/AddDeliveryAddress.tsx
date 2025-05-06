@@ -5,34 +5,33 @@ import type { Address } from "@/assets/types/address";
 import { addressService } from "@/app/domain/service/addressService";
 
 const AddDeliveryAddress: React.FC = () => {
-    const [referenceName, setReferenceName] = useState("");
+    const [name, setName] = useState("");
+    const [number, setNumber] = useState("");
     const [street, setStreet] = useState("");
     const [state, setState] = useState("");
     const [city, setCity] = useState("");
-    const [zip, setZip] = useState("");
+    const [zip_code, setZipCode] = useState("");
 
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!referenceName || !street || !state || !city || !zip) {
+        if (!name || !number || !street || !state || !city || !zip_code) {
             alert("Por favor completa todos los campos.");
             return;
         }
 
-        const fullAddress = `${street}, ${city}, ${state}, CP ${zip}`;
-        const newAddress: Address = {
-            id: Date.now(),
-            referenceName,
+        const newAddress: Omit<Address, "_id"> = {
+            name,
+            number,
             street,
             state,
             city,
-            zip,
-            fullAddress,
+            zip_code: parseInt(zip_code),
         };
 
-        await addressService.add(newAddress);
+        await addressService.add(newAddress as Address);
         navigate("/address");
     };
 
@@ -55,14 +54,24 @@ const AddDeliveryAddress: React.FC = () => {
                     <label className="block text-sm mb-1">Nombre de referencia:</label>
                     <input
                         type="text"
-                        value={referenceName}
-                        onChange={(e) => setReferenceName(e.target.value)}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         className="border rounded w-full p-2"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm mb-1">Calle y número:</label>
+                    <label className="block text-sm mb-1">Número:</label>
+                    <input
+                        type="text"
+                        value={number}
+                        onChange={(e) => setNumber(e.target.value)}
+                        className="border rounded w-full p-2"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm mb-1">Calle:</label>
                     <input
                         type="text"
                         value={street}
@@ -97,8 +106,8 @@ const AddDeliveryAddress: React.FC = () => {
                     <label className="block text-sm mb-1">Código postal:</label>
                     <input
                         type="text"
-                        value={zip}
-                        onChange={(e) => setZip(e.target.value)}
+                        value={zip_code}
+                        onChange={(e) => setZipCode(e.target.value.replace(/\D/g, ""))}
                         maxLength={5}
                         className="border rounded w-24 p-2"
                     />

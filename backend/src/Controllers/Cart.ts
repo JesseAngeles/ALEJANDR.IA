@@ -4,6 +4,23 @@ import { cartItemModel } from "../Models/Cart"
 import Book from "../Models/Book"
 import { returnUser } from "../Middleware/ReturnFunctions"
 
+export const getCart = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id
+
+        const user = await users.findById(userId)
+        if (!user) {
+            res.status(404).send(`User not found`)
+            return
+        }
+
+        res.status(200).json(user.cart)
+    } catch (error) {
+        console.log(`Error: ${error}`)
+        res.status(500).send(`Server error: ${error}`)
+    }
+}
+
 export const setBookToCart = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id
@@ -49,7 +66,7 @@ export const deleteBookFromCart = async (req: Request, res: Response): Promise<v
             return
         }
 
-        const book = await Book.findOne({"ISBN" : ISBN}).select("_id")
+        const book = await Book.findOne({ "ISBN": ISBN }).select("_id")
         if (!book) {
             res.status(404).send(`Book not found`)
             return
@@ -86,7 +103,7 @@ export const emptyCart = async (req: Request, res: Response): Promise<void> => {
 }
 
 // TODO Función estructura para el pago del carrito
-export const createTicket = async (req: Request, res:Response): Promise<void> => {
+export const createTicket = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id
         const user = await users.findById(userId)

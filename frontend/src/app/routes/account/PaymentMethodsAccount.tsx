@@ -7,8 +7,6 @@ import { paymentService } from "@/app/domain/service/paymentService";
 import { paymentMethods } from "@/assets/data/cards";
 import type { PaymentMethod } from "@/assets/types/card";
 
-// Datos de ejemplo en caso de que no existan métodos aún
-const exampleMethods: PaymentMethod[] = paymentMethods;
 
 const PaymentMethodsAccount: React.FC = () => {
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
@@ -20,14 +18,10 @@ const PaymentMethodsAccount: React.FC = () => {
 
     const loadMethods = async () => {
         let data = await paymentService.getAll();
-        if (data.length === 0) {
-            await Promise.all(exampleMethods.map((method) => paymentService.add(method)));
-            data = await paymentService.getAll();
-        }
         setMethods(data);
     };
 
-    const handleRemove = async (id: number) => {
+    const handleRemove = async (id: string) => {
         await paymentService.remove(id);
         loadMethods();
     };
@@ -54,7 +48,7 @@ const PaymentMethodsAccount: React.FC = () => {
                     <div className="space-y-4">
                         {methods.map((card) => (
                             <div
-                                key={card.id}
+                                key={card._id}
                                 className="flex justify-between items-center bg-gray-50 border rounded px-4 py-3 text-sm"
                             >
                                 <div className="flex items-center gap-4">
@@ -63,12 +57,12 @@ const PaymentMethodsAccount: React.FC = () => {
                                         <p>
                                             Terminada en <span className="font-semibold">{card.last4}</span>
                                         </p>
-                                        <p className="text-xs text-gray-600">{card.bank}</p>
+                                        <p className="text-xs text-gray-600">{card.brand}</p>
                                     </div>
                                 </div>
 
                                 <button
-                                    onClick={() => handleRemove(card.id)}
+                                    onClick={() => handleRemove(card._id.toString())}
                                     className="text-red-600 text-sm flex items-center gap-1 hover:underline"
                                 >
                                     <FaTrash className="text-xs" /> Eliminar

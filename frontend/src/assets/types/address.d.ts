@@ -1,9 +1,9 @@
 export type Address = {
-    id: number;
-    referenceName: string;
-    street: string;
-    state: string;
-    city: string;
-    zip: string;
-    fullAddress: string;
+    _id: string,
+    name: string,
+    number: string,
+    street: string,
+    city: string,
+    zip_code: number,
+    state: string
 };

@@ -31,8 +31,8 @@ const Summary: React.FC = () => {
     );
 
     const summary: OrderSummaryProps = {
-        cart: purchase.cart,                   // ✅ carrito completo
-        address: purchase.address,            // ✅ objeto Address completo
+        cart: purchase.cart,
+        address: purchase.address,
         paymentMethod: purchase.paymentMethod,
         totalItems,
         total,
