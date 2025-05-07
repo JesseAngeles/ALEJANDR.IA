@@ -1,0 +1,76 @@
+import { Request, Response } from "express";
+import books from "../Models/Book";
+import users from "../Models/User";
+import orders from "../Models/Order";
+import { CartItem } from "../Interfaces/Cart";
+
+export const newOrder = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id;
+
+        const user = await users.findById(userId);
+        if (!user) {
+            res.status(404).send("User not found");
+            return;
+        }
+
+        let total = 0;
+        let totalItems = 0;
+
+        for (const cartItem of user.cart.items as CartItem[]) {
+            const book = await books.findById(cartItem.bookId);
+            const price = book?.price || 0;
+            total += cartItem.quantity * price;
+            totalItems += cartItem.quantity;
+        }
+
+        const newOrder = await orders.create({
+            date: new Date(),
+            client: userId,
+            total,
+            state: "Pendiente",
+            items: user.cart.items,
+            noItems: totalItems,
+        });
+
+        // Clear cart from user
+        user.cart.items = []
+        await user.save()
+
+        res.status(200).json(newOrder);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
+export const getOrders = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const allOrders = await orders.find();
+        res.status(200).json(allOrders);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
+export const setOrderStateById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = req.params.id;
+        const { state } = req.body;
+
+        const order = await orders.findById(orderId);
+        if (!order) {
+            res.status(404).send("Order not found");
+            return;
+        }
+
+        order.state = state;
+        await order.save();
+
+        res.status(200).json(order);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
