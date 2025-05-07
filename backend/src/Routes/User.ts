@@ -34,7 +34,7 @@ routerUser.get('/direction/:direction', authenticateToken, authorizeRole("user")
 routerUser.put('/direction/:direction', authenticateToken, authorizeRole("user"), validateRequest(ValDirectionSchema), updateDirection)
 routerUser.delete('/direction/:direction', authenticateToken, authorizeRole("user"), deleteDirection)
 
-// CRUD CARDS (titular, number, expirationMonth, expirationYear, securityCode) 
+// CRUD CARDS (titular, number, expirationMonth, expirationYear, securityCode)
 // -> (titular, last4, expirationMonth, expirationyear)
 routerUser.post('/card', authenticateToken, authorizeRole("user"), validateRequest(ValCardSchema), addCard)
 routerUser.get('/card', authenticateToken, authorizeRole("user"), getCards)

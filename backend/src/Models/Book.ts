@@ -46,7 +46,7 @@ const BookSchema = new Schema<Book>({
   },
   image: {
     type: Schema.Types.String,
-    unique: false, 
+    unique: false,
     required: true
   }
 })

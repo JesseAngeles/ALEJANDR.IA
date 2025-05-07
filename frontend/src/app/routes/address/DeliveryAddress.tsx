@@ -80,7 +80,7 @@ const DeliveryAddress: React.FC = () => {
                     onClick={() => navigate("/address/add")}
                     className="bg-[#007B83] hover:bg-[#00666e] text-white px-6 py-2 rounded"
                 >
-                    Agregar o modificar dirección
+                    Agregar dirección
                 </button>
             </div>
         </div>

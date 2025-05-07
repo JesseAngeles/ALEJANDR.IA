@@ -70,33 +70,44 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
-            res.status(401).send(`Unauthorized: No user find in token`)
-            return
+            res.status(401).send("Unauthorized: No user found in token");
+            return;
         }
 
-        const id: string = req.user.id
-        const { name, email, password } = req.body
-        const active = req.body.active || true
+        const id: string = req.user.id;
+        const { name, email, password } = req.body;
 
-        const user: any = await users.findById(id)
+        // Validaciones mínimas
+        if (!password || !name || !email) {
+            res.status(400).send("Missing required fields");
+            return;
+        }
+
+        const user: any = await users.findById(id);
         if (!user) {
-            res.status(404).send(`User not found`)
-            return
+            res.status(404).send("User not found");
+            return;
         }
 
-        user.name = name
-        user.email = email
-        user.password = password
-        user.active = active
+        // Validar contraseña ingresada
+        const isPasswordCorrect = await user.comparePassword(password);
+        if (!isPasswordCorrect) {
+            res.status(401).send("Incorrect password");
+            return;
+        }
 
-        const updateUser = await user.save()
+        // Actualizar solo los campos permitidos
+        user.name = name;
+        user.email = email;
 
-        res.status(200).json(returnUser(updateUser))
+        const updatedUser = await user.save();
+
+        res.status(200).json(returnUser(updatedUser));
     } catch (error) {
-        console.error(`Error (Controllers/user/update): ${error}`)
-        res.status(500).send(`Server error: ${error}`)
+        console.error(`Error (Controllers/user/update): ${error}`);
+        res.status(500).send(`Server error: ${error}`);
     }
-}
+};
 
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {

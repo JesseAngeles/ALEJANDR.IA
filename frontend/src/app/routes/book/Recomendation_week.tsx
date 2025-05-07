@@ -1,44 +1,40 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-type Props = {
-  imagenLibro: string;
-  imagenAutora: string;
-  tituloLibro: string;
-  nombreAutora: string;
-  onClick?: () => void;
-};
+interface Book {
+  _id: string;
+  title: string;
+  image: string;
+  author: string;
+  category: string;
+  price: number;
+  rating: number;
+  stock: number;
+  ISBN: string;
+}
 
-const Recomendacion: React.FC<Props> = ({
-  imagenLibro,
-  imagenAutora,
-  tituloLibro,
-  nombreAutora,
-  onClick = () => alert(`Recomendación: ${tituloLibro}`),
-}) => {
+interface RecomendacionProps {
+  book: Book;
+}
+
+const Recomendacion: React.FC<RecomendacionProps> = ({ book }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="max-w-4xl mx-auto my-6 px-4">
       <div
-        onClick={onClick}
-        className="flex flex-col md:flex-row items-center justify-center gap-8 bg-red-900 text-white p-6 rounded-md shadow-md cursor-pointer hover:bg-red-800 transition"
+        onClick={() => navigate(`/book/${book.ISBN}`)}
+        className="flex items-center justify-center gap-6 bg-red-900 text-white p-6 rounded-md shadow-md cursor-pointer hover:bg-red-800 transition"
       >
-        <div className="flex items-center gap-4">
-          <img
-            src={imagenLibro}
-            alt="Libro recomendado"
-            className="w-24 h-auto shadow-lg"
-          />
-          <div className="text-center md:text-left">
-            <p className="text-lg font-semibold">Recomendación de la semana:</p>
-            <p className="text-2xl font-bold">{tituloLibro}</p>
-          </div>
-        </div>
-        <div className="flex flex-col items-center text-center">
-          <img
-            src={imagenAutora}
-            alt="Autora"
-            className="w-20 h-20 object-cover rounded-md border-2 border-white"
-          />
-          <p className="text-sm mt-2">Autor: {nombreAutora}</p>
+        <img
+          src={book.image}
+          alt={book.title}
+          className="w-24 h-auto shadow-lg"
+        />
+        <div className="text-center">
+          <p className="text-lg font-semibold">Recomendación de la semana:</p>
+          <p className="text-2xl font-bold">{book.title}</p>
+          <p className="text-sm mt-1">Autor: {book.author}</p>
         </div>
       </div>
     </div>

@@ -1,36 +1,40 @@
 import React, { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import type { PaymentMethod } from "@/assets/types/card";
 import { paymentService } from "@/app/domain/service/paymentService";
 
 const AddPaymentMethod: React.FC = () => {
-    const [name, setName] = useState("");
+    const [titular, setTitular] = useState("");
     const [number, setNumber] = useState("");
-    const [expiry, setExpiry] = useState("");
+    const [expirationMonth, setExpirationMonth] = useState("");
+    const [expirationYear, setExpirationYear] = useState("");
+    const [securityCode, setSecurityCode] = useState("");
 
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!name || !number || !expiry) {
+        if (!titular || !number || !expirationMonth || !expirationYear || !securityCode) {
             alert("Por favor completa todos los campos.");
             return;
         }
 
-        const last4 = number.slice(-4);
-        const brand = number.startsWith("5") ? "MasterCard" : "VISA";
-
-        const newMethod: PaymentMethod = {
-            id: Date.now(),
-            brand,
-            last4,
-            bank: "Banco genérico", // puedes reemplazar con input más adelante
+        const newMethod = {
+            titular,
+            number,
+            expirationMonth: parseInt(expirationMonth),
+            expirationYear: parseInt(expirationYear),
+            securityCode,
         };
 
-        await paymentService.add(newMethod);
-        navigate("/payment");
+        try {
+            await paymentService.add(newMethod as any);
+            navigate("/payment");
+        } catch (error) {
+            console.error("Error al guardar método de pago:", error);
+            alert("No se pudo agregar el método de pago.");
+        }
     };
 
     return (
@@ -50,35 +54,59 @@ const AddPaymentMethod: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm mb-1">
-                        Nombre como aparece en la tarjeta:
+                        Nombre del titular:
                     </label>
                     <input
                         type="text"
+                        value={titular}
+                        onChange={(e) => setTitular(e.target.value)}
                         className="border rounded w-full p-2"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm mb-1">Número de la tarjeta:</label>
+                    <label className="block text-sm mb-1">Número de tarjeta:</label>
                     <input
                         type="text"
                         maxLength={16}
-                        className="border rounded w-full p-2"
                         value={number}
                         onChange={(e) => setNumber(e.target.value.replace(/\D/g, ""))}
+                        className="border rounded w-full p-2"
                     />
                 </div>
 
+                <div className="flex gap-4">
+                    <div>
+                        <label className="block text-sm mb-1">Mes:</label>
+                        <input
+                            type="number"
+                            min={1}
+                            max={12}
+                            value={expirationMonth}
+                            onChange={(e) => setExpirationMonth(e.target.value)}
+                            className="border rounded p-2 w-20"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm mb-1">Año:</label>
+                        <input
+                            type="number"
+                            min={2024}
+                            value={expirationYear}
+                            onChange={(e) => setExpirationYear(e.target.value)}
+                            className="border rounded p-2 w-24"
+                        />
+                    </div>
+                </div>
+
                 <div>
-                    <label className="block text-sm mb-1">Fecha de vencimiento:</label>
+                    <label className="block text-sm mb-1">Código de seguridad (CVV):</label>
                     <input
                         type="text"
-                        placeholder="mm/aa"
+                        maxLength={4}
+                        value={securityCode}
+                        onChange={(e) => setSecurityCode(e.target.value.replace(/\D/g, ""))}
                         className="border rounded p-2 w-24"
-                        value={expiry}
-                        onChange={(e) => setExpiry(e.target.value)}
                     />
                 </div>
 

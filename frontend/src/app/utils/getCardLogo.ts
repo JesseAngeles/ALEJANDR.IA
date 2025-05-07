@@ -5,6 +5,6 @@ export function getCardLogo(brand: string): string {
         case "mastercard":
             return "/src/assets/icons/mastercard.webp";
         default:
-            return "/src/assets/icons/default-card.webp";
+            return "/src/assets/icons/American.webp";
     }
 }

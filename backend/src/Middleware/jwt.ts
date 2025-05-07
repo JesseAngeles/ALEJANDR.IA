@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken"
 import { JwtPayload } from "../Interfaces/JwtPayload"
 
 const JWT_SECRET: string = process.env.JWT_SECRET!
-const EXPIRATION_JWT_TOKEN = "1h"
+const EXPIRATION_JWT_TOKEN = "2h"
 
 
 declare global {

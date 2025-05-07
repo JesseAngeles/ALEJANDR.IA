@@ -42,7 +42,6 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
                         <p className="text-sm">
                             Terminada en <span className="font-semibold">{card.last4}</span>
                         </p>
-                        <p className="text-xs text-gray-600">{card.bank}</p>
                     </div>
                 </div>
 
