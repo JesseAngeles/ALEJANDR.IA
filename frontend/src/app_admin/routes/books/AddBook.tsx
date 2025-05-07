@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import { useNavigate } from "react-router-dom";
 import { createBook } from "app_admin/services/bookService";
 import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "@/app_admin/context/AdminAuthContext"; 
+import { validateBook } from "app_admin/validation/bookValidation"; 
 
 const AddBook: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const AddBook: React.FC = () => {
     stock: "",
     image: "", 
   });
+  const [errors, setErrors] = useState<any>({}); 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,11 +32,60 @@ const AddBook: React.FC = () => {
       return;
     }
 
+    
+    const updatedForm = {
+      ...form,
+      price: form.price ? parseFloat(form.price) : NaN,  
+      stock: form.stock ? parseInt(form.stock) : NaN,  
+    };
+
+    const newErrors: any = {};
+
+    if (isNaN(updatedForm.price)) {
+      newErrors.price = 'El precio debe ser un número válido.';
+    }
+
+    if (isNaN(updatedForm.stock)) {
+      newErrors.stock = 'El stock debe ser un número válido.';
+    }
+
+    if (!updatedForm.title) {
+      newErrors.title = 'El título es obligatorio';
+    }
+    if (!updatedForm.author) {
+      newErrors.author = 'El autor es obligatorio';
+    }
+    if (!updatedForm.ISBN) {
+      newErrors.ISBN = 'El ISBN es obligatorio';
+    }
+    if (!updatedForm.category) {
+      newErrors.category = 'La categoría es obligatoria';
+    }
+
+    if (form.image && !/^https?:\/\/[^\s]+$/.test(form.image)) {
+      newErrors.image = 'La URL debe tener un formato válido.';
+    }
+
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);  
+      return;
+    }
+
+   
+    const validationErrors = validateBook(updatedForm);
+    if (validationErrors.length > 0) {
+      const formattedErrors = validationErrors.reduce((acc: any, err: any) => {
+        acc[err.field] = err.message;
+        return acc;
+      }, {});
+      setErrors(formattedErrors); 
+      return; 
+    }
+
     try {
       await createBook({
-        ...form,
-        price: Number(form.price),
-        stock: Number(form.stock),
+        ...updatedForm,
       }, token); 
       alert("Libro añadido correctamente");
       navigate("/admin/libros");
@@ -63,6 +114,8 @@ const AddBook: React.FC = () => {
           placeholder="Nombre del libro"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.title && <div className="text-red-600">{errors.title}</div>}
+
         <input
           name="author"
           value={form.author}
@@ -70,6 +123,8 @@ const AddBook: React.FC = () => {
           placeholder="Autor"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.author && <div className="text-red-600">{errors.author}</div>}
+
         <input
           name="ISBN"
           value={form.ISBN}
@@ -77,6 +132,8 @@ const AddBook: React.FC = () => {
           placeholder="ISBN"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.ISBN && <div className="text-red-600">{errors.ISBN}</div>}
+
         <input
           name="category"
           value={form.category}
@@ -84,6 +141,8 @@ const AddBook: React.FC = () => {
           placeholder="Categoría"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.category && <div className="text-red-600">{errors.category}</div>}
+
         <input
           name="price"
           type="number"
@@ -92,6 +151,8 @@ const AddBook: React.FC = () => {
           placeholder="Precio"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.price && <div className="text-red-600">{errors.price}</div>}
+
         <input
           name="stock"
           type="number"
@@ -100,6 +161,8 @@ const AddBook: React.FC = () => {
           placeholder="Stock"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.stock && <div className="text-red-600">{errors.stock}</div>}
+
         <input
           name="image"
           value={form.image}
@@ -107,6 +170,7 @@ const AddBook: React.FC = () => {
           placeholder="URL de la portada (opcional)"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.image && <div className="text-red-600">{errors.image}</div>}
 
         <button
           type="submit"
@@ -120,4 +184,5 @@ const AddBook: React.FC = () => {
 };
 
 export { AddBook };
+
 
