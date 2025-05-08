@@ -1,15 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
 
-// Definir el tipo del contexto
 interface AuthContextType {
   token: string | null;
   login: (token: string) => void;
   logout: () => void;
 }
 
-// Definir el tipo de las props de AdminAuthProvider, incluyendo children
+
 interface AdminAuthProviderProps {
-  children: React.ReactNode;  // Se asegura de que 'children' sea un tipo de ReactNode
+  children: React.ReactNode;  
 }
 
 const AdminAuthContext = createContext<AuthContextType | undefined>(undefined);

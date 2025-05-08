@@ -18,6 +18,7 @@ const AddBook: React.FC = () => {
     image: "", 
   });
   const [errors, setErrors] = useState<any>({}); 
+  const [showSuccessModal, setShowSuccessModal] = useState(false); 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -32,7 +33,6 @@ const AddBook: React.FC = () => {
       return;
     }
 
-    
     const updatedForm = {
       ...form,
       price: form.price ? parseFloat(form.price) : NaN,  
@@ -66,13 +66,11 @@ const AddBook: React.FC = () => {
       newErrors.image = 'La URL debe tener un formato válido.';
     }
 
-  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);  
       return;
     }
 
-   
     const validationErrors = validateBook(updatedForm);
     if (validationErrors.length > 0) {
       const formattedErrors = validationErrors.reduce((acc: any, err: any) => {
@@ -87,8 +85,7 @@ const AddBook: React.FC = () => {
       await createBook({
         ...updatedForm,
       }, token); 
-      alert("Libro añadido correctamente");
-      navigate("/admin/libros");
+      setShowSuccessModal(true);  
     } catch (error) {
       console.error("Error al añadir el libro:", error);
       alert("Hubo un error al añadir el libro.");
@@ -179,10 +176,25 @@ const AddBook: React.FC = () => {
           Guardar libro
         </button>
       </form>
+
+ 
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-[#00000] mb-4">
+              ¡Libro añadido correctamente!
+            </h3>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export { AddBook };
-
-
