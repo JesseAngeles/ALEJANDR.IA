@@ -85,7 +85,8 @@ const AddBook: React.FC = () => {
       await createBook({
         ...updatedForm,
       }, token); 
-      setShowSuccessModal(true);  
+      setShowSuccessModal(true); 
+      setTimeout(() => navigate("/admin/libros", { state: { updated: true } }), 2000); 
     } catch (error) {
       console.error("Error al añadir el libro:", error);
       alert("Hubo un error al añadir el libro.");

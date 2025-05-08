@@ -81,7 +81,7 @@ export const updateBook = async (req: Request, res: Response): Promise<void> => 
 		const updateData = req.body
 
 		const updatedBook = await Book.findOneAndUpdate(
-			{ ISBN: ISBN }, // Busca por ISBN
+			{ ISBN: ISBN }, 
 			updateData,
 			{ new: true, runValidators: true }
 		)

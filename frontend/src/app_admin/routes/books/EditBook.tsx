@@ -91,7 +91,8 @@ const EditBook: React.FC = () => {
     try {
       await updateBook(updatedForm.ISBN, updatedForm, token);
       setShowSuccessModal(true);
-      setTimeout(() => navigate("/admin/libros"), 2000); 
+      setTimeout(() => navigate("/admin/libros", { state: { updated: true } }), 2000);
+
     } catch (error: any) {
       console.error("Error al actualizar el libro:", error);
       alert("Hubo un error al actualizar el libro.");
