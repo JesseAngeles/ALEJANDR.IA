@@ -176,7 +176,7 @@ const BookSchema = new Schema<Book>({
     required: false
   },
   reviews: {
-    type: [ReviewSchema],
+    type: [reviewSchema],
     default: [],
     unique: false,
     required: false
