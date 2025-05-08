@@ -46,6 +46,27 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+export const getOrderDetails = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = req.params.order
+
+        const orderDetails = await orders.findById(orderId).populate("client", "name")
+            .populate({
+                path: "items",
+                populate: {
+                    path: "bookId",
+                    select: "author title price image"
+                }
+            })
+            .exec();
+
+        res.status(200).json(orderDetails);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
 export const getUserOrders = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id
@@ -56,10 +77,7 @@ export const getUserOrders = async (req: Request, res: Response): Promise<void> 
             return
         }
 
-        const userOrders = []
-        for (const orderId in user.orders) {
-            userOrders.push(await orders.findById(orderId))
-        }
+        const userOrders = await orders.find({ client: userId }).populate("client", "name")
 
         res.status(200).json(userOrders);
     } catch (error) {
@@ -70,7 +88,7 @@ export const getUserOrders = async (req: Request, res: Response): Promise<void> 
 
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
-        const allOrders = await orders.find();
+        const allOrders = await orders.find().populate("client", "name");
         res.status(200).json(allOrders);
     } catch (error) {
         console.error(`Error: ${error}`);
@@ -80,7 +98,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 
 export const setOrderStateById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const orderId = req.params.id;
+        const orderId = req.params.order;
         const { state } = req.body;
 
         const order = await orders.findById(orderId);
