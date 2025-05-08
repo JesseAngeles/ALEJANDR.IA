@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import Book from '../Models/Book'
+import { Category } from '../Models/Category'
 
 export const createBook = async (req: Request, res: Response): Promise<void> => {
 	try {
@@ -7,6 +8,14 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
 
 		const newBook = await new Book(book)
 		const addedBook = await newBook.save()
+
+		const categoryName = book.category;
+		let category = await Category.findOne({ name: categoryName });
+
+		if (!category) {
+			category = new Category({ name: categoryName });
+			await category.save();
+		}
 
 		res.status(200).json(addedBook)
 	} catch (error) {

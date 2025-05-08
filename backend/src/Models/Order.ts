@@ -8,7 +8,7 @@ export const OrderSchema = new Schema<Order>({
         required: true,
     },
     client: {
-        type: Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId, ref: "users",
         required: true,
     },
     total: {
