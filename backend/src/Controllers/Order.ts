@@ -3,6 +3,7 @@ import books from "../Models/Book";
 import users from "../Models/User";
 import orders from "../Models/Order";
 import { CartItem } from "../Interfaces/Cart";
+import { Order } from "../Interfaces/Order";
 
 export const newOrder = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -38,6 +39,28 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
         await user.save()
 
         res.status(200).json(newOrder);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
+export const getUserOrders = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id
+
+        const user = await users.findById(userId)
+        if (!user) {
+            res.status(404).send(`User not found`)
+            return
+        }
+
+        const userOrders = []
+        for (const orderId in user.orders) {
+            userOrders.push(await orders.findById(orderId))
+        }
+
+        res.status(200).json(userOrders);
     } catch (error) {
         console.error(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`);

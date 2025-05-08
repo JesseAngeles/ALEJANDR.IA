@@ -2,6 +2,7 @@ import { Card } from "../Interfaces/Card"
 import { Cart } from "../Interfaces/Cart"
 import { Collection } from "../Interfaces/Collection"
 import { Direction } from "../Interfaces/Direction"
+import { Order } from "../Interfaces/Order"
 import { getCardBrand } from "./GetCardBrand"
 
 export function returnCard(card: Card | undefined): any {
@@ -42,7 +43,7 @@ export function returnUser(user: any | undefined): any {
         "name": user.name,
         "email": user.email,
         "active": user.active,
-        "role": user.role
+        "role": user.role,
     }
 }
 
@@ -58,7 +59,8 @@ export function returnFullUser(user: any | undefined): any {
         "cards": user.cards,
         "directions": user.directions,
         "collectios": user.collections,
-        "cart": user.cart
+        "cart": user.cart,
+        "orders": user.orders,
     }
 }
 
@@ -71,5 +73,11 @@ export function returnCollection(collection: Collection | undefined): any {
 export function returnCart(cart: Cart | undefined): any {
     if (!cart) return null
     const { items } = cart
+    return { items }
+}
+
+export function returnOrder(order: Order | undefined): any {
+    if (!order) return null
+    const { items } = order
     return { items }
 }
