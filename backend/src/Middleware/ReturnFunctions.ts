@@ -4,6 +4,7 @@ import { Collection } from "../Interfaces/Collection"
 import { Direction } from "../Interfaces/Direction"
 import { Order } from "../Interfaces/Order"
 import { getCardBrand } from "./GetCardBrand"
+import users from "../Models/User"
 
 export function returnCard(card: Card | undefined): any {
     if (!card)
@@ -78,6 +79,6 @@ export function returnCart(cart: Cart | undefined): any {
 
 export function returnOrder(order: Order | undefined): any {
     if (!order) return null
-    const { items } = order
+    let { items } = order
     return { items }
 }
