@@ -36,6 +36,7 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
 
         // Clear cart from user
         user.cart.items = []
+        user.orders.push(newOrder._id)
         await user.save()
 
         res.status(200).json(newOrder);
