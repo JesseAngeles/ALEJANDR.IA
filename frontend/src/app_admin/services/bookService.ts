@@ -13,6 +13,7 @@ export const fetchBooks = async (token: string) => {
 export const fetchBookByISBN = async (isbn: string, token: string) => {
   const response = await fetch(`${API_URL}/${isbn}`, {
     headers: {
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`, 
     },
   });
@@ -61,3 +62,4 @@ export const deleteBook = async (isbn: string, token: string) => {
   });
   if (!response.ok) throw new Error('Error al eliminar el libro');
 };
+

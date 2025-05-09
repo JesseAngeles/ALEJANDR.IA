@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import { useNavigate } from "react-router-dom";
 import { getOrders, updateOrderStatus } from "app_admin/services/orderService";
 import { useAuth } from "@/app_admin/context/AdminAuthContext";
@@ -62,10 +62,8 @@ const OrderList: React.FC = () => {
             <tr key={order._id} className="border-t">
               <td className="p-2">{order._id}</td>
               <td className="p-2">{order.date?.slice(0, 10)}</td>
-              <td className="p-2">{order.client}</td>
-              <td className="p-2 text-teal-600 font-semibold">
-                ${order.total}
-              </td>
+              <td className="p-2">{order.client?.name || "Desconocido"}</td>
+              <td className="p-2 text-teal-600 font-semibold">${order.total}</td>
               <td className="p-2">
                 <select
                   value={order.state}

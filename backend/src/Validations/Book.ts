@@ -41,21 +41,12 @@ export const ValBookSchema = z.object({
     .optional(),
 
   image: z
-<<<<<<< HEAD
-  .string()
-  .url('Image must be a valid URL'),
-
-  category: z
-    .string()
-
-=======
     .string()
     .url('Image must be a valid URL'),
 
   category: z
     .string()
     .min(1, 'Category is required'),
->>>>>>> master
 })
 
 export type Book = z.infer<typeof ValBookSchema>

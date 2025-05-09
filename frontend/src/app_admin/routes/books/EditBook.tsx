@@ -62,21 +62,39 @@ const EditBook: React.FC = () => {
       stock: parseInt(form.stock),
     };
 
-    if (updatedForm.price === undefined || isNaN(updatedForm.price)) {
+    if (updatedForm.price === undefined ) {
       setErrors((prevErrors: { [key: string]: string }) => ({
         ...prevErrors,
-        price: 'El precio es obligatorio y debe ser un número válido.',
+        price: 'El precio debe ser un número mayor a 0.',
       }));
       return;
     }
 
-    if (updatedForm.stock !== undefined && isNaN(updatedForm.stock)) {
+     if (isNaN(updatedForm.price)) {
       setErrors((prevErrors: { [key: string]: string }) => ({
         ...prevErrors,
-        stock: 'El stock debe ser un número válido.',
+        price: 'El precio es obligatorio .',
       }));
       return;
     }
+
+
+    if (updatedForm.stock == undefined ) {
+      setErrors((prevErrors: { [key: string]: string }) => ({
+        ...prevErrors,
+        stock: 'El stock debe ser al menos 0.',
+      }));
+      return;
+    }
+
+     if ( isNaN(updatedForm.stock)) {
+      setErrors((prevErrors: { [key: string]: string }) => ({
+        ...prevErrors,
+        stock: 'El stock es obligatorio.',
+      }));
+      return;
+    }
+
 
     const validationErrors = validateBook(updatedForm);
     if (validationErrors.length > 0) {

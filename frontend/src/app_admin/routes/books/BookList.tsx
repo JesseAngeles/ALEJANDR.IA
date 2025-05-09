@@ -9,8 +9,7 @@ const BookList: React.FC = () => {
   const { token } = useAuth();
   const [books, setBooks] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // Estado para el modal
-
+  const [showSuccessModal, setShowSuccessModal] = useState(false); 
   useEffect(() => {
     const loadBooks = async () => {
       if (!token) {

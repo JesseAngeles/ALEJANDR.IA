@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/app_admin/context/AdminAuthContext";
+import { useAuth } from "@/app_admin/context/AdminAuthContext"; // Importamos el contexto
 import axios from "axios";
 
 const LoginPage: React.FC = () => {
@@ -9,7 +9,7 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false); // 👈 Nuevo estado
   const [error, setError] = useState("");
 
-  const { login } = useAuth();
+  const { login } = useAuth(); // Obtenemos la función login del contexto
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +23,10 @@ const LoginPage: React.FC = () => {
 
       const { token } = response.data;
       if (token) {
+        // Guardamos el token en localStorage
         login(token);
+
+        // Redirigimos al homepage
         navigate("/admin");
       }
     } catch (err) {

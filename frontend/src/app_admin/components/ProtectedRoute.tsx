@@ -1,20 +1,45 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AdminAuthContext';
+import { useAuth } from '../context/AdminAuthContext'; 
+import { jwtDecode } from "jwt-decode"; 
 
 interface ProtectedRouteProps {
-  element: JSX.Element; // Este es el componente a renderizar
+  children: JSX.Element; 
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
-  const { token } = useAuth(); // Obtén el token del contexto
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { token, logout, isAuthenticated } = useAuth(); 
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Si no hay token, redirige a la página de login
-  if (!token) {
-    return <Navigate to="/admin/login" />;
+  useEffect(() => {
+    const checkTokenExpiry = () => {
+      if (token) {
+        const decodedToken: any = jwtDecode(token); 
+        const expiryTime = decodedToken?.exp * 1000;
+        const currentTime = Date.now();
+        if (currentTime > expiryTime) {
+          logout(); 
+          setLoading(false); 
+        } else {
+          setLoading(false); 
+        }
+      } else {
+        setLoading(false); 
+      }
+    };
+
+    checkTokenExpiry(); 
+  }, [token, logout]);
+
+  if (loading) {
+    return <div>Cargando...</div>; 
   }
 
-  return element; // Si hay token, renderiza el componente
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" />; 
+  }
+
+  return <>{children}</>;
 };
 
 export { ProtectedRoute };
