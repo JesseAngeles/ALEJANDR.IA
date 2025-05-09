@@ -3,6 +3,7 @@ import books from "../Models/Book";
 import users from "../Models/User";
 import orders from "../Models/Order";
 import { CartItem } from "../Interfaces/Cart";
+import { Order } from "../Interfaces/Order";
 
 export const newOrder = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -35,6 +36,7 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
 
         // Clear cart from user
         user.cart.items = []
+        user.orders.push(newOrder._id)
         await user.save()
 
         res.status(200).json(newOrder);
@@ -44,9 +46,49 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+export const getOrderDetails = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = req.params.order
+
+        const orderDetails = await orders.findById(orderId).populate("client", "name")
+            .populate({
+                path: "items",
+                populate: {
+                    path: "bookId",
+                    select: "author title price image"
+                }
+            })
+            .exec();
+
+        res.status(200).json(orderDetails);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
+export const getUserOrders = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id
+
+        const user = await users.findById(userId)
+        if (!user) {
+            res.status(404).send(`User not found`)
+            return
+        }
+
+        const userOrders = await orders.find({ client: userId }).populate("client", "name")
+
+        res.status(200).json(userOrders);
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
-        const allOrders = await orders.find();
+        const allOrders = await orders.find().populate("client", "name");
         res.status(200).json(allOrders);
     } catch (error) {
         console.error(`Error: ${error}`);
@@ -56,7 +98,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 
 export const setOrderStateById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const orderId = req.params.id;
+        const orderId = req.params.order;
         const { state } = req.body;
 
         const order = await orders.findById(orderId);

@@ -31,6 +31,7 @@ export const addUser = async (req: Request, res: Response): Promise<void> => {
         user.cards = []
         user.cart = {}
         user.active = true
+        user.orders = []
 
         const seeLaterCollection = new Collection({ name: "Ver más tarde" })
         user.collections = [seeLaterCollection]
@@ -147,6 +148,7 @@ export const multipleUser = async (req: Request, res: Response): Promise<void> =
             userData.cards = []
             userData.cart = {}
             userData.active = true
+            userData.orders = []
 
             const seeLaterCollection = new Collection({ name: "Ver más tarde" })
             userData.collections = [seeLaterCollection]

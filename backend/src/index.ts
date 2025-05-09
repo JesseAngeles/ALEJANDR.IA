@@ -12,6 +12,8 @@ import routerCart from './Routes/Cart'
 import routerCollection from './Routes/Collection'
 import routerDiscount from './Routes/Discount'
 import routerOrder from './Routes/Order'
+import routerSearch from './Routes/Search'
+import routerCategory from './Routes/Category'
 
 dotenv.config()
 connectDB()
@@ -30,6 +32,8 @@ app.use('/cart', routerCart)
 app.use('/collection', routerCollection)
 app.use('/discount', routerDiscount)
 app.use('/order', routerOrder)
+app.use('/search', routerSearch)
+app.use('/category', routerCategory)
 
 // Iniciar el servidor
 app.listen(port, () => {
