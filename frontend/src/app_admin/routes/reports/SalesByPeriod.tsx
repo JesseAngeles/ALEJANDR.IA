@@ -1,43 +1,75 @@
-import React from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-const data = [
-  { name: "Enero", value: 100 },
-  { name: "Febrero", value: 120 },
-  { name: "Marzo", value: 150 },
-  { name: "Abril", value: 180 },
-  { name: "Mayo", value: 200 },
-  { name: "Junio", value: 250 },
-  { name: "Julio", value: 275 },
-  { name: "Agosto", value: 300 },
-  { name: "Septiembre", value: 320 },
-  { name: "Octubre", value: 340 },
-  { name: "Noviembre", value: 360 },
-  { name: "Diciembre", value: 380 },
-];
+import React, { useState, useEffect } from "react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from "recharts";
+import { getSales } from "../../services/reportsService"; // Ajusta la ruta si es distinta
 
 const SalesByPeriod: React.FC = () => {
+  const [from, setFrom] = useState("2024-12-15");
+  const [to, setTo] = useState("2025-01-15");
+  const [groupBy, setGroupBy] = useState("month");
+  const [chartData, setChartData] = useState<{ date: string, sales: number }[]>([]);
+  const [totalSum, setTotalSum] = useState<number>(0);
+  const [count, setCount] = useState<number>(0);
+  const [average, setAverage] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const data = await getSales(from, to, groupBy);
+        setChartData(data.chartData || []);
+        setTotalSum(data.totalSum || 0);
+        setCount(data.count || 0);
+        setAverage(data.average || 0);
+      } catch (error) {
+        console.error("Error al cargar las ventas por periodo:", error);
+      }
+    };
+
+    fetchSales();
+  }, [from, to, groupBy]);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h2 className="text-2xl font-bold text-[#820000] mb-6">Ventas por periodo</h2>
       <div className="flex gap-4 mb-4">
-        <input type="date" className="border px-3 py-2 rounded" defaultValue="2024-12-15" />
-        <input type="date" className="border px-3 py-2 rounded" defaultValue="2025-01-15" />
-        <input type="text" placeholder="Mostrar por: Día" className="border px-3 py-2 rounded" />
+        <input
+          type="date"
+          className="border px-3 py-2 rounded"
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+        />
+        <input
+          type="date"
+          className="border px-3 py-2 rounded"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+        />
+        <select
+          className="border px-3 py-2 rounded"
+          value={groupBy}
+          onChange={(e) => setGroupBy(e.target.value)}
+        >
+          <option value="day">Día</option>
+          <option value="month">Mes</option>
+          <option value="year">Año</option>
+        </select>
       </div>
+
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
+        <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis dataKey="date" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="value" fill="#6495ED" />
+          <Bar dataKey="sales" fill="#6495ED" />
         </BarChart>
       </ResponsiveContainer>
+
       <div className="mt-6 space-y-1 text-lg">
-        <p><strong>Total vendido:</strong> $10574.00</p>
-        <p><strong>Total de pedidos:</strong> 21</p>
-        <p><strong>Promedio por pedido:</strong> $503.52</p>
+        <p><strong>Total vendido:</strong> ${totalSum.toFixed(2)}</p>
+        <p><strong>Total de pedidos:</strong> {count}</p>
+        <p><strong>Promedio por pedido:</strong> ${average.toFixed(2)}</p>
       </div>
     </div>
   );
