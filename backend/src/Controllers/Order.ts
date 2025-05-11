@@ -8,6 +8,7 @@ import { Order } from "../Interfaces/Order";
 export const newOrder = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id;
+        const { cardId, directionId } = req.body
 
         const user = await users.findById(userId);
         if (!user) {
@@ -28,6 +29,8 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
         const newOrder = await orders.create({
             date: new Date(),
             client: userId,
+            card: cardId,
+            direction: directionId,
             total,
             state: "Pendiente",
             items: user.cart.items,
@@ -58,6 +61,8 @@ export const getOrderDetails = async (req: Request, res: Response): Promise<void
                     select: "author title price image"
                 }
             })
+            .populate("card")
+            .populate("direction")
             .exec();
 
         res.status(200).json(orderDetails);
