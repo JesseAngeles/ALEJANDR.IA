@@ -59,7 +59,7 @@ const OrderDetails: React.FC = () => {
         Detalles del pedido
       </h2>
 
-      <p className="text-lg font-medium mb-4">Pedido No.{order._id}</p>
+      <p className="text-lg font-medium mb-4">Pedido No.{(Math.floor(parseFloat(order._id)))}</p>
       <p className="text-sm font-medium mb-4">Cliente: {order.client?.name || "No disponible"}</p>
 
       <div className="overflow-x-auto">

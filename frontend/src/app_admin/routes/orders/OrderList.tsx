@@ -8,7 +8,7 @@ const OrderList: React.FC = () => {
   const { token } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  
   const fetchOrders = async () => {
     if (!token) return;
     try {
@@ -59,8 +59,9 @@ const OrderList: React.FC = () => {
         </thead>
         <tbody>
           {orders.map((order) => (
+            
             <tr key={order._id} className="border-t">
-              <td className="p-2">{order._id}</td>
+              <td className="p-2">{Math.floor(parseFloat(order._id))}</td>
               <td className="p-2">{order.date?.slice(0, 10)}</td>
               <td className="p-2">{order.client?.name || "Desconocido"}</td>
               <td className="p-2 text-teal-600 font-semibold">${order.total}</td>

@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AdminAuthContext'; 
 import { jwtDecode } from "jwt-decode"; 
 
+
 interface ProtectedRouteProps {
   children: JSX.Element; 
 }
@@ -36,7 +37,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" />; 
+    return <Navigate to="/admin/login" replace />; 
   }
 
   return <>{children}</>;
