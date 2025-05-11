@@ -11,6 +11,14 @@ export const OrderSchema = new Schema<Order>({
         type: Schema.Types.ObjectId, ref: "users",
         required: true,
     },
+    card: {
+        type: Schema.Types.ObjectId, ref: "cards",
+        required: true,
+    },
+    direction: {
+        type: Schema.Types.ObjectId, ref: "directions",
+        required: true,
+    },
     total: {
         type: Schema.Types.Number,
         required: true,
@@ -29,4 +37,4 @@ export const OrderSchema = new Schema<Order>({
     },
 })
 
-export default model<Order>('Order', OrderSchema)
+export default model<Order>('orders', OrderSchema)
