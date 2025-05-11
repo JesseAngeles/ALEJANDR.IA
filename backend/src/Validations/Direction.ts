@@ -16,7 +16,7 @@ export const ValDirectionSchema = z.object({
     city: z
         .string()
         .min(1, 'City is required')
-        .regex(/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/, 'Invalid city name'),
+        .regex(/^[A-Za-zÁÉÍÓÚáéíóúñÑ.\s]+$/, 'Invalid city name'),
     zip_code: z
         .number()
         .int('Zip code must be an integer')
