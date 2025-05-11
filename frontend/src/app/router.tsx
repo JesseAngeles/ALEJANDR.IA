@@ -17,8 +17,9 @@ import { AddPaymentMethod } from "./routes/payment/AddPaymentMethod";
 import { AddDeliveryAddress } from "./routes/address/AddDeliveryAddress";
 import { PaymentMethodsAccount } from "./routes/account/PaymentMethodsAccount";
 import { AddressesAccount } from "./routes/account/AddressesAccount";
-//import { OrderHistoryAccount } from "./routes/account/OrderHistoryAccount";
-import { ProtectedRoute } from "./ProtectedRoute"; // 👈 nuevo
+import { PasswordRecovery } from "./routes/account/PasswordRecovery";
+import { OrderHistory } from "./routes/account/OrderHistory";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: "book/:isbn", element: <BookDetails /> },
       { path: "busqueda", element: <Search /> },
       { path: "mis-favoritos", element: <Favoritos /> },
+      { path: "password-recovery", element: <PasswordRecovery /> },
 
       {
         path: "cart",
@@ -124,12 +126,12 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        /*path: "account/history",
+        path: "account/history",
         element: (
           <ProtectedRoute>
-            <OrderHistoryAccount />
+            <OrderHistory />
           </ProtectedRoute>
-        ),*/
+        ),
       },
     ],
   },

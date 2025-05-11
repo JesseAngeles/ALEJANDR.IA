@@ -8,7 +8,6 @@ const PurchaseConfirmation: React.FC = () => {
     const { setPurchase } = usePurchase();
 
     const handleReturnHome = () => {
-        // Limpia los datos del pedido
         setPurchase({
             cart: [],
             address: null,

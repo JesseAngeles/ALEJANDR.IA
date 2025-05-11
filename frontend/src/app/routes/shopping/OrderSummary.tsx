@@ -60,12 +60,12 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
           <span className="font-semibold">Forma de pago:</span>
           <div className="flex items-center gap-2">
             <img
-              src={getCardLogo(paymentMethod.brand)}
-              alt={paymentMethod.brand}
+              src={getCardLogo(paymentMethod.type)}
+              alt={paymentMethod.type}
               className="w-8 h-auto"
             />
             <span className="text-sm font-medium">
-              Terminada en {paymentMethod.last4} {paymentMethod.brand}
+              Terminada en {paymentMethod.last4} {paymentMethod.type}
             </span>
           </div>
         </div>
@@ -76,7 +76,7 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
           <ul className="space-y-4">
             {cart.map((book) => (
               <li
-                key={book.id}
+                key={book.ISBN}
                 className="flex items-center justify-between gap-4 border-b pb-2"
               >
                 <div className="flex items-center gap-4">

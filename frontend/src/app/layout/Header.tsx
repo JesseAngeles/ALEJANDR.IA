@@ -67,7 +67,12 @@ const Header: React.FC = () => {
             <MdMenu />
           </button>
           <span className="text-sm font-semibold">Categorías</span>
-          <h1 className="text-2xl font-serif ml-4">ALEJANDR.IA</h1>
+          <h1
+            onClick={() => navigate("/")}
+            className="text-2xl font-serif ml-4 cursor-pointer"
+          >
+            ALEJANDR.IA
+          </h1>
         </div>
 
         {mostrarMenu && (
