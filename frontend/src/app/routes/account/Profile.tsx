@@ -95,7 +95,7 @@ const Profile: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block font-medium">Nombre*:</label>
+              <label className="block font-medium">Nombre:</label>
               <input
                 type="text"
                 className="w-full border border-black rounded px-3 py-2 mt-1"
@@ -124,7 +124,7 @@ const Profile: React.FC = () => {
 
             {editMode && (
               <div>
-                <label className="block font-medium">Confirma tu contraseña*:</label>
+                <label className="block font-medium">Confirma tu contraseña:</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}

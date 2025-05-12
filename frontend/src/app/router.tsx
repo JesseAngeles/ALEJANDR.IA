@@ -19,7 +19,9 @@ import { PaymentMethodsAccount } from "./routes/account/PaymentMethodsAccount";
 import { AddressesAccount } from "./routes/account/AddressesAccount";
 import { PasswordRecovery } from "./routes/account/PasswordRecovery";
 import { OrderHistory } from "./routes/account/OrderHistory";
+import { PasswordReset } from "./routes/account/PasswordReset";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { OrderDetails } from "./routes/account/OrderDetails";
 
 export const router = createBrowserRouter([
   {
@@ -131,6 +133,23 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <OrderHistory />
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: "password-reset",
+        element: (
+          <ProtectedRoute>
+            <PasswordReset />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/order/:orderId",
+        element: (
+          <ProtectedRoute>
+            <OrderDetails />
+          </ProtectedRoute >
+
         ),
       },
     ],

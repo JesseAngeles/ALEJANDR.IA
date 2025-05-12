@@ -1,29 +1,35 @@
-// src/app/routes/account/OrderHistory.tsx
 import React, { useEffect, useState } from "react";
+import { orderService } from "@/app/domain/service/orderService";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { AccountSidebar } from "@/app/routes/account/AccountSideBar";
-import { orderService } from "@/app/domain/service/orderService";
-import type { Order } from "@/assets/types/order"; // Asegúrate de tener este tipo definido
 
 const OrderHistory: React.FC = () => {
+    const [orders, setOrders] = useState<any[]>([]);
     const navigate = useNavigate();
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Recuperamos las órdenes del usuario
         const fetchOrders = async () => {
             try {
                 const userOrders = await orderService.getUserOrders();
                 setOrders(userOrders);
-            } catch (err) {
-                console.error("Error al cargar pedidos:", err);
-            } finally {
-                setLoading(false);
+            } catch (error) {
+                console.error("Error al obtener las órdenes", error);
             }
         };
         fetchOrders();
     }, []);
+
+    const handleViewDetails = async (orderId: string) => {
+        try {
+            const orderDetails = await orderService.getOrderDetails(orderId);
+            console.log("Detalles de la orden:", orderDetails);
+            // Puedes redirigir al usuario a una página con los detalles del pedido
+            navigate(`/order/${orderId}`);
+        } catch (error) {
+            console.error("Error al obtener los detalles del pedido", error);
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -35,40 +41,32 @@ const OrderHistory: React.FC = () => {
                 Regresar
             </button>
 
-            <div className="flex flex-col md:flex-row gap-8">
-                <AccountSidebar />
+            <h2 className="text-2xl font-bold text-[#820000] mb-6">Historial de pedidos</h2>
 
-                <section className="flex-1">
-                    <h2 className="text-2xl font-bold text-[#820000] mb-6">Historial de pedidos</h2>
-
-                    {loading ? (
-                        <p className="text-center text-gray-600">Cargando pedidos...</p>
-                    ) : orders.length === 0 ? (
-                        <p className="text-center text-gray-500">No hay pedidos registrados.</p>
-                    ) : (
-                        <div className="space-y-4">
-                            {orders.map((order) => (
-                                <div
-                                    key={order._id}
-                                    className="border rounded bg-gray-50 p-4 text-sm"
-                                >
-                                    <div className="mb-2 flex justify-between">
-                                        <p className="font-semibold text-[#820000]">
-                                            Pedido #{order._id.slice(-6)}
-                                        </p>
-                                        <p className="text-sm text-gray-700 font-medium">
-                                            Estado: <span className="text-[#007B83]">{order.state}</span>
-                                        </p>
-                                    </div>
-                                    <p className="text-gray-700 mb-1">
-                                        Total: ${order.total.toFixed(2)} — {order.items.length} producto(s)
-                                    </p>
-                                    <p className="text-xs text-gray-500">Fecha: {new Date(order.date).toLocaleDateString()}</p>
-                                </div>
-                            ))}
+            <div className="space-y-4">
+                {orders.length === 0 ? (
+                    <p>No tienes pedidos realizados.</p>
+                ) : (
+                    orders.map((order) => (
+                        <div
+                            key={order._id}
+                            className="border p-4 rounded-lg shadow-md hover:shadow-lg cursor-pointer"
+                            onClick={() => handleViewDetails(order._id)}
+                        >
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold">Pedido #{Math.floor(parseFloat(order._id))}</h3>
+                                <span className="text-sm text-gray-500">{new Date(order.date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="mt-2">
+                                <p className="text-gray-600">
+                                    Estado: <span className="font-semibold">{order.state}</span>
+                                </p>
+                                <p className="text-gray-600">Total: ${order.total}</p>
+                                <p className="text-gray-600">Número de productos: {order.noItems}</p>
+                            </div>
                         </div>
-                    )}
-                </section>
+                    ))
+                )}
             </div>
         </div>
     );

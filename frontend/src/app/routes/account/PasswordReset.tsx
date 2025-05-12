@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PasswordRecovery: React.FC = () => {
+const PasswordReset: React.FC = () => {
     const [oldPassword, setVerificationCode] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -60,7 +60,7 @@ const PasswordRecovery: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
 
                 <div>
-                    <label className="block text-sm mb-1">Contraseña actual*:</label>
+                    <label className="block text-sm mb-1">Contraseña actual:</label>
                     <input
                         type="text"
                         value={oldPassword}
@@ -72,7 +72,7 @@ const PasswordRecovery: React.FC = () => {
 
                 {/* Nueva contraseña */}
                 <div>
-                    <label className="block text-sm mb-1">Nueva contraseña*:</label>
+                    <label className="block text-sm mb-1">Nueva contraseña:</label>
                     <input
                         type="password"
                         value={newPassword}
@@ -84,7 +84,7 @@ const PasswordRecovery: React.FC = () => {
 
                 {/* Confirmar nueva contraseña */}
                 <div>
-                    <label className="block text-sm mb-1">Confirmar contraseña*:</label>
+                    <label className="block text-sm mb-1">Confirmar contraseña:</label>
                     <input
                         type="password"
                         value={confirmPassword}
@@ -113,4 +113,4 @@ const PasswordRecovery: React.FC = () => {
     );
 };
 
-export { PasswordRecovery };
+export { PasswordReset };

@@ -67,7 +67,7 @@ const PasswordRecovery: React.FC = () => {
 
                 {/* Código de verificación */}
                 <div>
-                    <label className="block text-sm mb-1">Código de verificación*:</label>
+                    <label className="block text-sm mb-1">Código de verificación:</label>
                     <input
                         type="text"
                         value={verificationCode}
@@ -79,7 +79,7 @@ const PasswordRecovery: React.FC = () => {
 
                 {/* Nueva contraseña */}
                 <div>
-                    <label className="block text-sm mb-1">Nueva contraseña*:</label>
+                    <label className="block text-sm mb-1">Nueva contraseña:</label>
                     <input
                         type="password"
                         value={newPassword}
@@ -91,7 +91,7 @@ const PasswordRecovery: React.FC = () => {
 
                 {/* Confirmar nueva contraseña */}
                 <div>
-                    <label className="block text-sm mb-1">Confirmar contraseña*:</label>
+                    <label className="block text-sm mb-1">Confirmar contraseña:</label>
                     <input
                         type="password"
                         value={confirmPassword}

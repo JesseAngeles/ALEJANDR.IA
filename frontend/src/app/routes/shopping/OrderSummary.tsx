@@ -16,8 +16,26 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
   const navigate = useNavigate();
 
   const handleConfirm = async () => {
+    const orderData = {
+      cardId: paymentMethod._id,
+      directionId: address._id,
+      items: cart.map((book) => ({
+        bookId: book.ISBN,
+        quantity: book.cantidad,
+      })),
+    };
+
+    console.log(orderData);
     try {
-      await orderService.sendOrder(summary);
+
+      await orderService.sendOrder({
+        cart,
+        address,
+        paymentMethod,
+        totalItems,
+        total,
+        ...orderData,
+      });
       resetPurchase();
       navigate("/confirmation");
     } catch (error) {

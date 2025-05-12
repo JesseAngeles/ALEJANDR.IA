@@ -20,4 +20,8 @@ export const paymentService = {
             method: "DELETE",
         });
     },
+
+    getById: async (id: string): Promise<PaymentMethod> => {
+        return await apiFetch(`${API}/${id}`);
+    },
 };
