@@ -2,14 +2,17 @@ import React, { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getCardLogo } from "@/app/utils/getCardLogo";
-import { useOrder } from "@/app/domain/context/OrderContext"; // Usar el contexto
-import { paymentService } from "@/app/domain/service/paymentService"; // Importar el servicio de tarjetas
-import { addressService } from "@/app/domain/service/addressService"; // Importar el servicio de direcciones
+import { useOrder } from "@/app/domain/context/OrderContext";
+import { paymentService } from "@/app/domain/service/paymentService";
+import { addressService } from "@/app/domain/service/addressService";
+import { cartService } from "@/app/domain/service/cartService"; // Importar cartService
 
 const OrderDetails: React.FC = () => {
     const { selectedOrder } = useOrder(); // Obtener la orden seleccionada del contexto
     const [card, setCard] = useState<any | null>(null);
     const [address, setAddress] = useState<any | null>(null);
+    const [items, setItems] = useState<any[]>([]); // Nuevo estado para los libros
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -17,7 +20,6 @@ const OrderDetails: React.FC = () => {
             if (!selectedOrder) return; // Si no hay orden seleccionada, no hacer nada
 
             try {
-                console.log(selectedOrder)
                 // Obtener los detalles de la tarjeta
                 const cardDetails = await paymentService.getById(selectedOrder.card);
                 setCard(cardDetails);
@@ -25,19 +27,28 @@ const OrderDetails: React.FC = () => {
                 // Obtener los detalles de la dirección
                 const addressDetails = await addressService.getById(selectedOrder.direction);
                 setAddress(addressDetails);
+
+                // Obtener detalles de los libros de la orden
+                const bookDetails = await Promise.all(
+                    selectedOrder.items.map(async (item: any) => {
+                        const book = await cartService.getBookById(item.bookId);
+                        return { ...item, book }; // Incluir los detalles del libro en cada ítem
+                    })
+                );
+                setItems(bookDetails); // Actualizar el estado con los detalles de los libros
             } catch (error) {
                 console.error("Error al obtener los detalles adicionales:", error);
             }
         };
 
         fetchAdditionalDetails();
-    }, [selectedOrder]); // Solo se ejecuta cuando se selecciona una nueva orden
+    }, [selectedOrder]);
 
     // Verificación si no hay datos en la orden
-    if (!selectedOrder || !card || !address) {
+    if (!selectedOrder || !card || !address || items.length === 0) {
         return <div>Cargando...</div>; // O podrías mostrar un mensaje de error
     }
-    console.log(card)
+
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
             {/* Regresar */}
@@ -95,17 +106,17 @@ const OrderDetails: React.FC = () => {
             <div className="bg-white mt-6 p-4 rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold text-[#820000]">Productos</h3>
                 <ul className="space-y-4 mt-4">
-                    {selectedOrder.items.map((item: any) => (
+                    {items.map((item: any) => (
                         <li key={item._id} className="flex items-center justify-between gap-4 border-b pb-4">
                             <div className="flex items-center gap-4">
                                 <img
-                                    src={item.bookId.image}
-                                    alt={item.bookId.title}
-                                    className="w-12 h-16 object-cover rounded"
+                                    src={item.book.image}
+                                    alt={item.book.title}
+                                    className="w-12 h-16 object-cover rounded cursor-pointer"
                                 />
-                                <div>
-                                    <p className="font-medium text-sm">{item.bookId.title}</p>
-                                    <p className="text-xs text-gray-500">{item.bookId.author}</p>
+                                <div onClick={() => navigate(`/book/${item.book.ISBN}`)}>
+                                    <p className="font-medium text-sm cursor-pointer">{item.book.title}</p>
+                                    <p className="text-xs text-gray-500">{item.book.author}</p>
                                     <p className="text-xs text-gray-600">
                                         Cantidad: {item.quantity}
                                     </p>
@@ -113,10 +124,10 @@ const OrderDetails: React.FC = () => {
                             </div>
                             <div className="text-right text-sm font-medium">
                                 {/* Verificación para evitar el error de undefined */}
-                                <p>${item.bookId.price ? item.bookId.price.toFixed(2) : "N/A"}</p>
+                                <p>${item.book.price ? item.book.price.toFixed(2) : "N/A"}</p>
                                 <p className="text-[#007B83]">
-                                    {item.bookId.price && item.quantity
-                                        ? (item.bookId.price * item.quantity).toFixed(2)
+                                    {item.book.price && item.quantity
+                                        ? (item.book.price * item.quantity).toFixed(2)
                                         : "N/A"}
                                 </p>
                             </div>

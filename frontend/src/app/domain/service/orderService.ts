@@ -1,5 +1,5 @@
 import { OrderSummaryProps } from "@/assets/types/summary";
-import { apiFetch } from "@/app/utils/apiFetch"; // Importamos apiFetch
+import { apiFetch } from "@/app/utils/apiFetch";
 
 const API = "http://localhost:8080/order";
 

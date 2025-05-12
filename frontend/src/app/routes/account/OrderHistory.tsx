@@ -23,7 +23,7 @@ const OrderHistory: React.FC = () => {
 
     const handleViewDetails = (order: any) => {
         setSelectedOrder(order);
-        navigate(`/order/${order._id}`);  // Redirigimos a la página de detalles
+        navigate(`/order/${order._id}`);
     };
 
     return (
