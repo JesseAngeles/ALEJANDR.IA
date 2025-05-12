@@ -23,7 +23,7 @@ routerUser.post('/login', loginUser)
 
 // CRUD USER (name, email, password)
 routerUser.post('', validateRequest(ValUserSchema), addUser)
-routerUser.get('/pass', authenticateToken, authorizeRole("user"), validateRequest(ValUserPassSchema), updateUserPassword)
+routerUser.post('/pass', authenticateToken, authorizeRole("user"), validateRequest(ValUserPassSchema), updateUserPassword)
 routerUser.get('', authenticateToken, authorizeRole("user"), getUser)
 routerUser.put('', authenticateToken, authorizeRole("user"), validateRequest(ValUserSchema), updateUser)
 routerUser.delete('', authenticateToken, authorizeRole("user"), deleteUser)
