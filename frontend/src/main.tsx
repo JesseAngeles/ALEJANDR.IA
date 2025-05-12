@@ -6,13 +6,16 @@ import { PurchaseProvider } from './app/domain/context/PurchaseContext';
 import { AuthProvider } from './app/domain/context/AuthContext';
 import { CartProvider } from './app/domain/context/CartContext'; // ✅ IMPORTANTE
 import './assets/styles/global.css';
+import { OrderProvider } from './app/domain/context/OrderContext';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>
-      <CartProvider> {/* ✅ Aquí envuelves con el contexto del carrito */}
+      <CartProvider>
         <PurchaseProvider>
-          <RouterProvider router={router} />
+          <OrderProvider>
+            <RouterProvider router={router} />
+          </OrderProvider>
         </PurchaseProvider>
       </CartProvider>
     </AuthProvider>

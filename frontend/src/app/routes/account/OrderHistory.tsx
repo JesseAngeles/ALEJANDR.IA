@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { orderService } from "@/app/domain/service/orderService";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useOrder } from "@/app/domain/context/OrderContext";
 
 const OrderHistory: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const navigate = useNavigate();
+    const { setSelectedOrder } = useOrder();  // Usamos el contexto para setear la orden seleccionada
 
     useEffect(() => {
-        // Recuperamos las órdenes del usuario
         const fetchOrders = async () => {
             try {
                 const userOrders = await orderService.getUserOrders();
@@ -20,15 +21,9 @@ const OrderHistory: React.FC = () => {
         fetchOrders();
     }, []);
 
-    const handleViewDetails = async (orderId: string) => {
-        try {
-            const orderDetails = await orderService.getOrderDetails(orderId);
-            console.log("Detalles de la orden:", orderDetails);
-            // Puedes redirigir al usuario a una página con los detalles del pedido
-            navigate(`/order/${orderId}`);
-        } catch (error) {
-            console.error("Error al obtener los detalles del pedido", error);
-        }
+    const handleViewDetails = (order: any) => {
+        setSelectedOrder(order);
+        navigate(`/order/${order._id}`);  // Redirigimos a la página de detalles
     };
 
     return (
@@ -51,7 +46,7 @@ const OrderHistory: React.FC = () => {
                         <div
                             key={order._id}
                             className="border p-4 rounded-lg shadow-md hover:shadow-lg cursor-pointer"
-                            onClick={() => handleViewDetails(order._id)}
+                            onClick={() => handleViewDetails(order)}
                         >
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-semibold">Pedido #{Math.floor(parseFloat(order._id))}</h3>

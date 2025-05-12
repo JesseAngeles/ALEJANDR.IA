@@ -27,4 +27,9 @@ export const addressService = {
             method: "DELETE",
         });
     },
+
+    // Nuevo método para obtener una dirección por su ID
+    getById: async (id: string): Promise<Address> => {
+        return await apiFetch(`${API}/${id}`);
+    },
 };
