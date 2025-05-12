@@ -15,6 +15,7 @@ import routerOrder from './Routes/Order'
 import routerSearch from './Routes/Search'
 import routerCategory from './Routes/Category'
 import routerReport from './Routes/Reports'
+import routerRestore from './Routes/Restore'
 
 dotenv.config()
 connectDB()
@@ -36,6 +37,7 @@ app.use('/order', routerOrder)
 app.use('/search', routerSearch)
 app.use('/category', routerCategory)
 app.use('/report', routerReport)
+app.use('/restore', routerRestore)
 
 // Iniciar el servidor
 app.listen(port, () => {
