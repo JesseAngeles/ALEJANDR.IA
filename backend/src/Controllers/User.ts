@@ -68,6 +68,49 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
+export const updateUserPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(401).send("Unauthorized: No user found in token");
+            return;
+        }
+
+        const id: string = req.user.id;
+        const { password, newPassword } = req.body;
+
+        if (!password || !newPassword) {
+            res.status(400).send("Missing required fields");
+            return;
+        }
+
+        if (password == newPassword) {
+            res.status(400).send("Same old and new password");
+            return;
+        }
+
+        const user: any = await users.findById(id);
+        if (!user) {
+            res.status(404).send("User not found");
+            return;
+        }
+
+        const isPasswordCorrect = await user.comparePassword(password);
+        if (!isPasswordCorrect) {
+            res.status(401).send("Incorrect old password");
+            return;
+        }
+
+        user.password = newPassword;
+
+        const updatedUser = await user.save();
+
+        res.status(200).json(returnUser(updatedUser));
+    } catch (error) {
+        console.error(`Error (Controllers/user/update): ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+}
+
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
