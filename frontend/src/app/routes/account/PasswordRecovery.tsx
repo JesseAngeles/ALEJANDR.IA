@@ -38,7 +38,7 @@ const PasswordRecovery: React.FC = () => {
 
         try {
             // Enviar solicitud GET para obtener el token
-            await passwordService.getToken({ mail: email });
+            await passwordService.getToken({ email: email });
             setIsTokenSent(true);  // Mostrar los campos de token y nueva contraseña
         } catch (error) {
             console.error("Error al enviar el correo:", error);

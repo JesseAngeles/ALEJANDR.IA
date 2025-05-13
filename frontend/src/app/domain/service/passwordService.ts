@@ -5,7 +5,7 @@ const API = "http://localhost:8080/restore";
 
 export const passwordService = {
 
-    getToken: async (data: { mail: string }) => {
+    getToken: async (data: { email: string }) => {
         return await apiFetch(API, {
             method: "POST",
             body: JSON.stringify(data),
