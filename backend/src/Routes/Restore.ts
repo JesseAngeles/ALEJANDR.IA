@@ -5,7 +5,7 @@ import { ValGenerateToken, ValRestoreToken } from "../Validations/Restore"
 
 const routerRestore = Router()
 
-routerRestore.get("", validateRequest(ValGenerateToken), generateRestoreToken)
+routerRestore.post("", validateRequest(ValGenerateToken), generateRestoreToken)
 routerRestore.put("", validateRequest(ValRestoreToken), restorePassWithToken)
 
 export default routerRestore
