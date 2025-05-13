@@ -1,19 +1,30 @@
-import { Request, Response } from 'express'
-import Book from '../Models/Book'
+import { Request, Response } from 'express';
+import Book from '../Models/Book';
 
 export const searchWithFilter = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const mongoQueryFilter = req.body
+  try {
+    const termino = req.body.query;
 
-        const books = await Book.find(mongoQueryFilter)
-
-        res.status(200).json(books)
-    } catch (error) {
-        console.log(`Error: ${error}`)
-        if ((error as any).code === 11000) {
-            res.status(500).send('Server error: El ISBN ya existe')
-        } else {
-            res.status(500).send(`Server error: ${error}`)
-        }
+    if (!termino || typeof termino !== "string") {
+      res.status(400).send("Falta el término de búsqueda.");
+      return;
     }
-}
+
+    const regex = { $regex: termino, $options: "i" };
+
+    // Buscar por título o por autor (soportando arreglo o string)
+    const books = await Book.find({
+      $or: [
+        { title: regex },
+        { author: regex },           // Para strings
+        { author: { $elemMatch: regex } } // Para arreglos de autores
+      ]
+    });
+
+    console.log(`🔍 Resultados encontrados para "${termino}":`, books.length);
+    res.status(200).json(books);
+  } catch (error: any) {
+    console.error("❌ Error al buscar libros:", error.message || error);
+    res.status(500).send(`Server error: ${error.message || error}`);
+  }
+};

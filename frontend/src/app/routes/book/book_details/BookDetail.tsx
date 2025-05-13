@@ -2,7 +2,7 @@ import { CompraLibro } from "./BuyBook";
 import { OpinionesLibro } from "./BuyOpinion";
 import { useParams } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
-
+import { bookService } from "@/app/domain/service/bookService";
 interface Review {
   userId: string;
   rating: number;
@@ -33,11 +33,18 @@ function BookDetails() {
 
 
   useEffect(() => {
-    fetch(`http://localhost:8080/book/${isbn}`)
-      .then(res => res.json())
-      .then(data => setRecommendedBook(data))
-      .catch(err => console.error('Error fetching book details:', err));
+    const fetchBook = async () => {
+      try {
+        const data = await bookService.obtenerPorISBN(isbn as string);
+        setRecommendedBook(data);
+      } catch (err) {
+        console.error("Error al obtener libro:", err);
+      }
+    };
+  
+    fetchBook();
   }, [isbn]);
+  
 
   if (!recommendedBook) return <p>Cargando...</p>;
 

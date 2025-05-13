@@ -4,20 +4,21 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './app/router';
 import { PurchaseProvider } from './app/domain/context/PurchaseContext';
 import { AuthProvider } from './app/domain/context/AuthContext';
-import { CartProvider } from './app/domain/context/CartContext'; // ✅ IMPORTANTE
+import { CartProvider } from './app/domain/context/CartContext';
+import { FavoritesProvider } from "./app/domain/context/FavoritesContext";
 import './assets/styles/global.css';
 import { OrderProvider } from './app/domain/context/OrderContext';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>
-      <CartProvider>
-        <PurchaseProvider>
-          <OrderProvider>
+      <FavoritesProvider>
+        <CartProvider>
+          <PurchaseProvider>
             <RouterProvider router={router} />
-          </OrderProvider>
-        </PurchaseProvider>
-      </CartProvider>
+          </PurchaseProvider>
+        </CartProvider>
+      </FavoritesProvider>
     </AuthProvider>
   </React.StrictMode>
 );

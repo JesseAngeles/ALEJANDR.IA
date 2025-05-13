@@ -4,7 +4,7 @@ import BookSection from '../book/BookSection'
 import Recomendacion from '../book/Recomendation_week'
 import CategoriasDestacadas from '../category/Categories'
 import { useCart } from "@/app/domain/context/CartContext";
-
+import { bookService } from '@/app/domain/service/bookService'
 
 interface Book {
     _id: string;
@@ -22,64 +22,59 @@ interface Book {
 
 
  
-function HomePage() {
-    const [count, setCount] = useState(0)
-    const navigate = useNavigate();
-
-    const [books, setBooks] = useState<Book[]>([]);
+  function HomePage() {
+    const [collections, setCollections] = useState<{ nombre: string; libros: Book[] }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [recommendedBook, setRecommendedBook] = useState<Book | null>(null);
     const { fetchCart } = useCart();
-
-useEffect(() => {
-  fetchCart(); // sincroniza el estado del carrito al volver a home
-}, []);
-
-
-    
-
-  useEffect(() => {
-    fetch('http://localhost:8080/book/')
-      .then(res => res.json())
-      .then(data => {
-        setBooks(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching books:', err);
-        setError('No se pudieron cargar los libros.');
-        setLoading(false);
-      });
-  }, []);
-
-
-
+    const navigate = useNavigate();
+  
     useEffect(() => {
-        fetch('http://localhost:8080/book/9780547739465') //Cambiar por un endpoint de recomendación semanal
-            .then(res => res.json())
-            .then(data => setRecommendedBook(data))
-        .catch(err => console.error('Error fetching recommended book:', err));
+      fetchCart();
     }, []);
-
-
-
-  //if (loading) return <p>Cargando libros...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-
-
+  
+    useEffect(() => {
+      const fetchCollections = async () => {
+        try {
+          const data = await bookService.obtenerRecomendados();
+          setCollections(data);
+          setLoading(false);
+        } catch (err) {
+          console.error("Error al obtener colecciones:", err);
+          setError("No se pudieron cargar los libros.");
+          setLoading(false);
+        }
+      };
+  
+      fetchCollections();
+    }, []);
+  
+    useEffect(() => {
+      const fetchRecomendado = async () => {
+        try {
+          const data = await bookService.obtenerUnoRecomendado();
+          setRecommendedBook(data);
+        } catch (err) {
+          console.error("Error al obtener recomendado:", err);
+        }
+      };
+  
+      fetchRecomendado();
+    }, []);
+  
+    if (error) return <p className="text-red-500">{error}</p>;
+  
     return (
-        <>
-            
-
-            <main className="flex-grow p-6">
-                {recommendedBook && (<Recomendacion book={recommendedBook} />)}
-                <BookSection tituloSeccion="Novedades" books={books} />
-                <BookSection tituloSeccion="Lo mas visto" books={books} />
-                <CategoriasDestacadas />
-            </main>
-        </>
-    )
-}
+      <main className="flex-grow p-6">
+        {recommendedBook && <Recomendacion book={recommendedBook} />}
+        {collections.map((col, idx) => (
+          <BookSection key={idx} tituloSeccion={col.nombre} books={col.libros} />
+        ))}
+        <CategoriasDestacadas />
+      </main>
+    );
+  }
+  
 
 export { HomePage };

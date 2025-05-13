@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useCart } from "@/app/domain/context/CartContext";
-import { FaPlus, FaHeart } from "react-icons/fa";
-
+import { useFavorites } from "@/app/domain/context/FavoritesContext";
+import { FaHeart } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 interface Book {
   _id: string;
@@ -18,21 +19,28 @@ interface Book {
 
 type Props = {
   book: Book;
+  enCarrito: boolean;
+  onAgregarAlCarrito: () => void;
+  onEliminarDelCarrito: () => void;
 };
 
 const CompraLibro: React.FC<Props> = ({ book }) => {
-  const [favoritos, setFavoritos] = useState<string[]>([]);
   const disponible = book.stock > 0;
-  const { isInCart, addToCart, removeFromCart } = useCart();
-  const enCarrito = isInCart(book._id); // directamente del contexto
+  const navigate = useNavigate();
+  const estaLogueado = !!localStorage.getItem("token"); // ✅
 
-  const toggleFavorito = (id: string) => {
-    setFavoritos((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+  const { isInCart, addToCart, removeFromCart } = useCart();
+  const enCarrito = isInCart(book._id);
+
+  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const enFavoritos = isFavorite(book._id);
 
   const handleToggleCarrito = async () => {
+    if (!estaLogueado) {
+      navigate("/login");
+      return;
+    }
+
     try {
       if (enCarrito) {
         await removeFromCart(book.ISBN);
@@ -43,6 +51,32 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
       console.error("Error al modificar el carrito:", error);
       alert("Hubo un problema al actualizar el carrito.");
     }
+  };
+
+  const handleToggleFavorito = async () => {
+    if (!estaLogueado) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      if (enFavoritos) {
+        await removeFromFavorites(book.ISBN);
+      } else {
+        await addToFavorites(book.ISBN);
+      }
+    } catch (error) {
+      console.error("Error al modificar favoritos:", error);
+    }
+  };
+
+  const handleComprar = () => {
+    if (!estaLogueado) {
+      navigate("/login");
+      return;
+    }
+    // ⚠️ Aquí podrías luego redirigir a una página de pago
+    alert("Función comprar aún no implementada");
   };
 
   return (
@@ -76,31 +110,28 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
 
             <div className="flex gap-4 flex-wrap relative">
               <button
-                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white bg-cyan-600 hover:bg-cyan-700`}
+                onClick={handleComprar}
+                className="mt-4 px-4 py-2 rounded-md font-semibold text-white bg-cyan-600 hover:bg-cyan-700"
               >
                 Comprar
               </button>
+
               <button
                 onClick={handleToggleCarrito}
-                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white ${enCarrito ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-600 hover:bg-cyan-700'
-                  }`}
+                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white ${enCarrito ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-600 hover:bg-cyan-700'}`}
               >
                 {enCarrito ? 'Eliminar del carrito' : 'Añadir al carrito'}
               </button>
 
               <button
-  onClick={() => toggleFavorito(book._id)}
-  className={`mt-4 px-4 py-2 rounded-md font-semibold flex items-center justify-center ${
-    favoritos.includes(book._id)
-      ? 'text-cyan-600'
-      : 'text-gray-400 hover:text-cyan-600'
-  }`}
-  title="Agregar a favoritos"
->
-  <FaHeart className="text-3xl" />
-</button>
-
-
+                onClick={handleToggleFavorito}
+                className={`mt-4 w-10 h-10 rounded-full flex items-center justify-center bg-white/70 backdrop-blur-sm shadow ${
+                  enFavoritos ? 'text-cyan-600' : 'text-gray-400 hover:text-cyan-600'
+                }`}
+                title="Favorito"
+              >
+                <FaHeart className="text-2xl" />
+              </button>
             </div>
           </div>
         </div>
