@@ -54,8 +54,8 @@ export const generateRestoreToken = async (req: Request, res: Response): Promise
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
+                user: `${process.env.EMAIL_USER}`,
+                pass: `${process.env.EMAIL_PASS}`,
             },
         });
 
@@ -66,7 +66,8 @@ export const generateRestoreToken = async (req: Request, res: Response): Promise
             html: `<p>Tu código de recuperación es: <strong>${token}</strong></p>`
         });
 
-        res.status(200).send("Restore token sent to your email.");
+        res.status(200).json({ message: "Restore token sent to your email." });
+
     } catch (error) {
         console.log(`Error: ${error}`)
         res.status(500).send(`Server error: ${error}`)
