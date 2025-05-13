@@ -2,11 +2,11 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { cartService } from "@/app/domain/service/cartService";
 
 interface CartItem {
-    bookId: string; // es solo el _id
-    quantity: number;
-  }
-  
-  
+  bookId: string;
+  quantity: number;
+}
+
+
 
 interface CartContextType {
   cart: CartItem[];
@@ -42,19 +42,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isInCart = (bookObjectId: string) => {
     return cart.some(item => item.bookId === bookObjectId);
   };
-  
-  
+
+
 
   const addToCart = async (isbn: string) => {
     await cartService.addToCart(isbn);
     await fetchCart(); // esto ya está bien
   };
-  
+
   const removeFromCart = async (isbn: string) => {
     await cartService.removeFromCart(isbn);
     await fetchCart();
   };
-  
+
   return (
     <CartContext.Provider value={{ cart, loading, fetchCart, isInCart, addToCart, removeFromCart }}>
       {children}

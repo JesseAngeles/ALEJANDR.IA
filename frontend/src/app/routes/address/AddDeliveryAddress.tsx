@@ -26,9 +26,9 @@ const AddDeliveryAddress: React.FC = () => {
             name,
             number,
             street,
-            state,
             city,
             zip_code: parseInt(zip_code),
+            state,
         };
 
         try {

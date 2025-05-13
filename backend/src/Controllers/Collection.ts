@@ -5,25 +5,36 @@ import Book from "../Models/Book"
 
 export const addCollection = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.user?.id
-        const collection = req.body
-
-        const user = await users.findById(userId)
-        if (!user) {
-            res.status(404).send(`User not found`)
-            return
-        }
-
-        user.collections.push(collection)
-        await user.save()
-
-        const newCollection = user.collections[user.collections.length - 1]
-        res.status(200).json(newCollection)
+      const userId = req.user?.id;
+      const collection = req.body;
+  
+      const user = await users.findById(userId);
+      if (!user) {
+        res.status(404).send(`User not found`);
+        return;
+      }
+  
+      const nameNormalizado = collection.name?.trim().toLowerCase();
+  
+      user.collections = user.collections.filter(
+        (col: any) => col.name?.trim().toLowerCase() !== nameNormalizado
+      );
+  
+      user.collections.push(collection);
+      await user.save();
+  
+      const newCollection = user.collections[user.collections.length - 1];
+      res.status(200).json(newCollection);
     } catch (error) {
-        console.log(`Error: ${error}`);
-        res.status(500).send(`Error del servidor: ${error}`)
+      console.log(`Error: ${error}`);
+      res.status(500).send(`Error del servidor: ${error}`);
     }
-}
+  };
+  
+  
+  
+  
+  
 
 export const getCollections = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -43,18 +54,33 @@ export const getCollections = async (req: Request, res: Response): Promise<void>
 
 export const getCollectionById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.params.id
-        const collectionId = req.params.collection
-
-        const user = await users.findById(userId)
-        const collection = (user?.collections as mongoose.Types.DocumentArray<any>).id(collectionId)
-
-        res.status(200).json(collection)
+      const userId = req.user?.id; // ← CORRECTO
+      const collectionId = req.params.collection;
+  
+      if (!userId) {
+        res.status(401).send("No autorizado");
+        return;
+      }
+  
+      const user = await users.findById(userId);
+      if (!user) {
+        res.status(404).send("Usuario no encontrado");
+        return;
+      }
+  
+      const collection = (user.collections as mongoose.Types.DocumentArray<any>).id(collectionId);
+      if (!collection) {
+        res.status(404).send("Colección no encontrada");
+        return;
+      }
+  
+      res.status(200).json(collection);
     } catch (error) {
-        console.log(`Error: ${error}`);
-        res.status(500).send(`Error del servidor: ${error}`)
+      console.log(`Error: ${error}`);
+      res.status(500).send(`Error del servidor: ${error}`);
     }
-}
+  };
+  
 
 export const renameCollection = async (req: Request, res: Response): Promise<void> => {
     try {

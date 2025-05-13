@@ -37,7 +37,7 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
                 <h3 className="text-lg font-bold mb-2">Ingresa el código de seguridad</h3>
 
                 <div className="flex items-center mb-4 gap-2">
-                    <img src={getCardLogo(card.brand)} alt={card.brand} className="w-10 h-6" />
+                    <img src={getCardLogo(card.type)} alt={card.type} className="w-10 h-6" />
                     <div>
                         <p className="text-sm">
                             Terminada en <span className="font-semibold">{card.last4}</span>

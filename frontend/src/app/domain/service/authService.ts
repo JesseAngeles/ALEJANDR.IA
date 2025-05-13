@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/user";
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/user`;
 
 export const authService = {
     login: async (email: string, password: string): Promise<string> => {

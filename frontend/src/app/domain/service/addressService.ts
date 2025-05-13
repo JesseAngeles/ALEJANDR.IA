@@ -1,7 +1,7 @@
 import type { Address } from "@/assets/types/address";
 import { apiFetch } from "@/app/utils/apiFetch";
 
-const API = "http://localhost:8080/user/direction";
+const API = `${import.meta.env.VITE_ENDPOINT}/user/direction`;
 
 export const addressService = {
     getAll: async (): Promise<Address[]> => {
@@ -26,5 +26,10 @@ export const addressService = {
         await apiFetch(`${API}/${id}`, {
             method: "DELETE",
         });
+    },
+
+    // Nuevo método para obtener una dirección por su ID
+    getById: async (id: string): Promise<Address> => {
+        return await apiFetch(`${API}/${id}`);
     },
 };

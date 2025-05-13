@@ -45,7 +45,7 @@ export const getRecommendedBooks = async (req: Request, res: Response): Promise<
 		const midpoint = Math.floor(books.length / 2);
 		const returnBooks = [
 			{
-				name: "colleccion 1",
+				name: "colección 1",
 				books: books.slice(0, midpoint)
 			},
 			{

@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 type Libro = {
   id: string;
   titulo: string;
   autor: string;
+  categoria: string;
+  precio: number;
+  valoracion: number;
   portada: string;
+  isbn: string;
 };
 
 type Filtro = {
@@ -15,92 +19,152 @@ type Filtro = {
 
 type Props = {
   terminoBusqueda: string;
-  filtrosDisponibles: Filtro[];
   resultados: Libro[];
+  filtrosDisponibles: Filtro[];
+  filtroInicial?: string;
 };
 
 const SearchResults: React.FC<Props> = ({
   terminoBusqueda,
-  filtrosDisponibles,
   resultados,
+  filtrosDisponibles,
+  filtroInicial,
 }) => {
-  const [filtrosActivos, setFiltrosActivos] = useState<string[]>([]);
+  const [filtroAutor, setFiltroAutor] = useState<string | null>(null);
+  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
+  const [rangoPrecio, setRangoPrecio] = useState<[number, number]>([0, 1000]);
+  const [valoracionMin, setValoracionMin] = useState<number>(0);
+  const [filtroAplicado, setFiltroAplicado] = useState(false);
+
   const navigate = useNavigate();
 
-  const toggleFiltro = (valor: string) => {
-    setFiltrosActivos((prev) =>
-      prev.includes(valor)
-        ? prev.filter((v) => v !== valor)
-        : [...prev, valor]
+  const autoresUnicos = Array.from(new Set(resultados.map((l) => l.autor))).sort();
+  const categoriasUnicas = Array.from(new Set(resultados.map((l) => l.categoria))).sort();
+
+  // Aplica el filtro automático solo una vez
+  useEffect(() => {
+    if (filtroAplicado) return;
+
+    if (filtroInicial === "autor") {
+      const match = autoresUnicos.find((a) =>
+        a.toLowerCase() === terminoBusqueda.toLowerCase()
+      );
+      if (match) {
+        setFiltroAutor(match);
+        setFiltroAplicado(true);
+      }
+    }
+
+    if (filtroInicial === "categoria") {
+      const match = categoriasUnicas.find((c) =>
+        c.toLowerCase() === terminoBusqueda.toLowerCase()
+      );
+      if (match) {
+        setFiltroCategoria(match);
+        setFiltroAplicado(true);
+      }
+    }
+  }, [filtroInicial, terminoBusqueda, autoresUnicos, categoriasUnicas, filtroAplicado]);
+
+  const resultadosFiltrados = resultados.filter((libro) => {
+    const autoresLibro = libro.autor.split(",").map((a) => a.trim());
+    return (
+      (!filtroAutor || autoresLibro.includes(filtroAutor)) &&
+      (!filtroCategoria || libro.categoria === filtroCategoria) &&
+      libro.precio >= rangoPrecio[0] &&
+      libro.precio <= rangoPrecio[1] &&
+      libro.valoracion >= valoracionMin
     );
-  };
-
-  const eliminarFiltro = (valor: string) => {
-    setFiltrosActivos((prev) => prev.filter((v) => v !== valor));
-  };
-
-  const resultadosFiltrados = resultados.filter((libro) =>
-    filtrosActivos.every((f) =>
-      Object.values(libro).some(
-        (valor) =>
-          typeof valor === "string" &&
-          valor.toLowerCase().includes(f.toLowerCase())
-      )
-    )
-  );
+  });
 
   return (
     <div className="flex min-h-screen">
       {/* Panel de filtros */}
-      <aside className="w-64 p-4 border-r text-sm">
+      <aside className="w-64 p-4 border-r text-sm space-y-6">
         <button
           onClick={() => navigate(-1)}
-          className="mb-4 flex items-center text-sm text-black hover:underline"
+          className="mb-2 flex items-center text-sm text-black hover:underline"
         >
           <span className="text-xl mr-2">←</span> Regresar
         </button>
 
-        <h2 className="font-bold mb-2">Filtros:</h2>
-
-        {/* Filtros activos */}
-        {filtrosActivos.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {filtrosActivos.map((f) => (
-              <button
-                key={f}
-                onClick={() => eliminarFiltro(f)}
-                className="flex items-center bg-cyan-100 text-sm text-cyan-900 px-2 py-1 rounded-full border border-cyan-300"
-              >
-                <span className="mr-1">✕</span> {f}
-              </button>
+        {/* Filtro: Autor */}
+        <div>
+          <h3 className="font-semibold mb-1">Autor</h3>
+          <select
+            value={filtroAutor ?? ""}
+            onChange={(e) => setFiltroAutor(e.target.value || null)}
+            className="w-full border rounded p-1"
+          >
+            <option value="">Todos</option>
+            {autoresUnicos.map((autor) => (
+              <option key={autor} value={autor}>
+                {autor}
+              </option>
             ))}
-          </div>
-        )}
+          </select>
+        </div>
 
-        {/* Filtros por sección */}
-        {filtrosDisponibles.map((filtro) => (
-          <div key={filtro.seccion} className="mb-4">
-            <h3 className="font-semibold border-b mb-1">{filtro.seccion}</h3>
-            {filtro.opciones.map((opcion) => (
-              <label key={opcion} className="flex items-center gap-2 my-1">
-                <input
-                  type="checkbox"
-                  checked={filtrosActivos.includes(opcion)}
-                  onChange={() => toggleFiltro(opcion)}
-                />
-                {opcion}
-              </label>
+        {/* Filtro: Categoría */}
+        <div>
+          <h3 className="font-semibold mb-1">Categoría</h3>
+          <select
+            value={filtroCategoria ?? ""}
+            onChange={(e) => setFiltroCategoria(e.target.value || null)}
+            className="w-full border rounded p-1"
+          >
+            <option value="">Todas</option>
+            {categoriasUnicas.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
-          </div>
-        ))}
+          </select>
+        </div>
+
+        {/* Filtro: Precio */}
+        <div>
+          <h3 className="font-semibold mb-1">Precio (MXN)</h3>
+          <input
+            type="range"
+            min={0}
+            max={1000}
+            step={5}
+            value={rangoPrecio[1]}
+            onChange={(e) =>
+              setRangoPrecio([rangoPrecio[0], parseInt(e.target.value)])
+            }
+            className="w-full"
+          />
+          <p className="text-xs text-gray-600">
+            Máx: ${rangoPrecio[1].toFixed(2)}
+          </p>
+        </div>
+
+        {/* Filtro: Valoración */}
+        <div>
+          <h3 className="font-semibold mb-1">Valoración mínima</h3>
+          <input
+            type="number"
+            min={0}
+            max={5}
+            step={0.5}
+            value={valoracionMin}
+            onChange={(e) => setValoracionMin(parseFloat(e.target.value))}
+            className="w-full border rounded p-1"
+          />
+        </div>
       </aside>
 
       {/* Resultados */}
       <main className="flex-grow p-6">
-        <h2 className="text-lg font-semibold">
-          Resultados de búsqueda para:{" "}
-          <span className="text-red-700">{terminoBusqueda}</span>
-        </h2>
+      {!["autor", "categoria"].includes(filtroInicial || "") && (
+  <h2 className="text-lg font-semibold">
+    Resultados de búsqueda para:{" "}
+    <span className="text-red-700">{terminoBusqueda}</span>
+  </h2>
+)}
+
 
         {resultadosFiltrados.length === 0 ? (
           <p className="mt-6 text-gray-600">No se encontraron resultados.</p>
@@ -110,17 +174,18 @@ const SearchResults: React.FC<Props> = ({
               <div
                 key={libro.id}
                 className="border rounded p-3 shadow-sm hover:shadow-md transition"
+                onClick={() => navigate(`/book/${libro.isbn}`)}
               >
                 <img
-  src={libro.portada}
-  alt={libro.titulo}
-  className="w-full h-60 object-contain mb-2 rounded"
-/>
-
-                <h3 className="text-sm font-semibold truncate">
-                  {libro.titulo}
-                </h3>
+                  src={libro.portada}
+                  alt={libro.titulo}
+                  className="w-full h-60 object-contain mb-2 rounded"
+                />
+                <h3 className="text-sm font-semibold truncate">{libro.titulo}</h3>
                 <p className="text-xs text-gray-600 truncate">{libro.autor}</p>
+                <p className="text-xs text-gray-500">Categoría: {libro.categoria}</p>
+                <p className="text-xs text-gray-500">Precio: ${libro.precio.toFixed(2)}</p>
+                <p className="text-xs text-yellow-600">⭐ {libro.valoracion}</p>
               </div>
             ))}
           </div>
@@ -130,4 +195,4 @@ const SearchResults: React.FC<Props> = ({
   );
 };
 
-export { SearchResults } ;
+export { SearchResults };
