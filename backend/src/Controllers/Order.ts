@@ -3,7 +3,31 @@ import books from "../Models/Book";
 import users from "../Models/User";
 import orders from "../Models/Order";
 import { CartItem } from "../Interfaces/Cart";
-import { Order } from "../Interfaces/Order";
+import { Server } from "socket.io";
+import { Types } from "mongoose";
+
+const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: string) => {
+    try {
+        const order = await orders.findById(orderId);
+        if (!order) return;
+
+        if (order.state !== "Cancelado") {
+            order.state = newState;
+            await order.save();
+
+            io.emit(`orderStatus:${order._id}`, { state: newState });
+            console.log(`Order ${order._id} state updated to ${newState}`);
+        }
+    } catch (error) {
+        console.error(`Error updating order state for ${orderId}: ${error}`);
+    }
+};
+
+const scheduleOrderStateChange = (io: Server, orderId: Types.ObjectId, delay: number, newState: string) => {
+    setTimeout(() => {
+        updateOrderState(io, orderId, newState);
+    }, delay);
+};
 
 export const newOrder = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -41,7 +65,43 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
         user.orders.push(newOrder._id)
         await user.save()
 
+        const io = req.app.get("socketio");
+        updateOrderState(io, newOrder._id, "Pendiente");
+
         res.status(200).json(newOrder);
+
+        scheduleOrderStateChange(io, newOrder._id, 15 * 1000, "En Preparación");
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
+export const setOrderStateById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = req.params.order;
+        const { state } = req.body;
+
+        const order = await orders.findById(orderId);
+        if (!order) {
+            res.status(404).send("Order not found");
+            return;
+        }
+
+        order.state = state;
+        await order.save();
+
+        const io = req.app.get("socketio");
+        updateOrderState(io, order._id, state);
+
+        res.status(200).json(order);
+
+        if (state === "Enviado") {
+            scheduleOrderStateChange(io, order._id, 60 * 1000, "En Tránsito");
+            scheduleOrderStateChange(io, order._id, 2 * 60 * 1000, "Entregado");
+        } else if (state === "En Devolución") {
+            scheduleOrderStateChange(io, order._id, 60 * 1000, "Devuelto");
+        }
     } catch (error) {
         console.error(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`);
@@ -94,27 +154,6 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
         const allOrders = await orders.find().populate("client", "name");
         res.status(200).json(allOrders);
-    } catch (error) {
-        console.error(`Error: ${error}`);
-        res.status(500).send(`Server error: ${error}`);
-    }
-};
-
-export const setOrderStateById = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const orderId = req.params.order;
-        const { state } = req.body;
-
-        const order = await orders.findById(orderId);
-        if (!order) {
-            res.status(404).send("Order not found");
-            return;
-        }
-
-        order.state = state;
-        await order.save();
-
-        res.status(200).json(order);
     } catch (error) {
         console.error(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`);
