@@ -14,7 +14,7 @@ export const ValRestoreToken = z.object({
         .email('Invalid email format'),
     token: z
         .string()
-        .length(64, "Invalid token format")
+        .length(8, "Invalid token format")
         .regex(/^[a-f0-9]{64}$/, "Token must be a 64-character hex string"),
     newPassword: z
         .string()

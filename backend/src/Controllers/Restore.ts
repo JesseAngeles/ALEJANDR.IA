@@ -42,7 +42,7 @@ export const generateRestoreToken = async (req: Request, res: Response): Promise
             return
         }
 
-        const token = crypto.randomBytes(32).toString("hex");
+        const token = crypto.randomBytes(4).toString("hex");
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
         await tokens.create({
