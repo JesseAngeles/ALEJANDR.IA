@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { userService } from "@/app/domain/service/userService"; // Asegúrate de importar el servicio
 
 const PasswordReset: React.FC = () => {
-    const [oldPassword, setVerificationCode] = useState("");
+    const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [success, setSuccess] = useState(false);
-
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // Estado para el modal
     const navigate = useNavigate();
 
     const validateFields = () => {
         const newErrors: { [key: string]: string } = {};
         const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?])(?=.{8,})/;
 
-        if (!oldPassword.trim()) newErrors.verificationCode = "Este campo es obligatorio";
+        if (!oldPassword.trim()) newErrors.oldPassword = "Este campo es obligatorio";
         if (!newPassword.trim()) newErrors.newPassword = "Este campo es obligatorio";
         else if (!passwordRegex.test(newPassword))
             newErrors.newPassword =
@@ -34,9 +34,17 @@ const PasswordReset: React.FC = () => {
         }
 
         try {
-            // Aquí iría la lógica para enviar el código y las nuevas contraseñas al backend
-            setSuccess(true);
-            setErrors({});
+            // Llamada al servicio para actualizar la contraseña
+            const response = await userService.updatePassword({
+                password: oldPassword,
+                newPassword: newPassword,
+            });
+
+            if (response) {
+                setErrors({}); // Limpiar errores
+                setShowSuccessModal(true); // Mostrar modal de éxito
+                setTimeout(() => navigate("/"), 2000); // Redirigir después de 2 segundos
+            }
         } catch (error) {
             console.error("Error al recuperar la contraseña:", error);
             setErrors({ general: "Hubo un error al procesar la recuperación" });
@@ -58,16 +66,16 @@ const PasswordReset: React.FC = () => {
             <h2 className="text-2xl font-semibold text-[#820000] mb-6">Recuperación de contraseña</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-
+                {/* Contraseña actual */}
                 <div>
                     <label className="block text-sm mb-1">Contraseña actual:</label>
                     <input
-                        type="text"
+                        type="password"
                         value={oldPassword}
-                        onChange={(e) => setVerificationCode(e.target.value)}
+                        onChange={(e) => setOldPassword(e.target.value)}
                         className="w-full mt-1 p-2 border rounded-md"
                     />
-                    {errors.verificationCode && <p className="text-red-600 text-xs">{errors.verificationCode}</p>}
+                    {errors.oldPassword && <p className="text-red-600 text-xs">{errors.oldPassword}</p>}
                 </div>
 
                 {/* Nueva contraseña */}
@@ -109,6 +117,23 @@ const PasswordReset: React.FC = () => {
                     </button>
                 </div>
             </form>
+
+            {/* Modal de éxito */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+                        <h3 className="text-lg font-semibold text-[#000000] mb-4">
+                            ¡Datos actualizados correctamente!
+                        </h3>
+                        <button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
