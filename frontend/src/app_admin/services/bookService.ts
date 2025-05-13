@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/book';
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/book`;
 
 export const fetchBooks = async (token: string) => {
   const response = await fetch(API_URL, {

@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/report";
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/report`;
 
 // Obtener las ventas con parámetros (from, to, groupBy)
 export const getSales = async (from: string, to: string, groupBy: string) => {

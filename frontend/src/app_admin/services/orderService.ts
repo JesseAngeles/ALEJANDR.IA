@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/order"; 
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/order`; 
 
 // Obtener todos los pedidos
 export const getOrders = async (token: string) => {

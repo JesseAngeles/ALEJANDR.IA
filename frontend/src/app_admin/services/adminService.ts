@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/admin';
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/admin`;
 
 export const addAdmin = async (adminData: any, token: string) => {
   const response = await fetch(API_URL, {

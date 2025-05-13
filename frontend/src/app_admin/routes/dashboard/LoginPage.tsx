@@ -16,7 +16,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:8080/user/login", {
+      const response = await axios.post(`${import.meta.env.VITE_ENDPOINT}login`, {
         email,
         password,
       });
