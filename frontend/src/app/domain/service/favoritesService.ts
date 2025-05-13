@@ -3,17 +3,17 @@ import { tokenService } from "@/app/utils/tokenService";
 import { forceLogout } from "@/app/utils/logoutHelper";
 
 type Libro = {
-    id: string;
-    titulo: string;
-    autor: string;
-    precio: number;
-    imagen: string;
-    ISBN: string;
-  };
-  
+  id: string;
+  titulo: string;
+  autor: string;
+  precio: number;
+  imagen: string;
+  ISBN: string;
+};
 
 
-const API_URL = "http://localhost:8080/collection";
+
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/collection`;
 
 let cachedCollectionId: string | null = null;
 
@@ -69,121 +69,121 @@ async function getFavoritesCollectionId(): Promise<string> {
   return cachedCollectionId!;
 }
 
-  
-  
-  
+
+
+
 
 
 export const favoritesService = {
-    getFavorites: async () => {
-        const token = tokenService.getToken();
-        const collectionId = await getFavoritesCollectionId();
-      
-        console.log("📥 Obteniendo libros de favoritos:", collectionId);
-      
-        const res = await fetch(`${API_URL}/${collectionId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      
-        if (res.status === 401) {
-          forceLogout();
-          throw new Error("Sesión expirada.");
+  getFavorites: async () => {
+    const token = tokenService.getToken();
+    const collectionId = await getFavoritesCollectionId();
+
+    console.log("📥 Obteniendo libros de favoritos:", collectionId);
+
+    const res = await fetch(`${API_URL}/${collectionId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.status === 401) {
+      forceLogout();
+      throw new Error("Sesión expirada.");
+    }
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("❌ Error al obtener favoritos:", text);
+      throw new Error("Error al obtener favoritos");
+    }
+
+    const collection = await res.json();
+
+    const libros = await Promise.all(
+      collection.books.map(async (bookId: string) => {
+        try {
+          const res = await fetch(`http://localhost:8080/book/id/${bookId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!res.ok) {
+            console.warn("⚠ No se pudo obtener libro:", bookId);
+            return null;
+          }
+
+          const libroRaw = await res.json();
+
+          if (
+            typeof libroRaw !== "object" ||
+            !libroRaw._id ||
+            !libroRaw.title ||
+            !libroRaw.author ||
+            !libroRaw.price ||
+            !libroRaw.image ||
+            !libroRaw.ISBN
+          ) {
+            console.warn("⚠ Libro con datos incompletos:", libroRaw);
+            return null;
+          }
+
+          const libro: Libro = {
+            id: libroRaw._id,
+            titulo: libroRaw.title,
+            autor: libroRaw.author,
+            precio: libroRaw.price,
+            imagen: libroRaw.image,
+            ISBN: libroRaw.ISBN, // ✅ Asegúrate de que el backend lo devuelva
+          };
+
+
+          return libro;
+        } catch (err) {
+          console.error("❌ Error al procesar libro:", err);
+          return null;
         }
-      
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("❌ Error al obtener favoritos:", text);
-          throw new Error("Error al obtener favoritos");
-        }
-      
-        const collection = await res.json();
-      
-        const libros = await Promise.all(
-            collection.books.map(async (bookId: string) => {
-              try {
-                const res = await fetch(`http://localhost:8080/book/id/${bookId}`, {
-                  headers: { Authorization: `Bearer ${token}` },
-                });
-          
-                if (!res.ok) {
-                  console.warn("⚠ No se pudo obtener libro:", bookId);
-                  return null;
-                }
-          
-                const libroRaw = await res.json();
-          
-                if (
-                  typeof libroRaw !== "object" ||
-                  !libroRaw._id ||
-                  !libroRaw.title ||
-                  !libroRaw.author ||
-                  !libroRaw.price ||
-                  !libroRaw.image ||
-                  !libroRaw.ISBN 
-                ) {
-                  console.warn("⚠ Libro con datos incompletos:", libroRaw);
-                  return null;
-                }
-          
-                const libro: Libro = {
-                  id: libroRaw._id,
-                  titulo: libroRaw.title,
-                  autor: libroRaw.author,
-                  precio: libroRaw.price,
-                  imagen: libroRaw.image,
-                  ISBN: libroRaw.ISBN, // ✅ Asegúrate de que el backend lo devuelva
-                };
-                
-          
-                return libro;
-              } catch (err) {
-                console.error("❌ Error al procesar libro:", err);
-                return null;
-              }
-            })
-          );
-          
-          // 💡 Filtramos los que no pasaron la validación
-          return libros.filter((libro): libro is Libro => !!libro);
-                   
-          
-      },
-      
-  
-    addToFavorites: async (isbn: string) => {
-      const token = tokenService.getToken();
-      const collectionId = await getFavoritesCollectionId();
-  
-      const res = await fetch(`${API_URL}/${collectionId}/book/${isbn}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
-      if (res.status === 401) {
-        forceLogout();
-        throw new Error("Sesión expirada.");
-      }
-  
-      if (!res.ok) throw new Error("Error al agregar a favoritos");
-      return await res.json();
-    },
-  
-    removeFromFavorites: async (isbn: string) => {
-      const token = tokenService.getToken();
-      const collectionId = await getFavoritesCollectionId();
-  
-      const res = await fetch(`${API_URL}/${collectionId}/book/${isbn}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
-      if (res.status === 401) {
-        forceLogout();
-        throw new Error("Sesión expirada.");
-      }
-  
-      if (!res.ok) throw new Error("Error al eliminar de favoritos");
-      return await res.json();
-    },
-  };
-  
+      })
+    );
+
+    // 💡 Filtramos los que no pasaron la validación
+    return libros.filter((libro): libro is Libro => !!libro);
+
+
+  },
+
+
+  addToFavorites: async (isbn: string) => {
+    const token = tokenService.getToken();
+    const collectionId = await getFavoritesCollectionId();
+
+    const res = await fetch(`${API_URL}/${collectionId}/book/${isbn}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.status === 401) {
+      forceLogout();
+      throw new Error("Sesión expirada.");
+    }
+
+    if (!res.ok) throw new Error("Error al agregar a favoritos");
+    return await res.json();
+  },
+
+  removeFromFavorites: async (isbn: string) => {
+    const token = tokenService.getToken();
+    const collectionId = await getFavoritesCollectionId();
+
+    const res = await fetch(`${API_URL}/${collectionId}/book/${isbn}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.status === 401) {
+      forceLogout();
+      throw new Error("Sesión expirada.");
+    }
+
+    if (!res.ok) throw new Error("Error al eliminar de favoritos");
+    return await res.json();
+  },
+};
+

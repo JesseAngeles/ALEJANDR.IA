@@ -1,7 +1,7 @@
 import type { Address } from "@/assets/types/address";
 import { apiFetch } from "@/app/utils/apiFetch";
 
-const API = "http://localhost:8080/user/direction";
+const API = `${import.meta.env.VITE_ENDPOINT}/user/direction`;
 
 export const addressService = {
     getAll: async (): Promise<Address[]> => {

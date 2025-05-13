@@ -5,6 +5,8 @@ import crypto from "crypto";
 import { returnUser } from "../Middleware/ReturnFunctions";
 import nodemailer from "nodemailer";
 
+require('dotenv').config()
+
 export const restorePassWithToken = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, token, newPassword } = req.body;
@@ -54,8 +56,8 @@ export const generateRestoreToken = async (req: Request, res: Response): Promise
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: `${process.env.EMAIL_USER}`,
-                pass: `${process.env.EMAIL_PASS}`,
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
             },
         });
 

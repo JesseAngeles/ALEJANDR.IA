@@ -1,7 +1,7 @@
 import { tokenService } from "@/app/utils/tokenService";
 import { forceLogout } from "@/app/utils/logoutHelper";
 
-const API_URL = "http://localhost:8080/cart";
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/cart`;
 
 export const cartService = {
   getCart: async () => {
@@ -98,7 +98,7 @@ export const cartService = {
 
   getBookById: async (id: string) => {
     const token = tokenService.getToken();
-    const res = await fetch(`http://localhost:8080/book/id/${id}`, {
+    const res = await fetch(`${import.meta.env.VITE_ENDPOINT}/book/id/${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

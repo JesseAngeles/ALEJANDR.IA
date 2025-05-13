@@ -2,7 +2,7 @@
 import { apiFetch } from "@/app/utils/apiFetch";
 import { string } from "zod";
 
-const API = "http://localhost:8080/user";
+const API = `${import.meta.env.VITE_ENDPOINT}/user`;
 
 export const userService = {
     get: async () => {

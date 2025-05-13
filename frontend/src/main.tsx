@@ -15,7 +15,9 @@ createRoot(document.getElementById('root')!).render(
       <FavoritesProvider>
         <CartProvider>
           <PurchaseProvider>
-            <RouterProvider router={router} />
+            <OrderProvider>
+              <RouterProvider router={router} />
+            </OrderProvider>
           </PurchaseProvider>
         </CartProvider>
       </FavoritesProvider>

@@ -1,7 +1,7 @@
 import type { PaymentMethod } from "@/assets/types/card";
 import { apiFetch } from "@/app/utils/apiFetch";
 
-const API = "http://localhost:8080/user/card";
+const API = `${import.meta.env.VITE_ENDPOINT}/user/card`;
 
 export const paymentService = {
     getAll: async (): Promise<PaymentMethod[]> => {

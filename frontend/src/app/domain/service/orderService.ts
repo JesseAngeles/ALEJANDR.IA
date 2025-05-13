@@ -1,14 +1,14 @@
 import { OrderSummaryProps } from "@/assets/types/summary";
 import { apiFetch } from "@/app/utils/apiFetch";
 
-const API = "http://localhost:8080/order";
+const API = `${import.meta.env.VITE_ENDPOINT}/order`;
 
 export const orderService = {
     // Enviar un nuevo pedido
     sendOrder: async (summary: OrderSummaryProps): Promise<any> => {
         const response = await apiFetch(`${API}`, {
             method: "POST",
-            body: JSON.stringify(summary), // Pasa el resumen del pedido
+            body: JSON.stringify(summary),
         });
 
         return response;

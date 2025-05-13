@@ -1,7 +1,7 @@
 import { apiFetch } from "@/app/utils/apiFetch";
 import { string } from 'zod';
 
-const API = "http://localhost:8080/restore";
+const API = `${import.meta.env.VITE_ENDPOINT}/restore`;
 
 export const passwordService = {
 
