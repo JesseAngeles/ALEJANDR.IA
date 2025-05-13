@@ -3,27 +3,23 @@ import { FaHeart, FaShoppingCart, FaUser, FaSearch } from "react-icons/fa";
 import { MdMenu } from "react-icons/md";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
-
-const sugerenciasBase = [
-  { titulo: "La muerte del amor", autor: "Gaby Pérez Islas" },
-  { titulo: "El amor y otros demonios", autor: "Gabriel García Márquez" },
-  { titulo: "El amor en los tiempos de cólera", autor: "Gabriel García Márquez" },
-  { titulo: "Cuentos de amor, de locura y de muerte", autor: "Horacio Quiroga" },
-];
+import { searchService } from "../domain/service/searchService";
 
 const Header: React.FC = () => {
   const [mostrarMenu, setMostrarMenu] = useState(false);
   const [buscar, setBuscar] = useState("");
+  const [resultados, setResultados] = useState<{ titulo: string; autor: string; id: string; portada: string; isbn: string }[]>([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const [mostrarOpcionesCuenta, setMostrarOpcionesCuenta] = useState(false);
+
   const contenedorRef = useRef<HTMLDivElement>(null);
   const sugerenciasRef = useRef<HTMLDivElement>(null);
   const cuentaRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const [mostrarAvisoFavoritos, setMostrarAvisoFavoritos] = useState(false);
+
+  const estaLogueado = !!localStorage.getItem("token"); 
 
 
-  const estaLogueado = true;
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -44,35 +40,59 @@ const Header: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const irAResultados = (termino: string) => {
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      const buscarLibros = async () => {
+        if (buscar.trim().length === 0) return setResultados([]);
+  
+        try {
+          const libros = await searchService.buscar(buscar);
+          setResultados(libros);
+        } catch (error) {
+          console.error("❌ Error en búsqueda:", error);
+          setResultados([]);
+        }
+      };
+  
+      buscarLibros();
+    }, 300);
+  
+    return () => clearTimeout(delayDebounce);
+  }, [buscar]);
+  
+
+  const irAResultados = (termino: string, filtro?: string) => {
     if (termino.trim().length > 0) {
-      navigate(`/resultados?query=${encodeURIComponent(termino)}`);
+      const url = `/busqueda?query=${encodeURIComponent(termino)}${filtro ? `&filtro=${filtro}` : ""}`;
+      navigate(url);
       setMostrarSugerencias(false);
     }
   };
-
-  const sugerenciasFiltradas = sugerenciasBase.filter((s) =>
-    s.titulo.toLowerCase().includes(buscar.toLowerCase())
-  );
+  
 
   return (
     <header className="flex flex-wrap items-center justify-between p-4 border-b bg-white shadow-md relative z-10">
       {/* Menú de navegación */}
       <div className="relative" ref={contenedorRef}>
-        <div className="flex items-center gap-4">
-          <button
-            className="text-2xl hover:text-gray-600"
-            onClick={() => setMostrarMenu((prev) => !prev)}
-          >
-            <MdMenu />
-          </button>
-          <span className="text-sm font-semibold">Categorías</span>
-          <h1 className="text-2xl font-serif ml-4">ALEJANDR.IA</h1>
-        </div>
+      <div className="flex items-center gap-4">
+  <button
+    className="flex items-center gap-2 text-sm font-semibold hover:text-gray-600"
+    onClick={() => setMostrarMenu((prev) => !prev)}
+  >
+    <MdMenu className="text-2xl" />
+    Categorías
+  </button>
+  <button
+    onClick={() => navigate("/")}
+    className="text-2xl font-serif ml-4 hover:text-blue-600 transition"
+  >
+    ALEJANDR.IA
+  </button>
+</div>
+
 
         {mostrarMenu && (
           <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border p-4 flex gap-8 text-sm w-[500px] z-50">
-            {/* Menú ficticio */}
             <div>
               <h4 className="font-semibold border-b mb-1">Ficción</h4>
               <ul className="space-y-1">
@@ -80,8 +100,8 @@ const Header: React.FC = () => {
                 <li><a href="#" className="hover:text-blue-600">Fantasía</a></li>
                 <li><a href="#" className="hover:text-blue-600">Romance</a></li>
                 <li><a href="#" className="hover:text-blue-600">Misterio</a></li>
-                <li><a href="#" className="hover:text-blue-600">Poesia</a></li>
-                <li><a href="#" className="hover:text-blue-600">Clasicos</a></li>
+                <li><a href="#" className="hover:text-blue-600">Poesía</a></li>
+                <li><a href="#" className="hover:text-blue-600">Clásicos</a></li>
               </ul>
             </div>
             <div>
@@ -90,7 +110,7 @@ const Header: React.FC = () => {
                 <li><a href="#" className="hover:text-blue-600">Ciencias Políticas</a></li>
                 <li><a href="#" className="hover:text-blue-600">Economía</a></li>
                 <li><a href="#" className="hover:text-blue-600">Filosofía</a></li>
-                <li><a href="#" className="hover:text-blue-600">Lingüistica</a></li>
+                <li><a href="#" className="hover:text-blue-600">Lingüística</a></li>
                 <li><a href="#" className="hover:text-blue-600">Matemáticas</a></li>
                 <li><a href="#" className="hover:text-blue-600">Química</a></li>
               </ul>
@@ -113,7 +133,7 @@ const Header: React.FC = () => {
           <button className="text-cyan-700 px-4" onClick={() => irAResultados(buscar)}>
             Buscar
           </button>
-          <button className="text-gray-500 text-lg pr-3" onClick={() => navigate("/busqueda")}>
+          <button className="text-gray-500 text-lg pr-3" onClick={() => irAResultados(buscar)}>
             <FaSearch />
           </button>
         </div>
@@ -122,22 +142,39 @@ const Header: React.FC = () => {
           <div className="absolute top-full left-0 w-full bg-white shadow-md border mt-1 z-50 max-h-80 overflow-y-auto">
             {buscar.length === 0 ? (
               <p className="p-4 text-sm text-gray-600">Empieza a escribir para mostrar sugerencias.</p>
-            ) : sugerenciasFiltradas.length === 0 ? (
+            ) : resultados.length === 0 ? (
               <p className="p-4 text-sm text-gray-600">No se encontraron coincidencias.</p>
             ) : (
-              sugerenciasFiltradas.map((s, idx) => (
-                <button
-                  key={idx}
-                  className="flex justify-between items-start p-4 w-full text-left hover:bg-gray-100"
-                  onClick={() => irAResultados(s.titulo)}
-                >
-                  <div>
-                    <p className="font-medium">{s.titulo}</p>
-                    <p className="text-sm text-gray-500">{s.autor}</p>
-                  </div>
-                  <FaArrowUpRightFromSquare className="text-gray-400 mt-1" />
-                </button>
+              resultados.map((s, idx) => (
+                <div
+  key={idx}
+  className="flex justify-between items-start p-4 w-full text-left hover:bg-gray-100 cursor-pointer"
+  onClick={() => navigate(`/book/${s.isbn}`)}
+>
+  <div className="w-full">
+    <p className="font-medium">{s.titulo}</p>
+    <div className="flex flex-wrap gap-1 mt-1 text-sm text-blue-600">
+      {s.autor.split(",").map((nombre, i, arr) => (
+        <span key={i}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              irAResultados(nombre.trim(), "autor");
+            }}
+            className="hover:underline"
+          >
+            {nombre.trim()}
+          </button>
+          {i < arr.length - 1 && ","}
+        </span>
+      ))}
+    </div>
+  </div>
+  <FaArrowUpRightFromSquare className="text-gray-400 mt-1" />
+</div>
+
               ))
+              
             )}
           </div>
         )}
@@ -151,7 +188,7 @@ const Header: React.FC = () => {
             if (estaLogueado) {
               navigate("/account/profile");
             } else {
-              setMostrarOpcionesCuenta((prev) => !prev);
+              navigate("/login");
             }
           }}
         >
@@ -159,62 +196,29 @@ const Header: React.FC = () => {
           <span className="hidden sm:inline">Mi cuenta</span>
         </button>
         <button
-          className="flex items-center gap-1 px-3 hover:text-blue-600"
-          onClick={() => {
-            if (estaLogueado) {
-              navigate("/mis-favoritos");
-            } else {
-              setMostrarAvisoFavoritos(true);
-            }
-          }}
+  className="flex items-center gap-1 px-3 hover:text-blue-600"
+  onClick={() => navigate(estaLogueado ? "/mis-favoritos" : "/login")}
+>
+  <FaHeart />
+  <span className="hidden sm:inline">Favoritos</span>
+</button>
+
+
+        <button className="flex items-center gap-1 px-3 hover:text-blue-600"
+        onClick={() => {
+          if (estaLogueado) {
+            navigate("/cart");
+          } else {
+            navigate("/login");
+          }
+        }}
         >
-          <FaHeart />
-          <span className="hidden sm:inline">Favoritos</span>
-        </button>
-
-        <button className="flex items-center gap-1 px-3 hover:text-blue-600">
           <FaShoppingCart />
-          <span onClick={() => navigate('/cart')} className="hidden sm:inline">Carrito</span>
+          <span className="hidden sm:inline">Carrito</span>
         </button>
 
-        {/* Menú desplegable para iniciar/registrar */}
-        {mostrarOpcionesCuenta && !estaLogueado && (
-          <div className="absolute top-full right-0 bg-white shadow-md border mt-2 w-48 rounded z-50 p-4">
-            <p className="text-sm font-semibold mb-2">Escoge una opción para entrar:</p>
-            <button
-              onClick={() => navigate("/login")}
-              className="w-full bg-cyan-700 text-white text-sm py-1 rounded mb-2 hover:bg-cyan-800 transition"
-            >
-              Iniciar sesión
-            </button>
-            <button
-              onClick={() => navigate("/registro")}
-              className="w-full bg-cyan-100 text-cyan-800 text-sm py-1 rounded hover:bg-cyan-200 transition"
-            >
-              Registrarse
-            </button>
-          </div>
-        )}
+        
       </div>
-      {mostrarAvisoFavoritos && !estaLogueado && (
-        <div className="absolute top-full right-16 bg-white shadow-md border mt-2 w-64 rounded z-50 p-4">
-          <p className="text-sm font-semibold mb-2 text-center">
-            Inicia sesión o regístrate para acceder a <span className="text-cyan-700 font-bold">Mis Favoritos</span>
-          </p>
-          <button
-            onClick={() => navigate("/login")}
-            className="w-full bg-cyan-700 text-white text-sm py-1 rounded mb-2 hover:bg-cyan-800 transition"
-          >
-            Iniciar sesión
-          </button>
-          <button
-            onClick={() => navigate("/registro")}
-            className="w-full bg-cyan-100 text-cyan-800 text-sm py-1 rounded hover:bg-cyan-200 transition"
-          >
-            Registrarse
-          </button>
-        </div>
-      )}
 
     </header>
   );
