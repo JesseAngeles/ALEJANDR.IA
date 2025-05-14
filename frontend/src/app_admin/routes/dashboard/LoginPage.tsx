@@ -1,32 +1,29 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/app_admin/context/AdminAuthContext"; // Importamos el contexto
+import { useAuth } from "@/app_admin/context/AdminAuthContext";
 import axios from "axios";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // 👈 Nuevo estado
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const { login } = useAuth(); // Obtenemos la función login del contexto
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_ENDPOINT}login`, {
+      const response = await axios.post(`${import.meta.env.VITE_ENDPOINT}/user/login`, {
         email,
         password,
       });
 
       const { token } = response.data;
       if (token) {
-        // Guardamos el token en localStorage
         login(token);
-
-        // Redirigimos al homepage
         navigate("/admin");
       }
     } catch (err) {
@@ -56,7 +53,7 @@ const LoginPage: React.FC = () => {
             <label className="block mb-1 font-medium">Contraseña:</label>
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"} // 👈 Tipo dinámico
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border rounded bg-blue-50"
@@ -81,6 +78,17 @@ const LoginPage: React.FC = () => {
             Ingresar
           </button>
         </form>
+
+        {/* Botón de recuperación */}
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => navigate("/admin/password-recovery")}
+            className="text-sm text-blue-700 hover:underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
       </div>
     </div>
   );

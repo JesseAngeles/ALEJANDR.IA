@@ -120,8 +120,8 @@ export const getOrderDetails = async (req: Request, res: Response): Promise<void
                     select: "author title price image"
                 }
             })
-            .populate("card")
-            .populate("direction")
+            .populate("card", "titular number expirationMonth expirationYear securityCode")
+            .populate("direction", "name number street city zip_code state")
             .exec();
 
         res.status(200).json(orderDetails);

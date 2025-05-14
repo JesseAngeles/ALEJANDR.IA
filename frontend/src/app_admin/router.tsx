@@ -14,12 +14,21 @@ import { FrequentCustomers } from "./routes/reports/FrequentCustomers";
 import { BooksByStatus } from "./routes/reports/BooksByStatus";
 import { ReportsLayout } from "./routes/reports/ReportsLayout"; 
 import { OrderDetails } from "./routes/orders/OrderDetails";
+import { AdminPasswordRecovery } from "./routes/dashboard/PasswordRecovery";
+
 
 export const adminRouter = createBrowserRouter([
   {
     path: "/admin/login",
     element: <LoginPage />,
   },
+
+  {
+  path: "/admin/password-recovery",
+  element: <AdminPasswordRecovery />,
+},
+
+
   {
     path: "/admin",
     element: (
