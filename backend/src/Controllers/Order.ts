@@ -40,6 +40,11 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        if (!cardId || !directionId) {
+            res.status(404).send("Card and Direction not found");
+            return;
+        }
+
         let total = 0;
         let totalItems = 0;
 
