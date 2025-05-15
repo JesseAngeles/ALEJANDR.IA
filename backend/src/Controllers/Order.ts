@@ -4,11 +4,6 @@ import users from "../Models/User";
 import orders from "../Models/Order";
 import { Server } from "socket.io";
 import { ObjectId, Types } from "mongoose";
-<<<<<<< HEAD
-import { User } from "../Interfaces/User";
-import { Direction } from "../Interfaces/Direction";
-import { Card } from "../Interfaces/Card";
-=======
 import nodemailer from "nodemailer";
 import { Direction } from "../Interfaces/Direction";
 import { Card } from "../Interfaces/Card";
@@ -18,7 +13,6 @@ const REQUIRED_PREVIOUS_STATE: Record<string, string> = {
     "Enviado": "En Preparación",
     "En Devolución": "Entregado"
 };
->>>>>>> master
 
 const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: string) => {
     try {
@@ -117,11 +111,7 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
         }
 
         if (!cardId || !directionId) {
-<<<<<<< HEAD
-            res.status(404).send("Card and Direction not found");
-=======
             res.status(400).send("Card and Direction are required");
->>>>>>> master
             return;
         }
 
