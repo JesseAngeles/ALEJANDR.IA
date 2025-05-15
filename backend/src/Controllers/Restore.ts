@@ -11,25 +11,24 @@ export const restorePassWithToken = async (req: Request, res: Response): Promise
     try {
         const { email, token, newPassword } = req.body;
 
-        const user = await users.findOne({ email })
+        const user = await users.findOne({ email });
         if (!user) {
-            res.status(404).send(`User not found`)
-            return
+            res.status(404).send(`User not found`);
+            return;
         }
 
-        const restoreToken = await tokens.findOne({ token })
+        const restoreToken = await tokens.findOne({ token });
         if (!restoreToken) {
-            res.status(404).send(`Token not found, maybe expired?`)
-            return
+            res.status(404).send(`Token not found, maybe expired?`);
+            return;
         }
 
-        user.password = newPassword
-        const updatedUser = await user.save()
+        user.password = newPassword;
+        const updatedUser = await user.save();
 
-        res.status(200).json(returnUser(updatedUser))
+        res.status(200).json(returnUser(updatedUser));
     } catch (error) {
-        console.log(`Error: ${error}`)
-        res.status(500).send(`Server error: ${error}`)
+        res.status(500).send(`Server error: ${error}`);
     }
 };
 
@@ -53,11 +52,9 @@ export const generateRestoreToken = async (req: Request, res: Response): Promise
             expiresAt,
         });
 
-
-
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error("❌ Faltan credenciales de correo");
-             res.status(500).send("Email config missing");
+            res.status(500).send("Email config missing");
+            return;
         }
 
         const transporter = nodemailer.createTransport({
@@ -75,11 +72,9 @@ export const generateRestoreToken = async (req: Request, res: Response): Promise
             html: `<p>Tu código de recuperación es: <strong>${token}</strong></p>`,
         });
 
-        console.log("✅ Email enviado a", email);
         res.status(200).json({ message: "Restore token sent to your email." });
 
     } catch (error) {
-        console.error("❌ Error en generateRestoreToken:", error);
         res.status(500).send(`Server error: ${error}`);
     }
 };

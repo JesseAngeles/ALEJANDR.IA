@@ -59,7 +59,7 @@ const OrderDetails: React.FC = () => {
         Detalles del pedido
       </h2>
 
-      <p className="text-lg font-medium mb-4">Pedido No.{(parseFloat(order._id))}</p>
+      <p className="text-lg font-medium mb-4">Id de pedido:{(order._id.slice(-8))}</p>
       <p className="text-sm font-medium mb-4">Cliente: {order.client?.name || "No disponible"}</p>
       <p className="text-sm font-medium mb-4"> Dirección: {order.direction?.street}, {order.direction?.city}, {order.direction?.state}, CP {order.direction?.zip}
 </p>

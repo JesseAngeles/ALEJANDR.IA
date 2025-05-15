@@ -2,13 +2,21 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getOrders, updateOrderStatus } from "app_admin/services/orderService";
 import { useAuth } from "@/app_admin/context/AdminAuthContext";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:8080");
+
+interface OrderUpdatePayload {
+  state: string;
+}
 
 const OrderList: React.FC = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  
+
+  // Función para obtener las órdenes desde el backend
   const fetchOrders = async () => {
     if (!token) return;
     try {
@@ -19,9 +27,32 @@ const OrderList: React.FC = () => {
     }
   };
 
+  // Inicializar datos + subscripción a sockets
   useEffect(() => {
-    fetchOrders();
-  }, [token]);
+    if (!token) return;
+
+    fetchOrders().then(() => {
+      // Escuchar cambios en el estado de cada orden
+      orders.forEach((order) => {
+        const channel = `orderStatus:${order._id}`;
+        socket.on(channel, (data: OrderUpdatePayload) => {
+          console.log(`📦 Cambio en orden ${order._id}:`, data.state);
+          setOrders((prev) =>
+            prev.map((o) =>
+              o._id === order._id ? { ...o, state: data.state } : o
+            )
+          );
+        });
+      });
+
+      return () => {
+        // Cleanup listeners
+        orders.forEach((order) => {
+          socket.off(`orderStatus:${order._id}`);
+        });
+      };
+    });
+  }, [token, orders.length]);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     if (!token) return;
@@ -35,7 +66,7 @@ const OrderList: React.FC = () => {
 
   const handleModalClose = async () => {
     setShowSuccessModal(false);
-    await fetchOrders(); // Recarga el listado actualizado
+    await fetchOrders(); // Refrescar el listado
   };
 
   return (
@@ -59,23 +90,32 @@ const OrderList: React.FC = () => {
         </thead>
         <tbody>
           {orders.map((order) => (
-            
             <tr key={order._id} className="border-t">
-              <td className="p-2">{Math.floor(parseFloat(order._id))}</td>
+              <td className="p-2">{order._id.slice(-8)}</td>
               <td className="p-2">{order.date?.slice(0, 10)}</td>
               <td className="p-2">{order.client?.name || "Desconocido"}</td>
               <td className="p-2 text-teal-600 font-semibold">${order.total}</td>
               <td className="p-2">
                 <select
                   value={order.state}
-                  onChange={(e) =>
-                    handleStatusChange(order._id, e.target.value)
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "Enviado" || value === "En Preparación") {
+                      handleStatusChange(order._id, value);
+                    }
+                  }}
                   className="border px-2 py-1 rounded"
-                >
-                  <option value="Pendiente">Pendiente</option>
+>               
+                  <option disabled value="Pendiente">Pendiente</option>
                   <option value="Enviado">Enviado</option>
-                </select>
+                  <option value="En Preparación">En Preparación</option>
+                  <option disabled value="En Tránsito">En Tránsito</option>
+                  <option disabled value="Entregado">Entregado</option>
+                  <option disabled value="En Devolución">En Devolución</option>
+                  <option disabled value="Devuelto">Devuelto</option>
+                  <option disabled value="Cancelado">Cancelado</option>
+                  </select>
+
               </td>
               <td className="p-2">
                 <button
