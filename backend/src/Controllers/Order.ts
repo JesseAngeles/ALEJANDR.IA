@@ -5,14 +5,36 @@ import orders from "../Models/Order";
 import { CartItem } from "../Interfaces/Cart";
 import { Server } from "socket.io";
 import { ObjectId, Types } from "mongoose";
-import { User } from "../Interfaces/User";
 import { Direction } from "../Interfaces/Direction";
 import { Card } from "../Interfaces/Card";
+import nodemailer from "nodemailer";
+
+const sendNotificationEmail = async (userEmail: string, orderId: string, subject: string, message: string) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: userEmail,
+            subject,
+            html: `<p>${message}</p>`,
+        });
+        console.log(`Email sent to ${userEmail} for order ${orderId}`);
+    } catch (error) {
+        console.error(`Error sending email to ${userEmail} for order ${orderId}: ${error}`);
+    }
+};
 
 const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: string) => {
     try {
         const order = await orders.findById(orderId);
-        if (!order) return;
+        if (!order) return false;
 
         if (order.state !== "Cancelado") {
             order.state = newState;
@@ -20,22 +42,18 @@ const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: s
 
             io.emit(`orderStatus:${order._id}`, { state: newState });
             console.log(`Order ${order._id} state updated to ${newState}`);
+            return true;
         }
     } catch (error) {
         console.error(`Error updating order state for ${orderId}: ${error}`);
     }
-};
-
-const scheduleOrderStateChange = (io: Server, orderId: Types.ObjectId, delay: number, newState: string) => {
-    setTimeout(() => {
-        updateOrderState(io, orderId, newState);
-    }, delay);
+    return false;
 };
 
 export const newOrder = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id;
-        const { cardId, directionId } = req.body
+        const { cardId, directionId } = req.body;
 
         const user = await users.findById(userId);
         if (!user) {
@@ -51,7 +69,7 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
         let total = 0;
         let totalItems = 0;
 
-        for (const cartItem of user.cart.items as CartItem[]) {
+        for (const cartItem of user.cart.items) {
             const book = await books.findById(cartItem.bookId);
             const price = book?.price || 0;
             total += cartItem.quantity * price;
@@ -69,16 +87,29 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
             noItems: totalItems,
         });
 
-        user.cart.items = []
-        user.orders.push(newOrder._id)
-        await user.save()
+        user.cart.items = [];
+        user.orders.push(newOrder._id);
+        await user.save();
 
         const io = req.app.get("socketio");
-        updateOrderState(io, newOrder._id, "Pendiente");
+        await updateOrderState(io, newOrder._id, "Pendiente");
 
         res.status(200).json(newOrder);
 
-        scheduleOrderStateChange(io, newOrder._id, 15 * 1000, "En Preparación");
+        // Cambio síncrono a "En Preparación"
+        setTimeout(async () => {
+            const updated = await updateOrderState(io, newOrder._id, "En Preparación");
+            if (updated) {
+                const userEmail = user.email || "";
+                await sendNotificationEmail(
+                    userEmail,
+                    newOrder._id.toString(),
+                    'Tu pedido está en preparación',
+                    `Tu pedido: ${newOrder._id.toString().slice(-8)} está ahora en <strong>preparación</strong>.`
+                );
+            }
+        }, 15 * 1000);
+
     } catch (error) {
         console.error(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`);
@@ -90,26 +121,59 @@ export const setOrderStateById = async (req: Request, res: Response): Promise<vo
         const orderId = req.params.order;
         const { state } = req.body;
 
-        const order = await orders.findById(orderId);
-        if (!order) {
-            res.status(404).send("Order not found");
+        const io = req.app.get("socketio");
+        const updated = await updateOrderState(io, new Types.ObjectId(orderId), state);
+
+        if (!updated) {
+            res.status(404).send("Order not found or already canceled");
             return;
         }
 
-        order.state = state;
-        await order.save();
+        res.status(200).json({ orderId, state });
 
-        const io = req.app.get("socketio");
-        updateOrderState(io, order._id, state);
-
-        res.status(200).json(order);
+        const order = await orders.findById(orderId);
+        const user = await users.findById(order?.client);
+        const userEmail = user?.email || "";
 
         if (state === "Enviado") {
-            scheduleOrderStateChange(io, order._id, 60 * 1000, "En Tránsito");
-            scheduleOrderStateChange(io, order._id, 2 * 60 * 1000, "Entregado");
+            setTimeout(async () => {
+                const inTransit = await updateOrderState(io, new Types.ObjectId(orderId), "En Tránsito");
+                if (inTransit) {
+                    await sendNotificationEmail(
+                        userEmail,
+                        orderId,
+                        'Tu pedido está en tránsito',
+                        `Tu paquete: ${orderId.slice(-8)} está ahora en <strong>tránsito</strong>.`
+                    );
+                }
+            }, 60 * 1000);
+
+            setTimeout(async () => {
+                const delivered = await updateOrderState(io, new Types.ObjectId(orderId), "Entregado");
+                if (delivered) {
+                    await sendNotificationEmail(
+                        userEmail,
+                        orderId,
+                        'Tu paquete ha sido entregado',
+                        `Tu paquete: ${orderId.slice(-8)} ha sido <strong>entregado</strong> correctamente.`
+                    );
+                }
+            }, 120 * 1000);
+
         } else if (state === "En Devolución") {
-            scheduleOrderStateChange(io, order._id, 60 * 1000, "Devuelto");
+            setTimeout(async () => {
+                const returned = await updateOrderState(io, new Types.ObjectId(orderId), "Devuelto");
+                if (returned) {
+                    await sendNotificationEmail(
+                        userEmail,
+                        orderId,
+                        'Tu paquete ha sido devuelto',
+                        `Tu paquete: ${orderId.slice(-8)} ha sido <strong>devuelto</strong> correctamente.`
+                    );
+                }
+            }, 60 * 1000);
         }
+
     } catch (error) {
         console.error(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`);
