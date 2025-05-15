@@ -10,6 +10,6 @@ routerOrder.get('', authenticateToken, /* authorizeRole("admin"), */ getOrders)
 routerOrder.post('', authenticateToken, /* authorizeRole("user"), */ newOrder)
 routerOrder.post('/return/:order', authenticateToken, /* authorizeRole("user"), */ setReturnOrder)
 routerOrder.post('/cancel/:order', authenticateToken, /* authorizeRole("user"), */ setCancelledOrder)
-routerOrder.post('/send/:order', authenticateToken, /* authorizeRole("admin"), */ setSendOrder)
+routerOrder.post('/state/:order', authenticateToken, /* authorizeRole("admin"), */ setSendOrder)
 
 export default routerOrder
