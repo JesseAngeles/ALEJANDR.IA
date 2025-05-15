@@ -4,9 +4,43 @@ import users from "../Models/User";
 import orders from "../Models/Order";
 import { Server } from "socket.io";
 import { ObjectId, Types } from "mongoose";
+import nodemailer from "nodemailer";
 import { Direction } from "../Interfaces/Direction";
 import { Card } from "../Interfaces/Card";
-import nodemailer from "nodemailer";
+
+const REQUIRED_PREVIOUS_STATE: Record<string, string> = {
+    "Cancelado": "En Preparación",
+    "Enviado": "En Preparación",
+    "En Devolución": "Entregado"
+};
+
+const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: string) => {
+    try {
+        const order = await orders.findById(orderId);
+        if (!order) return false;
+
+        const requiredState = REQUIRED_PREVIOUS_STATE[newState];
+        if (requiredState && order.state !== requiredState) {
+            console.log(`Cannot change order ${order._id} to ${newState} - current state is ${order.state}`);
+            return null;
+        }
+
+        if (order.state === "Cancelado") {
+            console.log(`Order ${order._id} is cancelled. State change to ${newState} is not allowed.`);
+            return false;
+        }
+
+        order.state = newState;
+        await order.save();
+
+        io.emit(`orderStatus:${order._id}`, { state: newState });
+        console.log(`Order ${order._id} state updated to ${newState}`);
+        return true;
+    } catch (error) {
+        console.error(`Error updating order state for ${orderId}: ${error}`);
+        return false;
+    }
+};
 
 const sendNotificationEmail = async (userEmail: string, orderId: string, subject: string, message: string) => {
     try {
@@ -30,29 +64,45 @@ const sendNotificationEmail = async (userEmail: string, orderId: string, subject
     }
 };
 
-const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: string) => {
-    try {
-        const order = await orders.findById(orderId);
-        if (!order) return false;
+const getUserEmail = async (orderId: string): Promise<string> => {
+    const order = await orders.findById(orderId);
+    if (!order) return "";
+    const user = await users.findById(order.client);
+    return user?.email || "";
+};
 
-        if (order.state !== "Cancelado") {
-            order.state = newState;
-            await order.save();
-
-            io.emit(`orderStatus:${order._id}`, { state: newState });
-            console.log(`Order ${order._id} state updated to ${newState}`);
-            return true;
-        }
-    } catch (error) {
-        console.error(`Error updating order state for ${orderId}: ${error}`);
+const delayAndUpdateState = async (
+    io: Server,
+    orderId: Types.ObjectId,
+    transitions: { state: string; subject: string; message: (id: string) => string; delay: number }[],
+    userEmail: string
+) => {
+    for (const { state, subject, message, delay } of transitions) {
+        await new Promise<void>((resolve) => {
+            setTimeout(async () => {
+                try {
+                    const updated = await updateOrderState(io, orderId, state);
+                    if (updated) {
+                        await sendNotificationEmail(userEmail, orderId.toString(), subject, message(orderId.toString()));
+                    }
+                } catch (error) {
+                    console.error(`Error actualizando estado a "${state}": ${error}`);
+                }
+                resolve();
+            }, delay);
+        });
     }
-    return false;
 };
 
 export const newOrder = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id;
         const { cardId, directionId } = req.body;
+
+        if (!userId) {
+            res.status(401).send("Unauthorized: User ID missing");
+            return;
+        }
 
         const user = await users.findById(userId);
         if (!user) {
@@ -61,7 +111,7 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
         }
 
         if (!cardId || !directionId) {
-            res.status(404).send("Card and Direction not found");
+            res.status(400).send("Card and Direction are required");
             return;
         }
 
@@ -99,12 +149,14 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
             const updated = await updateOrderState(io, newOrder._id, "En Preparación");
             if (updated) {
                 const userEmail = user.email || "";
-                await sendNotificationEmail(
-                    userEmail,
-                    newOrder._id.toString(),
-                    'Tu pedido está en preparación',
-                    `Tu pedido: ${newOrder._id.toString().slice(-8)} está ahora en <strong>preparación</strong>.`
-                );
+                if (userEmail) {
+                    await sendNotificationEmail(
+                        userEmail,
+                        newOrder._id.toString(),
+                        'Tu pedido está en preparación',
+                        `Tu pedido: ${newOrder._id.toString().slice(-8)} está ahora en <strong>preparación</strong>.`
+                    );
+                }
             }
         }, 15 * 1000);
 
@@ -114,63 +166,115 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-export const setOrderStateById = async (req: Request, res: Response): Promise<void> => {
+export const setCancelledOrder = async (req: Request, res: Response): Promise<void> => {
     try {
         const orderId = req.params.order;
-        const { state } = req.body;
-
         const io = req.app.get("socketio");
-        const updated = await updateOrderState(io, new Types.ObjectId(orderId), state);
 
-        if (!updated) {
-            res.status(404).send("Order not found or already canceled");
+        const updated = await updateOrderState(io, new Types.ObjectId(orderId), "Cancelado");
+
+        if (updated === null) {
+            res.status(400).send(`El pedido no se puede cancelar porque no está en "En Preparación"`);
             return;
         }
 
-        res.status(200).json({ orderId, state });
-
-        const order = await orders.findById(orderId);
-        const user = await users.findById(order?.client);
-        const userEmail = user?.email || "";
-
-        if (state === "Enviado") {
-            setTimeout(async () => {
-                const inTransit = await updateOrderState(io, new Types.ObjectId(orderId), "En Tránsito");
-                if (inTransit) {
-                    await sendNotificationEmail(
-                        userEmail,
-                        orderId,
-                        'Tu pedido está en tránsito',
-                        `Tu paquete: ${orderId.slice(-8)} está ahora en <strong>tránsito</strong>.`
-                    );
-                }
-            }, 30 * 1000);
-
-            setTimeout(async () => {
-                const delivered = await updateOrderState(io, new Types.ObjectId(orderId), "Entregado");
-                if (delivered) {
-                    await sendNotificationEmail(
-                        userEmail,
-                        orderId,
-                        'Tu paquete ha sido entregado',
-                        `Tu paquete: ${orderId.slice(-8)} ha sido <strong>entregado</strong> correctamente.`
-                    );
-                }
-            }, 30 * 1000);
-
-        } else if (state === "En Devolución") {
-            setTimeout(async () => {
-                const returned = await updateOrderState(io, new Types.ObjectId(orderId), "Devuelto");
-                if (returned) {
-                    await sendNotificationEmail(
-                        userEmail,
-                        orderId,
-                        'Tu paquete ha sido devuelto',
-                        `Tu paquete: ${orderId.slice(-8)} ha sido <strong>devuelto</strong> correctamente.`
-                    );
-                }
-            }, 30 * 1000);
+        if (!updated) {
+            res.status(404).send("Pedido no encontrado o ya cancelado");
+            return;
         }
+
+        res.status(200).json({ orderId, state: "Cancelado" });
+
+        const userEmail = await getUserEmail(orderId);
+        if (userEmail) {
+            await sendNotificationEmail(
+                userEmail,
+                orderId,
+                'Tu pedido ha sido cancelado',
+                `Tu pedido: ${orderId.slice(-8)} ha sido <strong>cancelado</strong> correctamente.`
+            );
+        }
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
+export const setReturnOrder = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = req.params.order;
+        const io = req.app.get("socketio");
+
+        const updated = await updateOrderState(io, new Types.ObjectId(orderId), "En Devolución");
+        if (updated === null) {
+            res.status(400).send(`El pedido no se puede devolver porque no está en "Entregado"`);
+            return;
+        }
+
+        if (!updated) {
+            res.status(404).send("Pedido no encontrado o no en estado adecuado");
+            return;
+        }
+
+        res.status(200).json({ orderId, state: "En Devolución" });
+
+        const userEmail = await getUserEmail(orderId);
+        if (!userEmail) return;
+
+        const transitions = [
+            {
+                state: "Devuelto",
+                subject: "Tu paquete ha sido devuelto",
+                message: (id: string) => `Tu paquete: ${id.slice(-8)} ha sido <strong>devuelto</strong> correctamente.`,
+                delay: 30 * 1000,
+            },
+        ];
+
+        await delayAndUpdateState(io, new Types.ObjectId(orderId), transitions, userEmail);
+
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
+    }
+};
+
+export const setSendOrder = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = req.params.order;
+        const io = req.app.get("socketio");
+
+        const updated = await updateOrderState(io, new Types.ObjectId(orderId), "Enviado");
+        if (updated === null) {
+            res.status(400).send(`El pedido no se puede enviar porque no está en "En Preparación"`);
+            return;
+        }
+
+        if (!updated) {
+            res.status(404).send("Pedido no encontrado o no en estado adecuado");
+            return;
+        }
+
+        res.status(200).json({ orderId, state: "Enviado" });
+
+        const userEmail = await getUserEmail(orderId);
+        if (!userEmail) return;
+
+        const transitions = [
+            {
+                state: "En Tránsito",
+                subject: "Tu pedido está en tránsito",
+                message: (id: string) => `Tu paquete: ${id.slice(-8)} está ahora en <strong>tránsito</strong>.`,
+                delay: 30 * 1000,
+            },
+            {
+                state: "Entregado",
+                subject: "Tu paquete ha sido entregado",
+                message: (id: string) => `Tu paquete: ${id.slice(-8)} ha sido <strong>entregado</strong> correctamente.`,
+                delay: 30 * 1000,
+            },
+        ];
+
+        await delayAndUpdateState(io, new Types.ObjectId(orderId), transitions, userEmail);
 
     } catch (error) {
         console.error(`Error: ${error}`);
