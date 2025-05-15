@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import books from "../Models/Book";
 import users from "../Models/User";
 import orders from "../Models/Order";
-import { CartItem } from "../Interfaces/Cart";
 import { Server } from "socket.io";
 import { ObjectId, Types } from "mongoose";
 import { Direction } from "../Interfaces/Direction";
@@ -96,7 +95,6 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
 
         res.status(200).json(newOrder);
 
-        // Cambio síncrono a "En Preparación"
         setTimeout(async () => {
             const updated = await updateOrderState(io, newOrder._id, "En Preparación");
             if (updated) {
@@ -146,7 +144,7 @@ export const setOrderStateById = async (req: Request, res: Response): Promise<vo
                         `Tu paquete: ${orderId.slice(-8)} está ahora en <strong>tránsito</strong>.`
                     );
                 }
-            }, 60 * 1000);
+            }, 30 * 1000);
 
             setTimeout(async () => {
                 const delivered = await updateOrderState(io, new Types.ObjectId(orderId), "Entregado");
@@ -158,7 +156,7 @@ export const setOrderStateById = async (req: Request, res: Response): Promise<vo
                         `Tu paquete: ${orderId.slice(-8)} ha sido <strong>entregado</strong> correctamente.`
                     );
                 }
-            }, 120 * 1000);
+            }, 30 * 1000);
 
         } else if (state === "En Devolución") {
             setTimeout(async () => {
@@ -171,7 +169,7 @@ export const setOrderStateById = async (req: Request, res: Response): Promise<vo
                         `Tu paquete: ${orderId.slice(-8)} ha sido <strong>devuelto</strong> correctamente.`
                     );
                 }
-            }, 60 * 1000);
+            }, 30 * 1000);
         }
 
     } catch (error) {
