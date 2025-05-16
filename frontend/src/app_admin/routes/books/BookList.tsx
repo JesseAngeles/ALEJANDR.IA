@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { fetchBooks, deleteBook } from "app_admin/services/bookService";
-import { useAuth } from "@/app_admin/context/AdminAuthContext"; 
+import { useAuth } from "@/app_admin/context/AdminAuthContext";
 
 const BookList: React.FC = () => {
   const navigate = useNavigate();
-  const { token } = useAuth(); 
+  const location = useLocation();
+  const { token } = useAuth();
   const [books, setBooks] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [showSuccessModal, setShowSuccessModal] = useState(false); 
   useEffect(() => {
     const loadBooks = async () => {
       if (!token) {
@@ -16,7 +17,7 @@ const BookList: React.FC = () => {
         return;
       }
       try {
-        const booksData = await fetchBooks(token); 
+        const booksData = await fetchBooks(token);
         console.log("Libros recibidos:", booksData);
         setBooks(booksData);
       } catch (error) {
@@ -25,7 +26,7 @@ const BookList: React.FC = () => {
     };
 
     loadBooks();
-  }, [token]); 
+  }, [token, location.state?.updated]);
 
   const handleDelete = async (isbn: string) => {
     if (!token) {
@@ -33,9 +34,9 @@ const BookList: React.FC = () => {
       return;
     }
     try {
-      await deleteBook(isbn, token); 
+      await deleteBook(isbn, token);
       setBooks(books.filter((book) => book.ISBN !== isbn));
-      alert("Libro eliminado correctamente");
+      setShowSuccessModal(true); 
     } catch (error) {
       console.error("Error al eliminar el libro", error);
       alert("Hubo un error al eliminar el libro");
@@ -48,9 +49,15 @@ const BookList: React.FC = () => {
       .includes(searchTerm.toLowerCase())
   );
 
+  const handleCloseModal = () => {
+    setShowSuccessModal(false); 
+    setTimeout(() => navigate("/admin/libros", { state: { updated: true } }), 2000); 
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h2 className="text-2xl font-bold text-[#820000] mb-6">Gestión de libros</h2>
+
       <input
         type="text"
         placeholder="Buscar libro"
@@ -58,12 +65,14 @@ const BookList: React.FC = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+
       <table className="w-full text-left border">
         <thead className="bg-gray-100">
           <tr>
             <th className="p-2">Portada</th>
             <th className="p-2">Título</th>
             <th className="p-2">Autor</th>
+            <th className="p-2">Categoría</th>
             <th className="p-2">ISBN</th>
             <th className="p-2">Precio</th>
             <th className="p-2">Stock</th>
@@ -78,6 +87,7 @@ const BookList: React.FC = () => {
               </td>
               <td className="p-2">{book.title}</td>
               <td className="p-2">{book.author}</td>
+              <td className="p-2">{book.category}</td>
               <td className="p-2">{book.ISBN}</td>
               <td className="p-2 text-teal-600 font-semibold">${book.price}.00</td>
               <td className="p-2">{book.stock}</td>
@@ -101,6 +111,7 @@ const BookList: React.FC = () => {
           ))}
         </tbody>
       </table>
+
       <div className="flex justify-center mt-4">
         <button
           onClick={() => navigate("/admin/libros/agregar")}
@@ -109,9 +120,25 @@ const BookList: React.FC = () => {
           Añadir libro
         </button>
       </div>
+
+      {/* Modal de éxito */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-[#00000] mb-4">
+              ¡Libro eliminado correctamente!
+            </h3>
+            <button
+              onClick={handleCloseModal}
+              className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export { BookList };
-

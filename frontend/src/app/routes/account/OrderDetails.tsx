@@ -66,7 +66,7 @@ const OrderDetails: React.FC = () => {
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-semibold text-[#820000]">
-                        Pedido #{Math.floor(parseFloat(selectedOrder._id))}
+                        Id Pedido:{(selectedOrder._id.slice(-8))}
                     </h3>
                     <span className="text-sm text-gray-500">{new Date(selectedOrder.date).toLocaleDateString()}</span>
                 </div>

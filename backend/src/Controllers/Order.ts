@@ -4,7 +4,10 @@ import users from "../Models/User";
 import orders from "../Models/Order";
 import { CartItem } from "../Interfaces/Cart";
 import { Server } from "socket.io";
-import { Types } from "mongoose";
+import { ObjectId, Types } from "mongoose";
+import { User } from "../Interfaces/User";
+import { Direction } from "../Interfaces/Direction";
+import { Card } from "../Interfaces/Card";
 
 const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: string) => {
     try {
@@ -37,6 +40,11 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
         const user = await users.findById(userId);
         if (!user) {
             res.status(404).send("User not found");
+            return;
+        }
+
+        if (!cardId || !directionId) {
+            res.status(404).send("Card and Direction not found");
             return;
         }
 
@@ -112,7 +120,8 @@ export const getOrderDetails = async (req: Request, res: Response): Promise<void
     try {
         const orderId = req.params.order
 
-        const orderDetails = await orders.findById(orderId).populate("client", "name")
+        const orderDetails = await orders.findById(orderId)
+            .populate<{ client: { _id: ObjectId, name: string, directions: Types.DocumentArray<Direction>, cards: Types.DocumentArray<Card> } }>("client", "name directions cards")
             .populate({
                 path: "items",
                 populate: {
@@ -120,11 +129,38 @@ export const getOrderDetails = async (req: Request, res: Response): Promise<void
                     select: "author title price image"
                 }
             })
-            .populate("card")
-            .populate("direction")
             .exec();
 
-        res.status(200).json(orderDetails);
+        if (!orderDetails) {
+            res.status(404).send('Order not found')
+            return;
+        }
+
+        if (!orderDetails.client || !(orderDetails.client as any)._id) {
+            res.status(404).send('Client information not found');
+            return;
+        }
+
+        const client = orderDetails.client;
+        const direction = client.directions.id(orderDetails.direction);
+        const card = client.cards.id(orderDetails.card);
+
+        const returnedDetails = {
+            _id: orderDetails._id,
+            date: orderDetails.date,
+            client: {
+                _id: orderDetails.client._id,
+                name: orderDetails.client.name,
+            },
+            card,
+            direction,
+            total: orderDetails.total,
+            state: orderDetails.state,
+            items: orderDetails.items,
+            noItems: orderDetails.noItems,
+        };
+
+        res.status(200).json(returnedDetails);
     } catch (error) {
         console.error(`Error: ${error}`);
         res.status(500).send(`Server error: ${error}`);

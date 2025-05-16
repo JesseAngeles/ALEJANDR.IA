@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaHeart } from 'react-icons/fa';
+import { FaArrowLeft, FaHeart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
 
@@ -65,12 +65,13 @@ const Favorites: React.FC<Props> = ({ libros }) => {
   
   return (
     <section className="my-8 px-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="text-base mb-4 flex items-center gap-2"
-      >
-        <span className="text-xl">←</span> Regresar
-      </button>
+         <button
+                  onClick={() => navigate(-1)} 
+                  className="flex items-center text-sm text-black hover:underline mb-4"
+                >
+                  <FaArrowLeft className="mr-2 text-black" />
+                          Regresar
+                </button>
 
       <h2 className="text-2xl font-bold text-red-700 mb-4">Mis favoritos</h2>
 

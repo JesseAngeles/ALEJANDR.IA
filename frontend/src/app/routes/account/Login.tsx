@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/domain/context/AuthContext";
+import { FaArrowLeft } from 'react-icons/fa';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -36,11 +37,12 @@ const Login: React.FC = () => {
       <div className="bg-white p-6 rounded shadow-md w-full max-w-sm relative">
         {/* Botón regresar */}
         <button
-          onClick={() => navigate("/")}
-          className="absolute left-4 top-4 text-sm flex items-center gap-2 text-gray-700"
-        >
-          <span className="text-xl">←</span> Regresar
-        </button>
+               onClick={() => navigate(-1)} 
+               className="flex items-center text-sm text-black hover:underline mb-4"
+             >
+               <FaArrowLeft className="mr-2 text-black" />
+                       Regresar
+             </button>
 
         {/* Formulario */}
         <h1 className="text-2xl font-bold text-red-800 mb-6 text-center mt-8">

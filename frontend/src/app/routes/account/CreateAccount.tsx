@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { userService } from "@/app/domain/service/userService";
+import { FaArrowLeft } from 'react-icons/fa';
 
 const Registro: React.FC = () => {
   const [nombre, setNombre] = useState('');
@@ -42,11 +43,12 @@ const Registro: React.FC = () => {
   return (
     <div className="min-h-screen px-4 pt-4 relative max-w-md mx-auto">
       <button
-        onClick={() => navigate("/")}
-        className="absolute left-4 top-4 text-sm flex items-center gap-2"
-      >
-        ← Regresar
-      </button>
+             onClick={() => navigate(-1)} 
+             className="flex items-center text-sm text-black hover:underline mb-4"
+           >
+             <FaArrowLeft className="mr-2 text-black" />
+                     Regresar
+           </button>
 
       <h2 className="text-2xl font-bold text-red-700 text-center mt-12 mb-6">Crear Cuenta</h2>
 
