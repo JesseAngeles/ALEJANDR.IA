@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AdminFooter } from "./layout/AdminFooter";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute"; 
 import { LoginPage } from "./routes/dashboard/LoginPage";
 import { AdminHome } from "./routes/dashboard/AdminHome";
 import { BookList } from "./routes/books/BookList";
@@ -12,8 +12,9 @@ import { SalesByPeriod } from "./routes/reports/SalesByPeriod";
 import { BestSellers } from "./routes/reports/BestSellers";
 import { FrequentCustomers } from "./routes/reports/FrequentCustomers";
 import { BooksByStatus } from "./routes/reports/BooksByStatus";
-import { ReportsLayout } from "./routes/reports/ReportsLayout"; // nuevo layout para reportes
+import { ReportsLayout } from "./routes/reports/ReportsLayout"; 
 import { OrderDetails } from "./routes/orders/OrderDetails";
+import { AdminPasswordRecovery } from "./routes/dashboard/PasswordRecovery";
 
 
 export const adminRouter = createBrowserRouter([
@@ -21,31 +22,108 @@ export const adminRouter = createBrowserRouter([
     path: "/admin/login",
     element: <LoginPage />,
   },
+
+  {
+  path: "/admin/password-recovery",
+  element: <AdminPasswordRecovery />,
+},
+
+
   {
     path: "/admin",
     element: (
-      <ProtectedRoute element={<AdminFooter />} />
+      <ProtectedRoute>
+        <AdminFooter />
+      </ProtectedRoute>
     ),
     children: [
       { index: true, element: <AdminHome /> },
-      { path: "libros", element: <BookList /> },
-      { path: "libros/agregar", element: <AddBook /> },
-      { path: "libros/editar/:id", element: <EditBook /> },
-      { path: "pedidos", element: <OrderList /> },
-      { path: "clientes", element: <CustomerList /> },
-      { path: "pedidos/:id", element: <OrderDetails /> },
-  
+      {
+        path: "libros",
+        element: (
+          <ProtectedRoute>
+            <BookList />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "libros/agregar",
+        element: (
+          <ProtectedRoute>
+            <AddBook />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "libros/editar/:id",
+        element: (
+          <ProtectedRoute>
+            <EditBook />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "pedidos",
+        element: (
+          <ProtectedRoute>
+            <OrderList />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "clientes",
+        element: (
+          <ProtectedRoute>
+            <CustomerList />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "pedidos/:id",
+        element: (
+          <ProtectedRoute>
+            <OrderDetails />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "reportes",
-        element: <ReportsLayout />, 
+        element: <ReportsLayout />,
         children: [
-          { path: "ventas", element: <SalesByPeriod /> },
-          { path: "populares", element: <BestSellers /> },
-          { path: "frecuentes", element: <FrequentCustomers /> },
-          { path: "estado", element: <BooksByStatus /> },
+          {
+            path: "ventas",
+            element: (
+              <ProtectedRoute>
+                <SalesByPeriod />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "populares",
+            element: (
+              <ProtectedRoute>
+                <BestSellers />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "frecuentes",
+            element: (
+              <ProtectedRoute>
+                <FrequentCustomers />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "estado",
+            element: (
+              <ProtectedRoute>
+                <BooksByStatus />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
     ],
   },
 ]);
-

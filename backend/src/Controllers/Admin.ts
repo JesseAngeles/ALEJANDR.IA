@@ -6,7 +6,6 @@ export const addAdmin = async (req: Request, res: Response): Promise<void> => {
     try {
         const admin = req.body
 
-        //TODO generador de contraseñas
         admin.password = "1234"
         admin.role = "admin"
         admin.active = true

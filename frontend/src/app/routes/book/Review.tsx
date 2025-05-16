@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaStar } from 'react-icons/fa';
+import { FaArrowLeft, FaStar } from 'react-icons/fa';
 
 type Props = {
   imagenLibro: string;
@@ -22,8 +22,9 @@ const ResenaLibro: React.FC<Props> = ({ imagenLibro, titulo, autor }) => {
         onClick={() => alert('Regresar')}
         className="self-start mb-4 text-sm flex items-center gap-2"
       >
-        <span className="text-xl">←</span> Regresar
+        <FaArrowLeft className="mr-2 text-black" />Regresar
       </button>
+     
 
       {/* Título */}
       <h1 className="text-xl font-bold text-red-800 mb-4">¿Qué te pareció el libro?</h1>

@@ -57,7 +57,7 @@ const OrderHistory: React.FC = () => {
                                 >
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-lg font-semibold">
-                                            Pedido #{Math.floor(parseFloat(order._id))}
+                                            Id Pedido: {order._id.slice(-8)}
                                         </h3>
                                         <span className="text-sm text-gray-500">
                                             {new Date(order.date).toLocaleDateString()}

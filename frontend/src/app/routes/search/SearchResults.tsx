@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 type Libro = {
@@ -81,12 +82,13 @@ const SearchResults: React.FC<Props> = ({
     <div className="flex min-h-screen">
       {/* Panel de filtros */}
       <aside className="w-64 p-4 border-r text-sm space-y-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-2 flex items-center text-sm text-black hover:underline"
-        >
-          <span className="text-xl mr-2">←</span> Regresar
-        </button>
+           <button
+                    onClick={() => navigate(-1)} 
+                    className="flex items-center text-sm text-black hover:underline mb-4"
+                  >
+                    <FaArrowLeft className="mr-2 text-black" />
+                            Regresar
+                  </button>
 
         {/* Filtro: Autor */}
         <div>
