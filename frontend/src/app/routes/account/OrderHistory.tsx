@@ -4,6 +4,9 @@ import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useOrder } from "@/app/domain/context/OrderContext";
 import { AccountSidebar } from "@/app/routes/account/AccountSideBar";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:8080");
 
 const OrderHistory: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
@@ -15,11 +18,34 @@ const OrderHistory: React.FC = () => {
             try {
                 const userOrders = await orderService.getUserOrders();
                 setOrders(userOrders);
+
+                // Suscribirse a cambios por WebSocket
+                userOrders.forEach((order) => {
+                    const channel = `orderStatus:${order._id}`;
+                    socket.on(channel, (data: { state: string }) => {
+                        console.log(`📦 Actualización de estado para ${order._id}: ${data.state}`);
+                        setOrders((prev) =>
+                            prev.map((o) =>
+                                o._id === order._id ? { ...o, state: data.state } : o
+                            )
+                        );
+                    });
+                });
+
+                // Cleanup al desmontar
+                return () => {
+                    userOrders.forEach((order) => {
+                        socket.off(`orderStatus:${order._id}`);
+                    });
+                };
+
             } catch (error) {
                 console.error("Error al obtener las órdenes", error);
             }
         };
+
         fetchOrders();
+        console.log(`Escuchando por websocket cambios en los pedidos`)
     }, []);
 
     const handleViewDetails = (order: any) => {
