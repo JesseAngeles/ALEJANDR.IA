@@ -13,7 +13,7 @@ const AdminHome: React.FC = () => {
 
   return (
     <div className="text-center">
-      <h2 className="text-2xl font-bold text-black mb-4">Bienvenido Gustavo</h2>
+      <h2 className="text-2xl font-bold text-black mb-4">Bienvenida Melissa</h2>
       <button
         onClick={handleLogout}
         className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded"

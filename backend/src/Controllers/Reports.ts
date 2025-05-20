@@ -3,16 +3,17 @@ import Order from "../Models/Order"
 
 export const Sales = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { from, to, groupBy } = req.body
+        const { from, to, groupBy } = req.query;
 
-        const dateFilter = (from && to)
-            ? {
-                date: {
-                    $gte: new Date(from),
-                    $lte: new Date(to)
-                }
-            }
-            : {}
+       const dateFilter = (from && to)
+  ? {
+      date: {
+        $gte: new Date(from as string),
+        $lte: new Date(to as string),
+      },
+    }
+  : {};
+
 
         const orders = await Order.find(dateFilter)
 

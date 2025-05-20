@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCart } from "@/app/domain/context/CartContext";
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
-import { FaHeart } from "react-icons/fa";
+import { FaArrowLeft, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 interface Book {
@@ -81,12 +81,13 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
 
   return (
     <div className="px-6 py-10">
-      <button
-        onClick={() => window.history.back()}
-        className="text-base mb-6 flex items-center gap-2"
-      >
-        <span className="text-2xl">←</span> Regresar
-      </button>
+     <button
+                   onClick={() => navigate(-1)} 
+                   className="flex items-center text-sm text-black hover:underline mb-4"
+                 >
+                   <FaArrowLeft className="mr-2 text-black" />
+                           Regresar
+                 </button>
 
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-10 items-center">

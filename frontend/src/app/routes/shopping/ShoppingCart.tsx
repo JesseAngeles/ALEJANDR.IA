@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaMinus, FaTimes } from "react-icons/fa";
+import { FaPlus, FaMinus, FaTimes, FaArrowLeft } from "react-icons/fa";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
 import { useNavigate } from "react-router-dom";
 import { cartService } from "@/app/domain/service/cartService";
@@ -131,12 +131,13 @@ const ShoppingCart: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <button
-        onClick={() => navigate("/")}
-        className="text-base mb-6 flex items-center gap-2"
-      >
-        <span className="text-2xl">←</span> Regresar
-      </button>
+         <button
+                  onClick={() => navigate(-1)} 
+                  className="flex items-center text-sm text-black hover:underline mb-4"
+                >
+                  <FaArrowLeft className="mr-2 text-black" />
+                          Regresar
+                </button>
       <h1 className="text-white bg-[#820000] text-center py-3 text-xl font-bold rounded-t">
         Mi carrito
       </h1>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { userService } from "@/app/domain/service/userService"; // Asegúrate de importar el servicio
+import { FaArrowLeft } from "react-icons/fa";
 
 const PasswordReset: React.FC = () => {
     const [oldPassword, setOldPassword] = useState("");
@@ -55,12 +56,13 @@ const PasswordReset: React.FC = () => {
         <div className="max-w-md mx-auto px-4 py-8">
             {/* Regresar */}
             <div className="mb-4">
-                <button
-                    onClick={() => navigate("/")}
-                    className="flex items-center text-sm text-black hover:underline"
-                >
-                    <span className="text-xl">←</span> Regresar
-                </button>
+               <button
+                      onClick={() => navigate(-1)} 
+                      className="flex items-center text-sm text-black hover:underline mb-4"
+                    >
+                      <FaArrowLeft className="mr-2 text-black" />
+                              Regresar
+                    </button>
             </div>
 
             <h2 className="text-2xl font-semibold text-[#820000] mb-6">Recuperación de contraseña</h2>

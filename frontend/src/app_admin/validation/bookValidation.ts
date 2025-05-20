@@ -23,7 +23,7 @@ export const ValBookSchema = z.object({
   ISBN: z
     .string()
     .min(1, 'El ISBN es obligatorio') 
-    .regex(/^(97(8|9))?\d{9}(\d|X)$/, 'ISBN no válido'), // Validación de formato
+    .regex(/^(97(8|9))?\d{9}(\d|X)$/, 'ISBN no válido'), 
 
   category: z
     .string()
