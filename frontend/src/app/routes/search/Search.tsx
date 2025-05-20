@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SearchResults } from "./SearchResults";
 import { searchService } from "@/app/domain/service/searchService";
-
+ 
 type Libro = {
   id: string;
   titulo: string;
@@ -13,6 +13,8 @@ type Libro = {
   cantidad: number;
   portada: string;
   isbn: string;
+  numOpiniones: number;
+  stock: number;
 };
 
 function Search() {
@@ -65,3 +67,4 @@ function Search() {
 }
 
 export { Search };
+ 

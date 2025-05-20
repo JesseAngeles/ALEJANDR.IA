@@ -26,15 +26,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchCart = async () => {
     try {
       const data = await cartService.getCart();
+
       setCart(data.items);
     } catch (err) {
-      console.error("Error fetching cart", err);
       setCart([]);
     } finally {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchCart();
   }, []);
@@ -67,3 +67,4 @@ export const useCart = (): CartContextType => {
   if (!context) throw new Error("useCart must be used within a CartProvider");
   return context;
 };
+ 

@@ -20,8 +20,6 @@ export const searchWithFilter = async (req: Request, res: Response): Promise<voi
         { author: { $elemMatch: regex } } // Para arreglos de autores
       ]
     });
-
-    console.log(`🔍 Resultados encontrados para "${termino}":`, books.length);
     res.status(200).json(books);
   } catch (error: any) {
     console.error("❌ Error al buscar libros:", error.message || error);

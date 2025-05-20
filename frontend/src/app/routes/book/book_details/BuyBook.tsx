@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useCart } from "@/app/domain/context/CartContext";
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
 import { FaArrowLeft, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from 'react-router-dom'; 
 
 interface Book {
   _id: string;
@@ -29,11 +30,16 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
   const navigate = useNavigate();
   const estaLogueado = !!localStorage.getItem("token"); // ✅
 
-  const { isInCart, addToCart, removeFromCart } = useCart();
+  const { isInCart, addToCart, removeFromCart, fetchCart} = useCart();
   const enCarrito = isInCart(book._id);
 
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const enFavoritos = isFavorite(book._id);
+
+  const location = useLocation(); 
+  useEffect(() => {
+    fetchCart(); 
+  }, [location]);
 
   const handleToggleCarrito = async () => {
     if (!estaLogueado) {
@@ -101,9 +107,14 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
               <span className="text-cyan-700">${book.price.toFixed(2)}</span>
             </div>
 
-            <p className={`text-lg ${disponible ? 'text-green-600' : 'text-red-600'}`}>
-              {disponible ? 'Disponible' : 'No disponible'}
-            </p>
+            <p className={`text-lg ${book.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+  {book.stock === 0
+    ? 'No disponible'
+    : book.stock === 1
+    ? '1 disponible'
+    : `${book.stock} disponibles`}
+</p>
+
 
             {enCarrito && (
               <p className="text-sm text-gray-700 italic">Libro agregado al carrito</p>
@@ -137,13 +148,16 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
           </div>
         </div>
 
-        <div className="mt-8">
-          <h3 className="text-xl font-bold text-red-800 mb-2">SINOPSIS</h3>
-          <hr className="border-t border-gray-300 mb-4" />
-          <p className="text-base text-gray-800 leading-relaxed whitespace-pre-line">
-            {book.sinopsis}
-          </p>
-        </div>
+        {book.sinopsis && book.sinopsis.trim() !== '' && (
+  <div className="mt-8">
+    <h3 className="text-xl font-bold text-red-800 mb-2">SINOPSIS</h3>
+    <hr className="border-t border-gray-300 mb-4" />
+    <p className="text-base text-gray-800 leading-relaxed whitespace-pre-line">
+      {book.sinopsis}
+    </p>
+  </div>
+)}
+
       </div>
     </div>
   );

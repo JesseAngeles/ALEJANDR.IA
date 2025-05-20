@@ -39,24 +39,58 @@ export const getBooks = async (req: Request, res: Response): Promise<void> => {
 }
 
 //TODO Sistema de recomendaciones
+// export const getRecommendedBooks = async (req: Request, res: Response): Promise<void> => {
+// 	try {
+// 		const books = await Book.find()
+// 		const midpoint = Math.floor(books.length / 2);
+// 		const returnBooks = [
+// 			{
+// 				name: "colección 1",
+// 				books: books.slice(0, midpoint)
+// 			},
+// 			{
+// 				name: "colección 2",
+// 				books: books.slice(midpoint)
+// 			}]
+// 		res.status(200).json(returnBooks)
+// 	} catch (error) {
+// 		res.status(500).send(`Server error: ${error}`)
+// 	}
+// }
 export const getRecommendedBooks = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const books = await Book.find()
-		const midpoint = Math.floor(books.length / 2);
-		const returnBooks = [
-			{
-				name: "colección 1",
-				books: books.slice(0, midpoint)
-			},
-			{
-				name: "colección 2",
-				books: books.slice(midpoint)
-			}]
-		res.status(200).json(returnBooks)
+	  const userId = req.params.id;
+
+  
+	  const response = await fetch(`https://webservicederecomendacionporgrafos.onrender.com/recommendations/${userId}`, {
+		headers: {
+		  'User-Agent': 'PostmanRuntime/7.39.1',
+		  'Accept': '*/*',
+		  'Accept-Encoding': 'gzip, deflate, br',
+		  'Connection': 'keep-alive',
+		  'Cache-Control': 'no-cache'
+		}
+	  });
+	  
+	  
+  
+	  if (!response.ok) {
+		const errorBody = await response.text();
+		throw new Error(`Microservicio respondió mal: ${response.status}`);
+	  }
+  
+	  const returnBooks = await response.json();
+  
+	  res.status(200).json(returnBooks);
 	} catch (error) {
-		res.status(500).send(`Server error: ${error}`)
+	  console.error("❌ Error al obtener libros recomendados:", error);
+	  res.status(500).send(`Server error: ${error}`);
 	}
-}
+  };
+  
+
+  
+  
 
 
 export const getBookById = async (req: Request, res: Response): Promise<void> => {

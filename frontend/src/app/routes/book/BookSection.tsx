@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { FaHeart, FaShoppingCart } from 'react-icons/fa';
+import React, {useEffect} from 'react';
+import { FaHeart, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from "@/app/domain/context/CartContext";
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
+import { useLocation } from 'react-router-dom'; 
 
 interface Book {
   _id: string;
@@ -15,59 +16,45 @@ interface Book {
   stock: number;
   ISBN: string;
   sinopsis: string;
+  numOpiniones: number;
 }
-
+ 
 interface BookSectionProps {
   tituloSeccion?: string;
   books: Book[];
 }
-
+ 
 const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) => {
   const navigate = useNavigate();
-  const { isInCart, addToCart, removeFromCart } = useCart();
-  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const { cart, addToCart, removeFromCart, fetchCart } = useCart();
+  const { favoritos, addToFavorites, removeFromFavorites } = useFavorites();
 
   const estaLogueado = !!localStorage.getItem("token");
-  const [actualizador, setActualizador] = useState(0); // 🔁 Forzar re-render visual
+  
+
+  const renderStars = (rating: number) => {
+    const rounded = Math.round(rating);
+    return (
+      <div className="flex items-center gap-1">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <FaStar
+            key={i}
+            className={`text-xs ${i < rounded ? 'text-yellow-500' : 'text-gray-300'}`}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  
+const location = useLocation(); 
+useEffect(() => {
+  fetchCart(); 
+}, [location]);
+
 
   const handleLibroClick = (libro: Book) => {
     navigate(`/book/${libro.ISBN}`);
-  };
-
-  const toggleFavorito = async (libro: Book) => {
-    if (!estaLogueado) {
-      navigate("/login");
-      return;
-    }
-
-    try {
-      if (isFavorite(libro._id)) {
-        await removeFromFavorites(libro.ISBN);
-      } else {
-        await addToFavorites(libro.ISBN);
-      }
-      setActualizador(prev => prev + 1); // 🔁 Forzar re-render visual
-    } catch (error) {
-      console.error("Error al modificar favoritos:", error);
-    }
-  };
-
-  const handleToggleCarrito = async (libro: Book) => {
-    if (!estaLogueado) {
-      navigate("/login");
-      return;
-    }
-
-    try {
-      if (isInCart(libro._id)) {
-        await removeFromCart(libro.ISBN);
-      } else {
-        await addToCart(libro.ISBN);
-      }
-      setActualizador(prev => prev + 1); // 🔁 Forzar re-render visual
-    } catch (error) {
-      console.error("Error al modificar el carrito:", error);
-    }
   };
 
   return (
@@ -76,29 +63,82 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) 
         <h2 className="text-xl font-bold border-b pb-1 mb-4">{tituloSeccion}</h2>
       )}
       <div className="flex gap-4 overflow-x-auto">
-        {books.map((libro) => {
-          const enFavoritos = isFavorite(libro._id);
-          const enCarrito = isInCart(libro._id);
+        {books.filter(libro => libro.stock > 0).map((libro) => {
+          const enFavoritos = favoritos.some(fav => fav.ISBN === libro.ISBN);
+          const enCarrito = cart.some(item => {
+            const esIgual = item.bookId === libro._id;
+            console.log("🔍 Comparando:", item.bookId, "===", libro._id, "→", esIgual);
+            return esIgual;
+          });
 
+
+
+
+
+          const toggleFavorito = async () => {
+            if (!estaLogueado) {
+              navigate("/login");
+              return;
+            }
+
+            try {
+              if (enFavoritos) {
+                await removeFromFavorites(libro.ISBN);
+              } else {
+                await addToFavorites(libro.ISBN);
+              }
+            } catch (error) {
+              console.error("Error al modificar favoritos:", error);
+            }
+          };
+
+          const handleToggleCarrito = async () => {
+            if (!estaLogueado) return navigate("/login");
+
+            try {
+              if (enCarrito) {
+                await removeFromCart(libro.ISBN);
+              } else {
+                await addToCart(libro.ISBN);
+              }
+              // No necesitas setActualizador aquí
+            } catch (error) {
+              console.error("Error al modificar el carrito:", error);
+            }
+          };
+
+
+ 
           return (
             <div
-              key={`${libro._id}-${actualizador}`} // 🔁 fuerza re-render al cambiar
-              className="group relative w-44 flex-shrink-0 border rounded-lg shadow-sm overflow-hidden pb-12"
+              key={libro._id}
+              className="group relative w-44 flex-shrink-0 border rounded-lg shadow-sm overflow-hidden pb-7"
             >
               <button onClick={() => handleLibroClick(libro)} className="w-full text-left">
                 <img src={libro.image} alt={libro.title} className="w-full h-60 object-cover" />
                 <div className="p-2">
                   <h3 className="text-sm font-semibold truncate">{libro.title}</h3>
                   <p className="text-xs text-gray-500 truncate">{libro.author}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-xs text-gray-700 font-medium">
+                      {libro.rating.toFixed(1)}
+                    </span>
+                    {renderStars(libro.rating)}
+
+                    <span className="text-xs text-gray-500">
+                      ({libro.numOpiniones})
+                    </span>
+                  </div>
+
                   <p className="text-sm font-medium mt-1">${libro.price.toFixed(2)}</p>
+
                 </div>
               </button>
 
               <button
-                onClick={() => toggleFavorito(libro)}
-                className={`absolute top-2 right-2 text-lg ${
-                  enFavoritos ? 'text-cyan-500' : 'text-gray-400 hover:text-cyan-500'
-                }`}
+                onClick={toggleFavorito}
+                className={`absolute top-2 right-2 text-lg ${enFavoritos ? 'text-cyan-500' : 'text-gray-400 hover:text-cyan-500'
+                  }`}
                 title="Favorito"
               >
                 <FaHeart />
@@ -106,10 +146,9 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) 
 
               <div className="absolute bottom-2 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
                 <button
-                  onClick={() => handleToggleCarrito(libro)}
-                  className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${
-                    enCarrito ? 'bg-red-600' : 'bg-cyan-600'
-                  }`}
+                  onClick={handleToggleCarrito}
+                  className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${enCarrito ? 'bg-red-600' : 'bg-cyan-600'
+                    }`}
                 >
                   {enCarrito ? 'Eliminar del carrito' : 'Añadir al carrito'}
                   <FaShoppingCart className="ml-2" />

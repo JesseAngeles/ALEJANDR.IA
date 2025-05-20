@@ -42,11 +42,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   const login = async (email: string, password: string) => {
-    const token = await authService.login(email, password);
+    const { token, user } = await authService.login(email, password);
     tokenService.setToken(token);
+    setUser(user); // ← Ahora guardas directamente el objeto completo
     const payload = tokenService.decodeToken(token);
-    setUser(payload);
   };
+  
 
   const logout = () => {
     tokenService.removeToken();
