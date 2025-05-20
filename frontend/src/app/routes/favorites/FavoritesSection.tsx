@@ -21,36 +21,53 @@ const Favorites: React.FC<Props> = ({ libros }) => {
   const { removeFromFavorites } = useFavorites();
 
   const [librosActuales, setLibrosActuales] = useState<Libro[]>(libros);
-  const [eliminado, setEliminado] = useState<Libro | null>(null);
+  const [eliminados, setEliminados] = useState<{
+    libro: Libro;
+    countdown: number;
+    intervalId: NodeJS.Timeout;
+    timeoutId: NodeJS.Timeout;
+  }[]>([]);  
   const [contador, setContador] = useState(5);
   const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
   const handleEliminar = async (libro: Libro) => {
     setLibrosActuales(prev => prev.filter(l => l.id !== libro.id));
-    setEliminado(libro);
-    setContador(5);
-
-    const timer = setTimeout(async () => {
-      await removeFromFavorites(libro.ISBN);
-      setEliminado(null);
-    }, 5000);
-    setUndoTimer(timer);
-
-    const interval = setInterval(() => {
-      setContador(prev => prev - 1);
+    let countdown = 5;
+  
+    const intervalId = setInterval(() => {
+      setEliminados(prev =>
+        prev.map(e =>
+          e.libro.id === libro.id ? { ...e, countdown: e.countdown - 1 } : e
+        )
+      );
     }, 1000);
-    setIntervalId(interval);
+  
+    const timeoutId = setTimeout(async () => {
+      await removeFromFavorites(libro.ISBN);
+      clearInterval(intervalId);
+      setEliminados(prev => prev.filter(e => e.libro.id !== libro.id));
+    }, 5000);
+  
+    setEliminados(prev => [
+      ...prev,
+      { libro, countdown, intervalId, timeoutId },
+    ]);
   };
+  
 
-  const handleDeshacer = () => {
-    if (eliminado) {
-      setLibrosActuales(prev => [eliminado!, ...prev]);
-      if (undoTimer) clearTimeout(undoTimer);
-      if (intervalId) clearInterval(intervalId);
-      setEliminado(null);
-    }
+  const handleDeshacer = (id: string) => {
+    const eliminado = eliminados.find(e => e.libro.id === id);
+    if (!eliminado) return;
+  
+    clearInterval(eliminado.intervalId);
+    clearTimeout(eliminado.timeoutId);
+  
+    setLibrosActuales(prev => [eliminado.libro, ...prev]);
+    setEliminados(prev => prev.filter(e => e.libro.id !== id));
   };
+  
+
 
   // Limpiar intervalo al desaparecer el mensaje
   useEffect(() => {
@@ -62,7 +79,7 @@ const Favorites: React.FC<Props> = ({ libros }) => {
   const handleLibroClick = (libro: Libro) => {
     navigate(`/book/${libro.ISBN}`); // ← antes usabas `libro.id`
   };
-  
+   
   return (
     <section className="my-8 px-6">
          <button
@@ -75,23 +92,27 @@ const Favorites: React.FC<Props> = ({ libros }) => {
 
       <h2 className="text-2xl font-bold text-red-700 mb-4">Mis favoritos</h2>
 
-      {eliminado && (
-        <div className="bg-gray-100 border border-gray-300 px-4 py-2 mb-4 rounded flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-          <p className="text-sm italic">
-            Se eliminó <strong>{eliminado.titulo}</strong>
-            <br />
-            <span className="text-xs text-gray-600">Tiempo restante: {contador} segundos</span>
-          </p>
-          <button
-            onClick={handleDeshacer}
-            className="text-sm text-white bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded"
-          >
-            Deshacer
-          </button>
-        </div>
-      )}
+      {eliminados.map(e => (
+  <div
+    key={e.libro.id}
+    className="bg-gray-100 border border-gray-300 px-4 py-2 mb-4 rounded flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1"
+  >
+    <p className="text-sm italic">
+      Se eliminó <strong>{e.libro.titulo}</strong>
+      <br />
+      <span className="text-xs text-gray-600">Tiempo restante: {e.countdown} segundos</span>
+    </p>
+    <button
+      onClick={() => handleDeshacer(e.libro.id)}
+      className="text-sm text-white bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded"
+    >
+      Deshacer
+    </button>
+  </div>
+))}
 
-{librosActuales.length === 0 && !eliminado && (
+
+{librosActuales.length === 0 && eliminados.length === 0 && (
   <p className="text-center text-gray-500 italic mt-8">
     Aún no has añadido ningún libro a favoritos.
   </p>

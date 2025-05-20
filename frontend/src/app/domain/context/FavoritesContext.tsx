@@ -92,3 +92,4 @@ export const useFavorites = () => {
   if (!context) throw new Error("useFavorites debe usarse dentro de un FavoritesProvider");
   return context;
 };
+ 

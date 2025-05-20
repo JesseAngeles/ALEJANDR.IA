@@ -11,7 +11,7 @@ type Review = {
 type Props = {
   reviews: Review[];
   isbn: string;
-  resumen: string; // ← nuevo prop
+  resumen: string; 
 };
 
 
@@ -125,13 +125,15 @@ const OpinionesLibro: React.FC<Props> = ({ reviews, isbn, resumen }) => {
         </div>
       </div>
 
-      <div className="mt-8">
-        <h4 className="text-lg font-bold text-red-700 mb-1">Resumen</h4>
-        <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
-          {resumen}
-        </p>
+      {resumen && resumen.trim() !== '' && (
+  <div className="mt-8">
+    <h4 className="text-lg font-bold text-red-700 mb-1">Resumen</h4>
+    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
+      {resumen}
+    </p>
+  </div>
+)}
 
-      </div>
 
 
       {reviews.length > 2 && (

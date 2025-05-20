@@ -11,6 +11,8 @@ const Header: React.FC = () => {
   const [resultados, setResultados] = useState<{ titulo: string; autor: string; id: string; portada: string; isbn: string }[]>([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const [mostrarOpcionesCuenta, setMostrarOpcionesCuenta] = useState(false);
+  const [categorias, setCategorias] = useState<string[]>([]);
+
 
   const contenedorRef = useRef<HTMLDivElement>(null);
   const sugerenciasRef = useRef<HTMLDivElement>(null);
@@ -60,6 +62,31 @@ const Header: React.FC = () => {
     return () => clearTimeout(delayDebounce);
   }, [buscar]);
 
+  
+
+  useEffect(() => {
+    const cargarCategorias = async () => {
+      try {
+        const libros: {
+          categoria: string;
+        }[] = await searchService.buscarTodos();
+  
+        const todasCategorias: string[] = libros.map((l) => l.categoria).filter(Boolean);
+        const unicas: string[] = Array.from(new Set(todasCategorias)).sort((a, b) =>
+          a.localeCompare(b)
+        );
+  
+        setCategorias(unicas);
+      } catch (error) {
+        console.error("Error al cargar categorías:", error);
+      }
+    };
+  
+    cargarCategorias();
+  }, []);
+  
+  
+
 
   const irAResultados = (termino: string, filtro?: string) => {
     if (termino.trim().length > 0) {
@@ -92,31 +119,25 @@ const Header: React.FC = () => {
 
 
         {mostrarMenu && (
-          <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border p-4 flex gap-8 text-sm w-[500px] z-50">
-            <div>
-              <h4 className="font-semibold border-b mb-1">Ficción</h4>
-              <ul className="space-y-1">
-                <li><a href="#" className="hover:text-blue-600">Ciencia ficción</a></li>
-                <li><a href="#" className="hover:text-blue-600">Fantasía</a></li>
-                <li><a href="#" className="hover:text-blue-600">Romance</a></li>
-                <li><a href="#" className="hover:text-blue-600">Misterio</a></li>
-                <li><a href="#" className="hover:text-blue-600">Poesía</a></li>
-                <li><a href="#" className="hover:text-blue-600">Clásicos</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold border-b mb-1">No Ficción</h4>
-              <ul className="space-y-1">
-                <li><a href="#" className="hover:text-blue-600">Ciencias Políticas</a></li>
-                <li><a href="#" className="hover:text-blue-600">Economía</a></li>
-                <li><a href="#" className="hover:text-blue-600">Filosofía</a></li>
-                <li><a href="#" className="hover:text-blue-600">Lingüística</a></li>
-                <li><a href="#" className="hover:text-blue-600">Matemáticas</a></li>
-                <li><a href="#" className="hover:text-blue-600">Química</a></li>
-              </ul>
-            </div>
-          </div>
-        )}
+  <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border p-4 text-sm w-[500px] z-50 max-h-80 overflow-y-auto">
+    <ul className="space-y-1">
+      {categorias.map((cat, idx) => (
+        <li key={idx}>
+          <button
+            className="hover:text-blue-600"
+            onClick={() => {
+              navigate(`/busqueda?query=${encodeURIComponent(cat)}&filtro=categoria`);
+              setMostrarMenu(false);
+            }}
+          >
+            {cat}
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
       </div>
 
       {/* Barra de búsqueda */}
