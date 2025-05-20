@@ -5,37 +5,49 @@ import { getCardLogo } from "@/app/utils/getCardLogo";
 import { useOrder } from "@/app/domain/context/OrderContext";
 import { paymentService } from "@/app/domain/service/paymentService";
 import { addressService } from "@/app/domain/service/addressService";
-import { cartService } from "@/app/domain/service/cartService"; // Importar cartService
+import { cartService } from "@/app/domain/service/cartService";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:8080");
 
 const OrderDetails: React.FC = () => {
-    const { selectedOrder } = useOrder(); // Obtener la orden seleccionada del contexto
+    const { selectedOrder, setSelectedOrder } = useOrder(); // Incluye setter del contexto
     const [card, setCard] = useState<any | null>(null);
     const [address, setAddress] = useState<any | null>(null);
-    const [items, setItems] = useState<any[]>([]); // Nuevo estado para los libros
-
+    const [items, setItems] = useState<any[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchAdditionalDetails = async () => {
-            if (!selectedOrder) return; // Si no hay orden seleccionada, no hacer nada
+            if (!selectedOrder) return;
 
             try {
-                // Obtener los detalles de la tarjeta
-                const cardDetails = await paymentService.getById(selectedOrder.card);
+                const [cardDetails, addressDetails, itemDetails] = await Promise.all([
+                    paymentService.getById(selectedOrder.card),
+                    addressService.getById(selectedOrder.direction),
+                    Promise.all(
+                        selectedOrder.items.map(async (item: any) => {
+                            const book = await cartService.getBookById(item.bookId);
+                            return { ...item, book };
+                        })
+                    )
+                ]);
+
                 setCard(cardDetails);
-
-                // Obtener los detalles de la dirección
-                const addressDetails = await addressService.getById(selectedOrder.direction);
                 setAddress(addressDetails);
+                setItems(itemDetails);
 
-                // Obtener detalles de los libros de la orden
-                const bookDetails = await Promise.all(
-                    selectedOrder.items.map(async (item: any) => {
-                        const book = await cartService.getBookById(item.bookId);
-                        return { ...item, book }; // Incluir los detalles del libro en cada ítem
-                    })
-                );
-                setItems(bookDetails); // Actualizar el estado con los detalles de los libros
+                // WebSocket: Escuchar actualizaciones de estado
+                const channel = `orderStatus:${selectedOrder._id}`;
+                socket.on(channel, (data: { state: string }) => {
+                    console.log(`📦 Estado actualizado en tiempo real: ${data.state}`);
+                    setSelectedOrder((prev: any) => ({ ...prev, state: data.state }));
+                });
+
+                return () => {
+                    socket.off(channel); // Limpieza al desmontar
+                };
+
             } catch (error) {
                 console.error("Error al obtener los detalles adicionales:", error);
             }
@@ -44,14 +56,12 @@ const OrderDetails: React.FC = () => {
         fetchAdditionalDetails();
     }, [selectedOrder]);
 
-    // Verificación si no hay datos en la orden
     if (!selectedOrder || !card || !address || items.length === 0) {
-        return <div>Cargando...</div>; // O podrías mostrar un mensaje de error
+        return <div>Cargando...</div>;
     }
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
-            {/* Regresar */}
             <button
                 onClick={() => navigate(-1)}
                 className="flex items-center text-sm text-black mb-6 hover:underline"
@@ -62,11 +72,10 @@ const OrderDetails: React.FC = () => {
 
             <h2 className="text-2xl font-bold text-[#820000] mb-6">Detalles de la Orden</h2>
 
-            {/* Información general */}
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-semibold text-[#820000]">
-                        Id Pedido:{(selectedOrder._id.slice(-8))}
+                        Id Pedido: {selectedOrder._id.slice(-8)}
                     </h3>
                     <span className="text-sm text-gray-500">{new Date(selectedOrder.date).toLocaleDateString()}</span>
                 </div>
@@ -79,34 +88,27 @@ const OrderDetails: React.FC = () => {
                 </div>
             </div>
 
-            {/* Dirección de Envío */}
             <div className="bg-white mt-6 p-4 rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold text-[#820000]">Dirección de Envío</h3>
                 <p className="text-sm text-gray-600">
-                    {address?.name} — {`${address?.street} ${address?.number}, ${address?.zip_code}, ${address?.city}, ${address?.state}`}
+                    {address.name} — {`${address.street} ${address.number}, ${address.zip_code}, ${address.city}, ${address.state}`}
                 </p>
             </div>
 
-            {/* Forma de pago */}
             <div className="bg-white mt-6 p-4 rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold text-[#820000]">Forma de Pago</h3>
                 <div className="flex items-center gap-4">
-                    <img
-                        src={getCardLogo(card?.type)}
-                        alt={card?.type}
-                        className="w-10 h-6"
-                    />
+                    <img src={getCardLogo(card.type)} alt={card.type} className="w-10 h-6" />
                     <span className="text-sm font-medium">
-                        Terminada en {card?.last4} ({card?.type})
+                        Terminada en {card.last4} ({card.type})
                     </span>
                 </div>
             </div>
 
-            {/* Productos */}
             <div className="bg-white mt-6 p-4 rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold text-[#820000]">Productos</h3>
                 <ul className="space-y-4 mt-4">
-                    {items.map((item: any) => (
+                    {items.map((item) => (
                         <li key={item._id} className="flex items-center justify-between gap-4 border-b pb-4">
                             <div className="flex items-center gap-4">
                                 <img
@@ -117,13 +119,10 @@ const OrderDetails: React.FC = () => {
                                 <div onClick={() => navigate(`/book/${item.book.ISBN}`)}>
                                     <p className="font-medium text-sm cursor-pointer">{item.book.title}</p>
                                     <p className="text-xs text-gray-500">{item.book.author}</p>
-                                    <p className="text-xs text-gray-600">
-                                        Cantidad: {item.quantity}
-                                    </p>
+                                    <p className="text-xs text-gray-600">Cantidad: {item.quantity}</p>
                                 </div>
                             </div>
                             <div className="text-right text-sm font-medium">
-                                {/* Verificación para evitar el error de undefined */}
                                 <p>${item.book.price ? item.book.price.toFixed(2) : "N/A"}</p>
                                 <p className="text-[#007B83]">
                                     {item.book.price && item.quantity
