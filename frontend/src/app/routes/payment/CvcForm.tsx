@@ -11,12 +11,14 @@ type Props = {
 
 const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
     const [cvc, setCvc] = useState("");
+    const [error, setError] = useState(""); // 👈 nuevo estado de error
 
     const handleContinue = () => {
         if (cvc.length >= 3) {
+            setError(""); // limpia error si es válido
             onContinue(cvc);
         } else {
-            alert("Please enter a valid CVC (at least 3 digits).");
+            setError("Por favor ingresa un CVC válido de al menos 3 dígitos.");
         }
     };
 
@@ -49,16 +51,20 @@ const CvcForm: React.FC<Props> = ({ card, onContinue }) => {
                     <img src="/src/assets/icons/cvc.webp" alt="CVC location on card" className="w-40 h-auto" />
                 </div>
 
-                <div className="text-center mb-6">
+                <div className="text-center mb-2">
                     <input
                         type="text"
                         placeholder="CVC"
                         maxLength={4}
                         value={cvc}
                         onChange={(e) => setCvc(e.target.value)}
-                        className="border border-black rounded px-4 py-2 text-center w-24"
+                        className={`border rounded px-4 py-2 text-center w-24 ${error ? "border-red-500" : "border-black"}`}
                     />
                 </div>
+
+                {error && (
+                    <p className="text-sm text-red-600 text-center mb-4">{error}</p>
+                )}
 
                 <div className="text-center">
                     <button

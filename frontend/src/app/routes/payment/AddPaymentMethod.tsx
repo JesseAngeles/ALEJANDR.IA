@@ -11,6 +11,7 @@ const AddPaymentMethod: React.FC = () => {
     const [securityCode, setSecurityCode] = useState("");
     const [successMessage, setSuccessMessage] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [formError, setFormError] = useState(""); // 👈 nuevo estado
 
     const navigate = useNavigate();
 
@@ -31,6 +32,8 @@ const AddPaymentMethod: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormError(""); // Limpia error anterior
+
         if (!validateFields()) return;
 
         const newMethod = {
@@ -46,7 +49,7 @@ const AddPaymentMethod: React.FC = () => {
             setSuccessMessage(true);
         } catch (error) {
             console.error("Error al guardar método de pago:", error);
-            alert("No se pudo agregar el método de pago.");
+            setFormError("La tarjeta no es una tarjeta valida"); // 👈 mensaje visual
         }
     };
 
@@ -125,6 +128,9 @@ const AddPaymentMethod: React.FC = () => {
                     />
                     {errors.securityCode && <p className="text-red-600 text-sm">{errors.securityCode}</p>}
                 </div>
+
+                {/* 🔴 Mostrar error general */}
+                {formError && <p className="text-red-600 text-sm text-center">{formError}</p>}
 
                 <div className="text-center pt-4">
                     <button

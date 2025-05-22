@@ -114,13 +114,17 @@ const Profile: React.FC = () => {
                 type="email"
                 className="w-full border border-black rounded px-3 py-2 mt-1"
                 value={email}
-                disabled={!editMode}
+                disabled
                 onChange={(e) => setEmail(e.target.value)}
               />
               {errors.email && (
                 <p className="text-sm text-red-600 mt-1">{errors.email}</p>
               )}
+              {editMode && (
+    <p className="text-sm text-gray-500 mt-1">El correo no se puede cambiar</p>
+  )}
             </div>
+
 
             {editMode && (
               <div>

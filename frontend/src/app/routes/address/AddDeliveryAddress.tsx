@@ -11,16 +11,37 @@ const AddDeliveryAddress: React.FC = () => {
     const [state, setState] = useState("");
     const [city, setCity] = useState("");
     const [zip_code, setZipCode] = useState("");
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const navigate = useNavigate();
+
+    const validateFields = () => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!name.trim()) newErrors.name = "Este campo es obligatorio.";
+        if (!number.trim()) {
+    newErrors.number = "Este campo es obligatorio.";
+} else if (!/^\d+$/.test(number)) {
+    newErrors.number = "Debe ser un número entero válido.";
+}
+
+        if (!street.trim()) newErrors.street = "Este campo es obligatorio.";
+        if (!state.trim()) newErrors.state = "Este campo es obligatorio.";
+        if (!city.trim()) newErrors.city = "Este campo es obligatorio.";
+       if (!zip_code.trim()) {
+    newErrors.zip_code = "Este campo es obligatorio.";
+} else if (!/^\d{5}$/.test(zip_code)) {
+    newErrors.zip_code = "Debe ser un código postal válido de 5 dígitos.";
+}
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!name || !number || !street || !state || !city || !zip_code) {
-            alert("Por favor completa todos los campos.");
-            return;
-        }
+        if (!validateFields()) return;
 
         const newAddress = {
             name,
@@ -36,7 +57,7 @@ const AddDeliveryAddress: React.FC = () => {
             navigate("/address");
         } catch (error) {
             console.error("Error al agregar dirección:", error);
-            alert("No se pudo guardar la dirección.");
+            setErrors({ general: "No se pudo guardar la dirección." });
         }
     };
 
@@ -63,6 +84,7 @@ const AddDeliveryAddress: React.FC = () => {
                         onChange={(e) => setName(e.target.value)}
                         className="border rounded w-full p-2"
                     />
+                    {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 <div>
@@ -73,6 +95,7 @@ const AddDeliveryAddress: React.FC = () => {
                         onChange={(e) => setNumber(e.target.value)}
                         className="border rounded w-full p-2"
                     />
+                    {errors.number && <p className="text-red-600 text-sm mt-1">{errors.number}</p>}
                 </div>
 
                 <div>
@@ -83,6 +106,7 @@ const AddDeliveryAddress: React.FC = () => {
                         onChange={(e) => setStreet(e.target.value)}
                         className="border rounded w-full p-2"
                     />
+                    {errors.street && <p className="text-red-600 text-sm mt-1">{errors.street}</p>}
                 </div>
 
                 <div className="flex gap-4">
@@ -94,6 +118,7 @@ const AddDeliveryAddress: React.FC = () => {
                             onChange={(e) => setState(e.target.value)}
                             className="border rounded w-full p-2"
                         />
+                        {errors.state && <p className="text-red-600 text-sm mt-1">{errors.state}</p>}
                     </div>
 
                     <div className="flex-1">
@@ -104,6 +129,7 @@ const AddDeliveryAddress: React.FC = () => {
                             onChange={(e) => setCity(e.target.value)}
                             className="border rounded w-full p-2"
                         />
+                        {errors.city && <p className="text-red-600 text-sm mt-1">{errors.city}</p>}
                     </div>
                 </div>
 
@@ -116,7 +142,12 @@ const AddDeliveryAddress: React.FC = () => {
                         maxLength={5}
                         className="border rounded w-24 p-2"
                     />
+                    {errors.zip_code && <p className="text-red-600 text-sm mt-1">{errors.zip_code}</p>}
                 </div>
+
+                {errors.general && (
+                    <p className="text-red-600 text-sm text-center mt-2">{errors.general}</p>
+                )}
 
                 <div className="text-center pt-4">
                     <button

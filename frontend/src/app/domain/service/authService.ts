@@ -12,7 +12,7 @@ login: async (email: string, password: string): Promise<{ token: string, user: U
     });
   
     if (!res.ok) {
-      throw new Error("Login failed");
+      throw new Error("El correo o la contraseña son incorrectos");
     }
   
     const data = await res.json();

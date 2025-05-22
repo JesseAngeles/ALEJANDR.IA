@@ -7,7 +7,7 @@ import { getSales } from "../../services/reportsService"; // Ajusta la ruta si e
 const SalesByPeriod: React.FC = () => {
   const [from, setFrom] = useState("2025-01-01");
   const [to, setTo] = useState("2025-12-31");
-  const [groupBy, setGroupBy] = useState("month");
+  const [groupBy, setGroupBy] = useState("day");
   const [chartData, setChartData] = useState<{ date: string, sales: number }[]>([]);
   const [totalSum, setTotalSum] = useState<number>(0);
   const [count, setCount] = useState<number>(0);

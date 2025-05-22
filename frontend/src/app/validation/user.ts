@@ -3,21 +3,21 @@ import { z } from "zod";
 export const ValUserSchema = z.object({
     name: z
         .string()
-        .min(1, 'Name is required')
+        .min(1, 'El nombre es un campo obligatorio')
         .regex(/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/, 'Nombre inválido'),
 
     email: z
         .string()
-        .min(1, 'Email is required')
-        .email('Invalid email format'),
+        .min(1, 'El email es un campo obligatorio')
+        .email('El email no es válido'),
 
     password: z
         .string()
-        .min(6, 'Password must be at least 6 characters')
-        .max(64, 'Password must have less than 64 characters')
+        .min(6, 'La contraseña debe tener al menos 6 caracteres')
+        .max(64, 'La contraseña no puede tener más de 64 caracteres')
         .regex(
             /(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?]).+/,
-            'Password must contain at least one uppercase letter and one special character'
+            'La contraseña debe contener al menos una letra mayúscula y un carácter especial'
         )
 });
 
