@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import Book from '../Models/Book'
+import { Category } from '../Models/Category'
 
 export const createBook = async (req: Request, res: Response): Promise<void> => {
 	try {
@@ -7,6 +8,14 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
 
 		const newBook = await new Book(book)
 		const addedBook = await newBook.save()
+
+		const categoryName = book.category;
+		let category = await Category.findOne({ name: categoryName });
+
+		if (!category) {
+			category = new Category({ name: categoryName });
+			await category.save();
+		}
 
 		res.status(200).json(addedBook)
 	} catch (error) {
@@ -19,7 +28,7 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
 	}
 }
 
-
+ 
 export const getBooks = async (req: Request, res: Response): Promise<void> => {
 	try {
 		const books = await Book.find()
@@ -30,25 +39,58 @@ export const getBooks = async (req: Request, res: Response): Promise<void> => {
 }
 
 //TODO Sistema de recomendaciones
+// export const getRecommendedBooks = async (req: Request, res: Response): Promise<void> => {
+// 	try {
+// 		const books = await Book.find()
+// 		const midpoint = Math.floor(books.length / 2);
+// 		const returnBooks = [
+// 			{
+// 				name: "colección 1",
+// 				books: books.slice(0, midpoint)
+// 			},
+// 			{
+// 				name: "colección 2",
+// 				books: books.slice(midpoint)
+// 			}]
+// 		res.status(200).json(returnBooks)
+// 	} catch (error) {
+// 		res.status(500).send(`Server error: ${error}`)
+// 	}
+// }
 export const getRecommendedBooks = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const books = await Book.find()
-		const midpoint = Math.floor(books.length / 2);
-		const returnBooks = [
-			{
-				name: "colleccion 1",
-				books: books.slice(0, midpoint) 
-			},
-			{
-				name: "colección 2",
-				books: books.slice(midpoint) 
-			}]
-			
-		res.status(200).json(returnBooks)
+	  const userId = req.params.id;
+
+  
+	  const response = await fetch(`https://webservicederecomendacionporgrafos.onrender.com/recommendations/${userId}`, {
+		headers: {
+		  'User-Agent': 'PostmanRuntime/7.39.1',
+		  'Accept': '*/*',
+		  'Accept-Encoding': 'gzip, deflate, br',
+		  'Connection': 'keep-alive',
+		  'Cache-Control': 'no-cache'
+		}
+	  });
+	  
+	  
+  
+	  if (!response.ok) {
+		const errorBody = await response.text();
+		throw new Error(`Microservicio respondió mal: ${response.status}`);
+	  }
+  
+	  const returnBooks = await response.json();
+  
+	  res.status(200).json(returnBooks);
 	} catch (error) {
-		res.status(500).send(`Server error: ${error}`)
+	  console.error("❌ Error al obtener libros recomendados:", error);
+	  res.status(500).send(`Server error: ${error}`);
 	}
-}
+  };
+  
+
+  
+  
 
 
 export const getBookById = async (req: Request, res: Response): Promise<void> => {
@@ -82,7 +124,7 @@ export const updateBook = async (req: Request, res: Response): Promise<void> => 
 		const updateData = req.body
 
 		const updatedBook = await Book.findOneAndUpdate(
-			{ ISBN: ISBN }, // Busca por ISBN
+			{ ISBN: ISBN }, 
 			updateData,
 			{ new: true, runValidators: true }
 		)
@@ -102,7 +144,30 @@ export const updateBook = async (req: Request, res: Response): Promise<void> => 
 	}
 }
 
-
+export const getBookByObjectId = async (req: Request, res: Response): Promise<void> => {
+	try {
+	  const { id } = req.params;
+  
+	  const book = await Book.findById(id);
+	  if (!book) {
+		res.status(404).json({
+		  error: 'Libro no encontrado',
+		  suggestion: 'Verifica que el ID sea correcto'
+		});
+		return;
+	  }
+  
+	  res.status(200).json(book);
+	} catch (error: unknown) {
+	  console.error('Error en getBookByObjectId:', error);
+	  const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+	  res.status(500).json({
+		error: 'Error al obtener el libro por ID',
+		details: errorMessage
+	  });
+	}
+  };
+  
 
 export const deleteBook = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 	try {

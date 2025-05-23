@@ -8,4 +8,5 @@ routerAdmin.post('', authenticateToken, authorizeRole("admin"), addAdmin)
 routerAdmin.get('', authenticateToken, getUsers)
 
 
+
 export default routerAdmin

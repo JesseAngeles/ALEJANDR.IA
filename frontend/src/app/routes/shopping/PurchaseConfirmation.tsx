@@ -7,17 +7,6 @@ const PurchaseConfirmation: React.FC = () => {
     const navigate = useNavigate();
     const { setPurchase } = usePurchase();
 
-    const handleReturnHome = () => {
-        // Limpia los datos del pedido
-        setPurchase({
-            cart: [],
-            address: null,
-            paymentMethod: null,
-            cvc: "",
-        });
-        navigate("/");
-    };
-
     return (
         <div className="max-w-xl mx-auto px-4 py-12 text-center">
             <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4" />
@@ -26,7 +15,7 @@ const PurchaseConfirmation: React.FC = () => {
                 Gracias por su compra. Un correo de confirmación fue enviado.
             </p>
             <button
-                onClick={handleReturnHome}
+                onClick={() => navigate("/")}
                 className="bg-[#007B83] hover:bg-[#6d0000] text-white px-6 py-2 rounded"
             >
                 Regresar al inicio

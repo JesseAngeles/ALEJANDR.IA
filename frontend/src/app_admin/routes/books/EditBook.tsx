@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchBookByISBN, updateBook } from "app_admin/services/bookService";
 import { FaArrowLeft } from "react-icons/fa";
-import { useAuth } from "@/app_admin/context/AdminAuthContext"; // Asegúrate de que la ruta sea correcta
+import { useAuth } from "@/app_admin/context/AdminAuthContext";
+import { validateBook } from "app_admin/validation/bookValidation";
 
 const EditBook: React.FC = () => {
-  const { id } = useParams(); // id = ISBN
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { token } = useAuth(); // Obtener el token desde el contexto de autenticación
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     title: "",
@@ -18,11 +19,13 @@ const EditBook: React.FC = () => {
     stock: "",
     image: "",
   });
+  const [errors, setErrors] = useState<any>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     if (!id || !token) return;
 
-    fetchBookByISBN(id,token)
+    fetchBookByISBN(id, token)
       .then((book) => {
         setForm({
           title: book.title || "",
@@ -38,7 +41,7 @@ const EditBook: React.FC = () => {
         console.error("Error al obtener el libro:", error);
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, token]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -53,18 +56,61 @@ const EditBook: React.FC = () => {
       return;
     }
 
+    const updatedForm = {
+      ...form,
+      price: parseFloat(form.price),
+      stock: parseInt(form.stock),
+    };
+
+    if (updatedForm.price === undefined ) {
+      setErrors((prevErrors: { [key: string]: string }) => ({
+        ...prevErrors,
+        price: 'El precio debe ser un número mayor a 0.',
+      }));
+      return;
+    }
+
+     if (isNaN(updatedForm.price)) {
+      setErrors((prevErrors: { [key: string]: string }) => ({
+        ...prevErrors,
+        price: 'El precio es obligatorio .',
+      }));
+      return;
+    }
+
+
+    if (updatedForm.stock == undefined ) {
+      setErrors((prevErrors: { [key: string]: string }) => ({
+        ...prevErrors,
+        stock: 'El stock debe ser al menos 0.',
+      }));
+      return;
+    }
+
+     if ( isNaN(updatedForm.stock)) {
+      setErrors((prevErrors: { [key: string]: string }) => ({
+        ...prevErrors,
+        stock: 'El stock es obligatorio.',
+      }));
+      return;
+    }
+
+
+    const validationErrors = validateBook(updatedForm);
+    if (validationErrors.length > 0) {
+      const formattedErrors = validationErrors.reduce((acc: any, err: any) => {
+        acc[err.field] = err.message;
+        return acc;
+      }, {});
+      setErrors(formattedErrors);
+      return;
+    }
+
     try {
-      await updateBook(form.ISBN, {
-        title: form.title,
-        author: form.author,
-        category: form.category,
-        price: Number(form.price),
-        stock: Number(form.stock),
-        image: form.image,
-        ISBN: form.ISBN,
-      }, token); // Pasa el token aquí para la autorización
-      alert("Libro actualizado exitosamente");
-      navigate("/admin/libros");
+      await updateBook(updatedForm.ISBN, updatedForm, token);
+      setShowSuccessModal(true);
+      setTimeout(() => navigate("/admin/libros", { state: { updated: true } }), 2000);
+
     } catch (error: any) {
       console.error("Error al actualizar el libro:", error);
       alert("Hubo un error al actualizar el libro.");
@@ -94,6 +140,8 @@ const EditBook: React.FC = () => {
           placeholder="Nombre del libro"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.title && <div className="text-red-600">{errors.title}</div>}
+
         <input
           name="author"
           value={form.author}
@@ -101,6 +149,8 @@ const EditBook: React.FC = () => {
           placeholder="Autor"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.author && <div className="text-red-600">{errors.author}</div>}
+
         <input
           name="ISBN"
           value={form.ISBN}
@@ -108,6 +158,8 @@ const EditBook: React.FC = () => {
           placeholder="ISBN"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.ISBN && <div className="text-red-600">{errors.ISBN}</div>}
+
         <input
           name="category"
           value={form.category}
@@ -115,6 +167,8 @@ const EditBook: React.FC = () => {
           placeholder="Categoría"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.category && <div className="text-red-600">{errors.category}</div>}
+
         <input
           name="price"
           type="number"
@@ -123,6 +177,8 @@ const EditBook: React.FC = () => {
           placeholder="Precio"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.price && <div className="text-red-600">{errors.price}</div>}
+
         <input
           name="stock"
           type="number"
@@ -131,6 +187,8 @@ const EditBook: React.FC = () => {
           placeholder="Stock"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.stock && <div className="text-red-600">{errors.stock}</div>}
+
         <input
           name="image"
           value={form.image}
@@ -138,6 +196,7 @@ const EditBook: React.FC = () => {
           placeholder="URL de la portada (opcional)"
           className="w-full border rounded px-3 py-2"
         />
+        {errors.image && <div className="text-red-600">{errors.image}</div>}
 
         <button
           type="submit"
@@ -146,6 +205,22 @@ const EditBook: React.FC = () => {
           Guardar cambios
         </button>
       </form>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-[#00000] mb-4">
+              ¡Libro editado correctamente!
+            </h3>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

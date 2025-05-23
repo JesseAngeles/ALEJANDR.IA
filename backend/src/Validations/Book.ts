@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { ValidationError } from "../Interfaces/ValidationError"
+import { Category } from "../Models/Category"
 
 // Esquema para validar un review básico si lo estás usando (opcional)
 const ReviewSchema = z.object({
@@ -38,10 +39,14 @@ export const ValBookSchema = z.object({
   reviews: z
     .array(ReviewSchema)
     .optional(),
-    
+
   image: z
-  .string()
-  .url('Image must be a valid URL'),
+    .string()
+    .url('Image must be a valid URL'),
+
+  category: z
+    .string()
+    .min(1, 'Category is required'),
 })
 
 export type Book = z.infer<typeof ValBookSchema>

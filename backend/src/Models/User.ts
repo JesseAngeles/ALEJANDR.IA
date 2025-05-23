@@ -51,6 +51,10 @@ const userSchema = new Schema<UserDocument>({
     cart: {
         type: cartSchema,
         required: false
+    },
+    orders: {
+        type: [Schema.Types.ObjectId],
+        required: false
     }
 })
 

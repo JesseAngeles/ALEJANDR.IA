@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/book';
+const API_URL = `${import.meta.env.VITE_ENDPOINT}/book`;
 
 export const fetchBooks = async (token: string) => {
   const response = await fetch(API_URL, {
@@ -13,6 +13,7 @@ export const fetchBooks = async (token: string) => {
 export const fetchBookByISBN = async (isbn: string, token: string) => {
   const response = await fetch(`${API_URL}/${isbn}`, {
     headers: {
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`, 
     },
   });
@@ -61,3 +62,4 @@ export const deleteBook = async (isbn: string, token: string) => {
   });
   if (!response.ok) throw new Error('Error al eliminar el libro');
 };
+

@@ -1,15 +1,32 @@
-import type { OrderSummaryProps } from "@/assets/types/summary";
+import { OrderSummaryProps } from "@/assets/types/summary";
+import { apiFetch } from "@/app/utils/apiFetch";
+
+const API = `${import.meta.env.VITE_ENDPOINT}/order`;
 
 export const orderService = {
-    sendOrder: async (summary: OrderSummaryProps): Promise<void> => {
-        const response = await fetch("/api/orders", {
+    // Enviar un nuevo pedido
+    sendOrder: async (summary: OrderSummaryProps): Promise<any> => {
+        const response = await apiFetch(`${API}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(summary),
         });
 
-        /*if (!response.ok) {
-            throw new Error("Error al guardar el pedido.");
-        }*/
+        return response;
+    },
+
+    getUserOrders: async (): Promise<any[]> => {
+        const response = await apiFetch(`${API}/user`, {
+            method: "GET",
+        });
+
+        return response;
+    },
+
+    getOrderDetails: async (orderId: string): Promise<any> => {
+        const response = await apiFetch(`${API}/details/${orderId}`, {
+            method: "GET",
+        });
+
+        return response;
     },
 };

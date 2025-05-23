@@ -1,6 +1,25 @@
 import { z } from "zod"
 import { ValidationError } from "../Interfaces/ValidationError"
 
+export const ValUserPassSchema = z.object({
+    password: z
+        .string()
+        .min(6, 'Password must be at least 6 characters')
+        .max(64, 'Password must have less than 64 characters')
+        .regex(
+            /(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?]).+/,
+            'Password must contain at least one uppercase letter and one special character'
+        ),
+    newPassword: z
+        .string()
+        .min(6, 'Password must be at least 6 characters')
+        .max(64, 'Password must have less than 64 characters')
+        .regex(
+            /(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?]).+/,
+            'Password must contain at least one uppercase letter and one special character'
+        )
+})
+
 export const ValUserSchema = z.object({
     name: z
         .string()

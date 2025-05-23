@@ -4,5 +4,5 @@ export type PaymentMethod = {
     last4: string;
     expirationMonth: number;
     expirationYear: number;
-    brand: "VISA" | "MasterCard";
+    type: "VISA" | "MasterCard";
 };

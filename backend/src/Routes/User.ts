@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { loginUser, addUser, deleteUser, getAllUsers, getUserById, updateUser, multipleUser, getUser } from "../Controllers/User"
+import { loginUser, addUser, deleteUser, getAllUsers, getUserById, updateUser, multipleUser, getUser, updateUserPassword } from "../Controllers/User"
 import { addDirection, deleteDirection, getDirectionById, getDirections, updateDirection } from "../Controllers/Direction"
 import { addCard, deleteCard, getCardById, getCards } from "../Controllers/Card"
 
@@ -8,7 +8,7 @@ import { validateRequest } from "../Middleware/ValidateRequest"
 
 import { ValCardSchema } from "../Validations/Card"
 import { ValDirectionSchema } from "../Validations/Direction"
-import { ValUserSchema } from "../Validations/User"
+import { ValUserPassSchema, ValUserSchema } from "../Validations/User"
 
 const routerUser = Router()
 
@@ -23,6 +23,7 @@ routerUser.post('/login', loginUser)
 
 // CRUD USER (name, email, password)
 routerUser.post('', validateRequest(ValUserSchema), addUser)
+routerUser.post('/pass', authenticateToken, authorizeRole("user"), validateRequest(ValUserPassSchema), updateUserPassword)
 routerUser.get('', authenticateToken, authorizeRole("user"), getUser)
 routerUser.put('', authenticateToken, authorizeRole("user"), validateRequest(ValUserSchema), updateUser)
 routerUser.delete('', authenticateToken, authorizeRole("user"), deleteUser)
@@ -34,7 +35,7 @@ routerUser.get('/direction/:direction', authenticateToken, authorizeRole("user")
 routerUser.put('/direction/:direction', authenticateToken, authorizeRole("user"), validateRequest(ValDirectionSchema), updateDirection)
 routerUser.delete('/direction/:direction', authenticateToken, authorizeRole("user"), deleteDirection)
 
-// CRUD CARDS (titular, number, expirationMonth, expirationYear, securityCode) 
+// CRUD CARDS (titular, number, expirationMonth, expirationYear, securityCode)
 // -> (titular, last4, expirationMonth, expirationyear)
 routerUser.post('/card', authenticateToken, authorizeRole("user"), validateRequest(ValCardSchema), addCard)
 routerUser.get('/card', authenticateToken, authorizeRole("user"), getCards)

@@ -29,7 +29,7 @@ const PaymentMethods: React.FC<Props> = ({ methods, onSelect }) => {
                     className="border rounded bg-gray-50 p-4 flex justify-between items-center text-sm"
                 >
                     <div className="flex items-center gap-4">
-                        <img src={getCardLogo(card.brand)} alt={card.brand} className="w-10 h-6" />
+                        <img src={getCardLogo(card.type)} alt={card.type} className="w-10 h-6" />
                         <div>
                             <p>
                                 Terminada en <span className="font-semibold">{card.last4}</span>

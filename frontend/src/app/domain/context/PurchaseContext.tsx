@@ -3,6 +3,12 @@ import type { Book } from "@/assets/types/book";
 import type { Address } from "@/assets/types/address";
 import type { PaymentMethod } from "@/assets/types/card";
 
+
+interface BookConCantidad extends Book {
+    cantidad: number;
+  }
+  
+
 type PurchaseData = {
     cart: Book[];
     address: Address | null;
