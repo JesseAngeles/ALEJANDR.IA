@@ -5,13 +5,16 @@ import { getCardLogo } from "@/app/utils/getCardLogo";
 import { useOrder } from "@/app/domain/context/OrderContext";
 import { paymentService } from "@/app/domain/service/paymentService";
 import { addressService } from "@/app/domain/service/addressService";
-import { cartService } from "@/app/domain/service/cartService"; // Importar cartService
+import { cartService } from "@/app/domain/service/cartService";
+import { bookService } from "@/app/domain/service/bookService";
+
 
 const OrderDetails: React.FC = () => {
     const { selectedOrder } = useOrder(); // Obtener la orden seleccionada del contexto
     const [card, setCard] = useState<any | null>(null);
     const [address, setAddress] = useState<any | null>(null);
     const [items, setItems] = useState<any[]>([]); // Nuevo estado para los libros
+    const [reviewStatus, setReviewStatus] = useState<{ [key: string]: boolean }>({});
 
     const navigate = useNavigate();
 
@@ -36,6 +39,28 @@ const OrderDetails: React.FC = () => {
                     })
                 );
                 setItems(bookDetails); // Actualizar el estado con los detalles de los libros
+
+                // Si el pedido está entregado, verificar las reseñas
+                if (selectedOrder.state === "Entregado") {
+                    const reviewChecks = await Promise.all(
+                        bookDetails.map(async (item) => {
+                            try {
+                                const hasReview = await bookService.verificarReviewUsuario(item.book.ISBN);
+                                return { isbn: item.book.ISBN, hasReview: hasReview.hasReview };
+                            } catch (error) {
+                                console.error(`Error verificando reseña para ISBN ${item.book.ISBN}:`, error);
+                                return { isbn: item.book.ISBN, hasReview: true }; // En caso de error, no mostrar botón
+                            }
+                        })
+                    );
+
+                    const reviewStatusMap = reviewChecks.reduce((acc, check) => {
+                        acc[check.isbn] = check.hasReview;
+                        return acc;
+                    }, {} as { [key: string]: boolean });
+
+                    setReviewStatus(reviewStatusMap);
+                }
             } catch (error) {
                 console.error("Error al obtener los detalles adicionales:", error);
             }
@@ -48,6 +73,10 @@ const OrderDetails: React.FC = () => {
     if (!selectedOrder || !card || !address || items.length === 0) {
         return <div>Cargando...</div>; // O podrías mostrar un mensaje de error
     }
+
+    const handleWriteReview = (isbn: string) => {
+        navigate(`/review/${isbn}`);
+    };
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -122,14 +151,25 @@ const OrderDetails: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
-                            <div className="text-right text-sm font-medium">
-                                {/* Verificación para evitar el error de undefined */}
-                                <p>${item.book.price ? item.book.price.toFixed(2) : "N/A"}</p>
-                                <p className="text-[#007B83]">
-                                    {item.book.price && item.quantity
-                                        ? (item.book.price * item.quantity).toFixed(2)
-                                        : "N/A"}
-                                </p>
+                            <div className="flex items-center gap-4">
+                                <div className="text-right text-sm font-medium">
+                                    {/* Verificación para evitar el error de undefined */}
+                                    <p>${item.book.price ? item.book.price.toFixed(2) : "N/A"}</p>
+                                    <p className="text-[#007B83]">
+                                        {item.book.price && item.quantity
+                                            ? (item.book.price * item.quantity).toFixed(2)
+                                            : "N/A"}
+                                    </p>
+                                </div>
+                                {selectedOrder.state === "Entregado" &&
+                                    reviewStatus[item.book.ISBN] === false && (
+                                        <button
+                                            onClick={() => handleWriteReview(item.book.ISBN)}
+                                            className="bg-cyan-700 text-white px-3 py-1 rounded text-xs hover:bg-[#660000] transition-colors"
+                                        >
+                                            Escribir reseña
+                                        </button>
+                                    )}
                             </div>
                         </li>
                     ))}

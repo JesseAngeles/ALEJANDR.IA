@@ -3,7 +3,7 @@ import { createBook, getBooks, getBookById, updateBook, deleteBook, getRecommend
 import { authenticateToken, authorizeRole } from '../Middleware/jwt'
 import { validateRequest } from '../Middleware/ValidateRequest'
 import { ValBookSchema } from '../Validations/Book'
-import { createComment, deleteComment } from '../Controllers/Review'
+import { createComment, deleteComment, getUserBookReview } from '../Controllers/Review'
 
 const routerBook = Router()
 
@@ -17,10 +17,9 @@ routerBook.delete('/:ISBN', authenticateToken, authorizeRole("admin"), deleteBoo
 routerBook.get('/id/:id', getBookByObjectId);
 
 // OPINIONES (comment, rating)
+routerBook.get('/user-has-review/:ISBN', authenticateToken, authorizeRole("user"), getUserBookReview)
 routerBook.post('/opinion/:ISBN', authenticateToken, authorizeRole("user"), createComment)
 routerBook.delete('/opinion/:ISBN/:reviewId', authenticateToken, deleteComment)
 
 
 export default routerBook
-
-

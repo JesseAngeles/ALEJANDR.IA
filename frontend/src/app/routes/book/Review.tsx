@@ -1,80 +1,218 @@
-import React, { useState } from 'react';
-import { FaArrowLeft, FaStar } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaArrowLeft, FaStar } from "react-icons/fa";
+import { bookService } from "@/app/domain/service/bookService";
 
-type Props = {
-  imagenLibro: string;
-  titulo: string;
-  autor: string;
-};
+interface Book {
+  _id: string;
+  title: string;
+  author: string | string[];
+  image: string;
+  ISBN: string;
+  price: number;
+  rating: number;
+}
 
-const ResenaLibro: React.FC<Props> = ({ imagenLibro, titulo, autor }) => {
-  const [calificacion, setCalificacion] = useState(0);
-  const [comentario, setComentario] = useState('');
+const Review: React.FC = () => {
+  const { isbn } = useParams<{ isbn: string }>();
+  const navigate = useNavigate();
 
-  const handleEnviar = () => {
-    alert(`Calificación: ${calificacion}\nComentario: ${comentario || 'Ninguno'}`);
+  const [book, setBook] = useState<Book | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Estados para el formulario de reseña
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  useEffect(() => {
+    const fetchBook = async () => {
+      if (!isbn) {
+        setError("ISBN no válido");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const bookData = await bookService.obtenerPorISBN(isbn);
+        setBook(bookData);
+      } catch (error) {
+        console.error("Error al obtener el libro:", error);
+        setError("Error al cargar los datos del libro");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, [isbn]);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isbn || !rating || !comment.trim()) {
+      setError("Por favor, completa todos los campos");
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await bookService.crearOpinion(isbn, {
+        rating,
+        comment: comment.trim()
+      });
+
+      // Redirigir de vuelta después de crear la opinión
+      navigate(-1);
+    } catch (error) {
+      console.error("Error al crear la opinión:", error);
+      setError("Error al enviar la reseña. Por favor, intenta de nuevo.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-6">
-      {/* Regresar */}
-      <button
-        onClick={() => alert('Regresar')}
-        className="self-start mb-4 text-sm flex items-center gap-2"
-      >
-        <FaArrowLeft className="mr-2 text-black" />Regresar
-      </button>
-     
+  const handleStarClick = (starValue: number) => {
+    setRating(starValue);
+  };
 
-      {/* Título */}
-      <h1 className="text-xl font-bold text-red-800 mb-4">¿Qué te pareció el libro?</h1>
+  const handleStarHover = (starValue: number) => {
+    setHoveredRating(starValue);
+  };
 
-      {/* Portada + Info */}
-      <img src={imagenLibro} alt={titulo} className="w-40 h-auto shadow-lg mb-2" />
-      <p className="font-semibold uppercase text-center">{titulo}</p>
-      <p className="text-sm text-gray-700 uppercase text-center mb-6">{autor}</p>
+  const handleStarLeave = () => {
+    setHoveredRating(0);
+  };
 
-      {/* Calificación */}
-      <div className="flex flex-col md:flex-row justify-center gap-8 w-full max-w-3xl">
-        {/* Estrellas */}
-        <div className="flex flex-col items-center">
-          <p className="text-sm font-medium mb-2 text-center">Asigna una calificación general al libro</p>
-          <div className="flex gap-1 text-2xl mb-1">
-            {[1, 2, 3, 4, 5].map((num) => (
-              <button key={num} onClick={() => setCalificacion(num)}>
-                <FaStar className={num <= calificacion ? 'text-yellow-500' : 'text-gray-400'} />
-              </button>
-            ))}
-          </div>
-          <div className="flex justify-between w-full text-xs text-gray-600 px-2">
-            <span>MALO</span>
-            <span>EXCELENTE</span>
-          </div>
-        </div>
-
-        {/* Comentario */}
-        <div className="flex flex-col items-center w-full max-w-md">
-          <label className="text-sm font-medium mb-2 text-center">
-            Cuéntanos acerca del libro <span className="text-gray-500">(Opcional)</span>
-          </label>
-          <textarea
-            className="w-full border rounded-md p-2 h-24 resize-none"
-            placeholder="¿Qué te pareció el libro que compraste?"
-            value={comentario}
-            onChange={(e) => setComentario(e.target.value)}
-          />
-        </div>
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center">Cargando...</div>
       </div>
+    );
+  }
 
-      {/* Botón Enviar */}
+  if (error && !book) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center text-red-600">{error}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Botón regresar */}
       <button
-        onClick={handleEnviar}
-        className="mt-6 bg-cyan-700 text-white px-6 py-2 rounded-md hover:bg-cyan-800"
+        onClick={() => navigate(-1)}
+        className="flex items-center text-sm text-black mb-6 hover:underline"
       >
-        Enviar opinión
+        <FaArrowLeft className="mr-2" />
+        Regresar
       </button>
+
+      <h1 className="text-2xl font-bold text-[#820000] mb-6">Escribir Reseña</h1>
+
+      {/* Información del libro */}
+      {book && (
+        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <div className="flex gap-4">
+            <img
+              src={book.image}
+              alt={book.title}
+              className="w-24 h-32 object-cover rounded"
+            />
+            <div>
+              <h2 className="text-xl font-semibold text-[#820000]">{book.title}</h2>
+              <p className="text-gray-600 mb-2">
+                {Array.isArray(book.author) ? book.author.join(", ") : book.author}
+              </p>
+              <p className="text-sm text-gray-500">ISBN: {book.ISBN}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Formulario de reseña */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <form onSubmit={handleSubmitReview}>
+          {/* Calificación */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Calificación *
+            </label>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar
+                  key={star}
+                  className={`cursor-pointer text-2xl transition-colors ${star <= (hoveredRating || rating)
+                      ? "text-yellow-400"
+                      : "text-gray-300"
+                    }`}
+                  onClick={() => handleStarClick(star)}
+                  onMouseEnter={() => handleStarHover(star)}
+                  onMouseLeave={handleStarLeave}
+                />
+              ))}
+            </div>
+            {rating > 0 && (
+              <p className="text-sm text-gray-600 mt-1">
+                Has seleccionado {rating} estrella{rating !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+
+          {/* Comentario */}
+          <div className="mb-6">
+            <label
+              htmlFor="comment"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Comentario *
+            </label>
+            <textarea
+              id="comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Escribe tu opinión sobre el libro..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#820000] focus:border-transparent"
+              rows={6}
+              required
+            />
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+
+          {/* Botones */}
+          <div className="flex gap-4">
+            <button
+              type="submit"
+              disabled={submitting || !rating || !comment.trim()}
+              className="bg-[#820000] text-white px-6 py-2 rounded hover:bg-[#660000] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {submitting ? "Enviando..." : "Enviar Reseña"}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default ResenaLibro;
+export { Review };

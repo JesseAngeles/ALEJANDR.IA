@@ -22,6 +22,7 @@ import { OrderHistory } from "./routes/account/OrderHistory";
 import { PasswordReset } from "./routes/account/PasswordReset";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { OrderDetails } from "./routes/account/OrderDetails";
+import { Review } from "./routes/book/Review";
 import { NotFound } from "@/Errors/NotFound";
 
 export const router = createBrowserRouter([
@@ -149,6 +150,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <OrderDetails />
+          </ProtectedRoute >
+
+        ),
+      },
+      {
+        path: "/review/:isbn",
+        element: (
+          <ProtectedRoute>
+            <Review />
           </ProtectedRoute >
 
         ),

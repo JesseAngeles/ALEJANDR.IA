@@ -31,6 +31,30 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
     }
 }
 
+export const getUserBookReview = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const ISBN = req.params.ISBN
+        const userId = req.user?.id
+
+        const book = await Book.findOne({ ISBN })
+        if (!book) {
+            res.status(404).send("Book not found")
+            return
+        }
+
+        const existingReview = book.reviews.find((review: Review) => review.userId === userId)
+
+        if (existingReview) {
+            res.status(200).json({ hasReview: true, review: existingReview })
+        } else {
+            res.status(200).json({ hasReview: false, review: null })
+        }
+    } catch (error) {
+        console.log(`Error: ${error}`)
+        res.status(500).send(`Server error: ${error}`)
+    }
+}
+
 export const deleteComment = async (req: Request, res: Response): Promise<void> => {
     try {
         const ISBN = req.params.ISBN
@@ -38,13 +62,13 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
         const userId = req.user?.id
 
         const book = await Book.findOne({ ISBN })
-        
+
         if (!book) {
             res.status(404).send("Book not found")
             return
         }
-        
-        const review:Review = (book.reviews as Types.DocumentArray<any>).id(reviewId)
+
+        const review: Review = (book.reviews as Types.DocumentArray<any>).id(reviewId)
         if (!review) {
             res.status(404).send(`Review not found`)
             return

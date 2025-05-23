@@ -55,10 +55,10 @@ export const bookService = {
     return await res.json();
   },
 
-  obtenerRecomendados: async (userId: string) => { 
+  obtenerRecomendados: async (userId: string) => {
     console.time("Tiempo recomendación");
-const res = await fetch(`${API_URL}/recommended/${userId}`);
-console.timeEnd("Tiempo recomendación");
+    const res = await fetch(`${API_URL}/recommended/${userId}`);
+    console.timeEnd("Tiempo recomendación");
 
     if (!res.ok) throw new Error("Error al obtener libros recomendados");
 
@@ -83,5 +83,38 @@ console.timeEnd("Tiempo recomendación");
       })),
     }));
   },
+
+  verificarReviewUsuario: async (isbn: string) => {
+    const res = await fetch(`${API_URL}/user-has-review/${isbn}`, {
+      headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) throw new Error("Error al verificar reseña del usuario");
+
+    return await res.json();
+  },
+
+  crearOpinion: async (isbn: string, opinion: { rating: number; comment: string }) => {
+    const res = await fetch(`${API_URL}/opinion/${isbn}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(opinion),
+    });
+
+    if (!res.ok) throw new Error("Error al crear opinión");
+
+    return await res.json();
+  },
+
+  eliminarOpinion: async (isbn: string, reviewId: string) => {
+    const res = await fetch(`${API_URL}/opinion/${isbn}/${reviewId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) throw new Error("Error al eliminar opinión");
+
+    return await res.json();
+  },
+
 };
- 
