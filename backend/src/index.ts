@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import cookieParser from "cookie-parser"
 
 import connectDB from './Config/DatabaseConnection'
 
@@ -12,6 +13,7 @@ import routerCart from './Routes/Cart'
 import routerCollection from './Routes/Collection'
 import routerDiscount from './Routes/Discount'
 import routerOrder from './Routes/Order'
+import authRoutes from "./Routes/Auth"
 
 dotenv.config()
 connectDB()
@@ -21,6 +23,7 @@ const port = process.env.PORT || 8080
 
 app.use(express.json())
 app.use(cors())
+app.use(cookieParser())
 
 //TODO Rutas
 app.use('/user', routerUser)
@@ -30,6 +33,7 @@ app.use('/cart', routerCart)
 app.use('/collection', routerCollection)
 app.use('/discount', routerDiscount)
 app.use('/order', routerOrder)
+app.use("/auth", authRoutes)
 
 // Iniciar el servidor
 app.listen(port, () => {

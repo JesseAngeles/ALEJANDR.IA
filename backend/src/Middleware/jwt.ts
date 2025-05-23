@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken"
 import { JwtPayload } from "../Interfaces/JwtPayload"
 
 const JWT_SECRET: string = process.env.JWT_SECRET!
-const EXPIRATION_JWT_TOKEN = "1h"
+const EXPIRATION_JWT_TOKEN = "15d"
 
 
 declare global {
@@ -29,6 +29,36 @@ export const generateJWT = (user: any) => {
 
     return { token, payload }
 }
+
+export const generateTokens = (user: any) => {
+    const payload = {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+    };
+
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "15m" });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, { expiresIn: "7d" });
+
+    return { accessToken, refreshToken };
+};
+
+
+export const refreshToken = (req: Request, res: Response) => {
+    const token = req.cookies.refreshToken;
+
+    if (!token) return res.status(401).json({ message: "No refresh token" });
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as JwtPayload;
+        const newAccessToken = jwt.sign(decoded, JWT_SECRET, { expiresIn: "15m" });
+
+        return res.json({ accessToken: newAccessToken });
+    } catch (err) {
+        return res.status(403).json({ message: "Invalid refresh token" });
+    }
+};
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
     const authHeader = req.headers["authorization"]

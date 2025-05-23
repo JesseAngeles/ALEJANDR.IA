@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import users from "../Models/User"
-import { generateJWT } from "../Middleware/jwt"
+import jwt from "jsonwebtoken"
 import { returnUser, returnFullUser } from "../Middleware/ReturnFunctions"
 import Collection from "../Models/Collection"
 
@@ -15,9 +15,29 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
             return
         }
 
-        const { token, payload } = generateJWT(user)
+        // Payload para ambos tokens
+        const payload = {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+        }
 
-        res.status(200).json({ token, user: payload })
+        // Access token corto
+        const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "15m" })
+
+        // Refresh token largo
+        const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, { expiresIn: "7d" })
+
+        // Guardar refresh token como cookie segura
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+        })
+
+        res.status(200).json({ token: accessToken, user: payload })
     } catch (error) {
         console.log(`Error: ${error}`)
         res.status(500).send(`Server error: ${error}`)
