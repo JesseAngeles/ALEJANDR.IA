@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/app/domain/context/CartContext";
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
 import { useLocation } from 'react-router-dom'; 
+import { useToast } from '@/app/domain/context/ToastContext';
+
  
 
 type Libro = {
@@ -49,6 +51,7 @@ const [precioError, setPrecioError] = useState<string | null>(null);
   const { favoritos, addToFavorites, removeFromFavorites } = useFavorites();
   const estaLogueado = !!localStorage.getItem("token");
   const [soloDisponibles, setSoloDisponibles] = useState(false);
+  const { showToast } = useToast();
 
 
   const navigate = useNavigate();
@@ -291,12 +294,17 @@ useEffect(() => {
                   if (!estaLogueado) return navigate("/login");
                   const enFavoritos = favoritos.some(f => f.ISBN === libro.isbn);
                   try {
-                    enFavoritos
-                      ? await removeFromFavorites(libro.isbn)
-                      : await addToFavorites(libro.isbn);
+                    if (enFavoritos) {
+                      await removeFromFavorites(libro.isbn);
+                      showToast("Libro eliminado de favoritos", "error");
+                    } else {
+                      await addToFavorites(libro.isbn);
+                      showToast("Libro añadido a favoritos", "success");
+                    }
                   } catch (error) {
                     console.error("Error al modificar favoritos:", error);
                   }
+                  
                 }}
                 className={`absolute top-2 right-2 text-lg ${favoritos.some(f => f.ISBN === libro.isbn) ? 'text-cyan-500' : 'text-gray-400 hover:text-cyan-500'}`}
                 title="Favorito"
@@ -312,13 +320,18 @@ useEffect(() => {
                     if (!estaLogueado) return navigate("/login");
                     const enCarrito = cart.some(c => c.bookId === libro.id);
                     try {
-                      enCarrito
-                        ? await removeFromCart(libro.isbn)
-                        : await addToCart(libro.isbn);
+                      if (enCarrito) {
+                        await removeFromCart(libro.isbn);
+                        showToast("Libro eliminado del carrito", "error");
+                      } else {
+                        await addToCart(libro.isbn);
+                        showToast("Libro añadido al carrito", "success");
+                      }
                       await fetchCart();
                     } catch (error) {
                       console.error("Error al modificar el carrito:", error);
                     }
+                    
                   }}
                   className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${cart.some(c => c.bookId === libro.id) ? 'bg-red-600' : 'bg-cyan-600'}`}
                 >

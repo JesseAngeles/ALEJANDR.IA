@@ -4,6 +4,8 @@ import { useFavorites } from "@/app/domain/context/FavoritesContext";
 import { FaArrowLeft, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from 'react-router-dom'; 
+import { useToast } from '@/app/domain/context/ToastContext';
+import { usePurchase } from '@/app/domain/context/PurchaseContext';
 
 interface Book {
   _id: string;
@@ -29,10 +31,10 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
   const disponible = book.stock > 0;
   const navigate = useNavigate();
   const estaLogueado = !!localStorage.getItem("token"); // ✅
-
+  const { showToast } = useToast();
   const { isInCart, addToCart, removeFromCart, fetchCart} = useCart();
   const enCarrito = isInCart(book._id);
-
+  const { setPurchase } = usePurchase();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const enFavoritos = isFavorite(book._id);
 
@@ -46,44 +48,67 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
       navigate("/login");
       return;
     }
-
+  
     try {
       if (enCarrito) {
         await removeFromCart(book.ISBN);
+        showToast("Libro eliminado del carrito", "error");
       } else {
         await addToCart(book.ISBN);
+        showToast("Libro añadido al carrito", "success");
       }
     } catch (error) {
       console.error("Error al modificar el carrito:", error);
-      alert("Hubo un problema al actualizar el carrito.");
+      showToast("Hubo un error al actualizar el carrito", "error");
     }
   };
+  
 
   const handleToggleFavorito = async () => {
     if (!estaLogueado) {
       navigate("/login");
       return;
     }
-
+  
     try {
       if (enFavoritos) {
         await removeFromFavorites(book.ISBN);
+        showToast("Libro eliminado de favoritos", "error");
       } else {
         await addToFavorites(book.ISBN);
+        showToast("Libro añadido a favoritos", "success");
       }
     } catch (error) {
       console.error("Error al modificar favoritos:", error);
+      showToast("Hubo un error al actualizar favoritos", "error");
     }
   };
+  
 
   const handleComprar = () => {
     if (!estaLogueado) {
       navigate("/login");
       return;
     }
-    // ⚠️ Aquí podrías luego redirigir a una página de pago
-    alert("Función comprar aún no implementada");
+  
+    setPurchase((prev) => ({
+      ...prev,
+      cart: [
+        {
+          id: book._id,
+          titulo: book.title,
+          autor: book.author,
+          precio: book.price,
+          imagen: book.image,
+          cantidad: 1,
+          ISBN: book.ISBN,
+        },
+      ],
+    }));
+  
+    navigate("/address");
   };
+  
 
   return (
     <div className="px-6 py-10">
