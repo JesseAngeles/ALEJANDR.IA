@@ -34,6 +34,8 @@ interface Book {
     const { fetchCart } = useCart();
     const navigate = useNavigate();
     const { user } = useAuth();
+    
+    
 
     function getDateFromObjectId(objectId: string): string {
       const timestampHex = objectId.substring(0, 8);
@@ -127,7 +129,7 @@ interface Book {
       <main className="flex-grow p-6">
         {recommendedBook && <Recomendacion book={recommendedBook} />}
         {collections.map((col, idx) => (
-          <BookSection key={col.nombre} tituloSeccion={col.nombre} books={[...col.libros]} />
+          <BookSection key={col.nombre} tituloSeccion={col.nombre} books={[...col.libros] } />
         ))}
         <CategoriasDestacadas />
       </main>

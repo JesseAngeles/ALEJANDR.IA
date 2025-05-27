@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from "@/app/domain/context/CartContext";
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
 import { useLocation } from 'react-router-dom'; 
+import { useToast } from '@/app/domain/context/ToastContext';
 
 interface Book {
   _id: string;
@@ -24,10 +25,12 @@ interface BookSectionProps {
   books: Book[];
 }
  
-const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) => {
+const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books}) => {
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart, fetchCart } = useCart();
   const { favoritos, addToFavorites, removeFromFavorites } = useFavorites();
+  const { showToast } = useToast();
+
 
   const estaLogueado = !!localStorage.getItem("token");
   
@@ -82,11 +85,17 @@ useEffect(() => {
             }
 
             try {
-              if (enFavoritos) {
-                await removeFromFavorites(libro.ISBN);
-              } else {
+              if (!enFavoritos) {
                 await addToFavorites(libro.ISBN);
+                showToast("Libro añadido a favoritos", "success");
+
+              } else {
+                await removeFromFavorites(libro.ISBN);
+                showToast("Libro eliminado del carrito", "error");
+
               }
+              
+              
             } catch (error) {
               console.error("Error al modificar favoritos:", error);
             }
@@ -96,11 +105,16 @@ useEffect(() => {
             if (!estaLogueado) return navigate("/login");
 
             try {
-              if (enCarrito) {
-                await removeFromCart(libro.ISBN);
-              } else {
+              if (!enCarrito) {
                 await addToCart(libro.ISBN);
+                showToast("Libro añadido a carrito", "success");
+
+              } else {
+                await removeFromCart(libro.ISBN);
+                showToast(`Libro eliminado del carrito`, "error");
               }
+              
+              
               // No necesitas setActualizador aquí
             } catch (error) {
               console.error("Error al modificar el carrito:", error);
@@ -161,5 +175,5 @@ useEffect(() => {
     </section>
   );
 };
-
+  
 export default BookSection;
