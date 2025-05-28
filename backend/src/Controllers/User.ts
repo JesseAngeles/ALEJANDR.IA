@@ -3,6 +3,7 @@ import users from "../Models/User"
 import { generateJWT } from "../Middleware/jwt"
 import { returnUser, returnFullUser } from "../Middleware/ReturnFunctions"
 import Collection from "../Models/Collection"
+import { updateUserRecommendations } from "../Middleware/UpdateRecommendations"
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -23,6 +24,36 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         res.status(500).send(`Server error: ${error}`)
     }
 }
+
+
+export const getCachedRecommendations = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.params.id;
+      let user = await users.findById(userId);
+  
+      if (!user) {
+        res.status(404).send("Usuario no encontrado");
+        return;
+      }
+  
+      // Si no tiene recomendaciones, generarlas
+      if (!user.recommendations || user.recommendations.length === 0) {
+        await updateUserRecommendations(userId);
+        user = await users.findById(userId);
+  
+        if (!user) {
+          res.status(500).send("Error al recargar usuario tras actualizar recomendaciones");
+          return;
+        }
+      }
+  
+      res.status(200).json(user.recommendations || []);
+    } catch (error) {
+      console.error("❌ Error al obtener recomendaciones cacheadas:", error);
+      res.status(500).send(`Error del servidor: ${error}`);
+    }
+  };
+
 
 export const addUser = async (req: Request, res: Response): Promise<void> => {
     try {

@@ -19,6 +19,7 @@ export interface User {
     directions: Direction[]
     cards: Card[]
     collections: Collection[]
+    recommendations?: any[] 
     cart: Cart,
     orders: mongoose.Types.ObjectId[],
 }

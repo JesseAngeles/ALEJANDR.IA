@@ -2,6 +2,7 @@
 import { tokenService } from "@/app/utils/tokenService";
 
 const API_URL = `${import.meta.env.VITE_ENDPOINT}/book`;
+const API_URL2 = `${import.meta.env.VITE_ENDPOINT}/user`;
 
 function getAuthHeaders(): HeadersInit {
   const token = tokenService.getToken();
@@ -57,7 +58,7 @@ export const bookService = {
 
   obtenerRecomendados: async (userId: string) => {
     console.time("Tiempo recomendación");
-    const res = await fetch(`${API_URL}/recommended/${userId}`);
+    const res = await fetch(`${API_URL2}/recommendations/${userId}`);
     console.timeEnd("Tiempo recomendación");
 
     if (!res.ok) throw new Error("Error al obtener libros recomendados");

@@ -3,6 +3,7 @@ import Book from "../Models/Book"
 import { Types } from "mongoose"
 import { updateRating, updateSummary } from "../Middleware/BookReview"
 import { Review } from "../Interfaces/Review"
+import { updateUserRecommendations } from "../Middleware/UpdateRecommendations"
 
 export const createComment = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -23,6 +24,9 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
         book.reviewSumary = updateSummary(book)
 
         const savedBook = await book.save()
+        if (review.rating >= 4 && userId) {
+            await updateUserRecommendations(userId);
+        }
 
         res.status(200).json(savedBook)
     } catch (error) {

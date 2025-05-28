@@ -55,6 +55,10 @@ const userSchema = new Schema<UserDocument>({
     orders: {
         type: [Schema.Types.ObjectId],
         required: false
+    },
+    recommendations: {
+        type: [Object], 
+        default: []
     }
 })
 

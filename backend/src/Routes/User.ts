@@ -2,6 +2,8 @@ import { Router } from "express"
 import { loginUser, addUser, deleteUser, getAllUsers, getUserById, updateUser, multipleUser, getUser, updateUserPassword } from "../Controllers/User"
 import { addDirection, deleteDirection, getDirectionById, getDirections, updateDirection } from "../Controllers/Direction"
 import { addCard, deleteCard, getCardById, getCards } from "../Controllers/Card"
+import { getCachedRecommendations } from "../Controllers/User"
+
 
 import { authenticateToken, authorizeRole } from "../Middleware/jwt"
 import { validateRequest } from "../Middleware/ValidateRequest"
@@ -17,6 +19,7 @@ routerUser.get('/test', getAllUsers)
 routerUser.post('/test', multipleUser)
 routerUser.get('/test/:id', getUserById)
 routerUser.delete('/:id', authenticateToken, deleteUser)
+routerUser.get('/recommendations/:id', getCachedRecommendations)
 
 // Login user
 routerUser.post('/login', loginUser)
