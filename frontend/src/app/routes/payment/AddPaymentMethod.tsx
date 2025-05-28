@@ -11,20 +11,73 @@ const AddPaymentMethod: React.FC = () => {
     const [securityCode, setSecurityCode] = useState("");
     const [successMessage, setSuccessMessage] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [formError, setFormError] = useState(""); // 👈 nuevo estado
+    const [formError, setFormError] = useState("");
 
     const navigate = useNavigate();
 
+    const luhnCheck = (num: string): boolean => {
+        let sum = 0;
+        let shouldDouble = false;
+        for (let i = num.length - 1; i >= 0; i--) {
+            let digit = parseInt(num[i]);
+            if (shouldDouble) {
+                digit *= 2;
+                if (digit > 9) digit -= 9;
+            }
+            sum += digit;
+            shouldDouble = !shouldDouble;
+        }
+        return sum % 10 === 0;
+    };
+
     const validateFields = () => {
         const newErrors: { [key: string]: string } = {};
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
 
-        if (!titular.trim()) newErrors.titular = "Este campo es obligatorio";
-        if (!number.match(/^\d{16}$/)) newErrors.number = "Debe tener 16 dígitos";
-        if (!expirationMonth.match(/^(0?[1-9]|1[0-2])$/)) newErrors.expirationMonth = "Mes inválido";
-        if (!expirationYear.match(/^\d{4}$/) || parseInt(expirationYear) < new Date().getFullYear()) {
-            newErrors.expirationYear = "Año inválido";
+        if (!titular.trim()) {
+            newErrors.titular = "Este campo es obligatorio";
+        } else if (!/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/.test(titular)) {
+            newErrors.titular = "Nombre inválido";
         }
-        if (!securityCode.match(/^\d{3,4}$/)) newErrors.securityCode = "CVV inválido";
+
+        if (!number.trim()) {
+            newErrors.number = "Este campo es obligatorio";
+        } else if (!/^\d{13,19}$/.test(number)) {
+            newErrors.number = "Debe tener entre 13 y 19 dígitos";
+        } else if (!luhnCheck(number)) {
+            newErrors.number = "Número de tarjeta inválido";
+        }
+
+        if (!expirationMonth.trim()) {
+            newErrors.expirationMonth = "Este campo es obligatorio";
+        } else {
+            const month = parseInt(expirationMonth);
+            if (isNaN(month) || month < 1 || month > 12) {
+                newErrors.expirationMonth = "Mes inválido";
+            }
+        }
+
+        if (!expirationYear.trim()) {
+            newErrors.expirationYear = "Este campo es obligatorio";
+        } else {
+            const year = parseInt(expirationYear);
+            if (isNaN(year) || year < currentYear) {
+                newErrors.expirationYear = "La tarjeta está expirada";
+            } else if (
+                year === currentYear &&
+                parseInt(expirationMonth) < currentMonth
+            ) {
+                newErrors.expirationMonth = "La tarjeta está expirada";
+            }
+        }
+
+        if (!securityCode.trim()) {
+            newErrors.securityCode = "Este campo es obligatorio";
+        } else if (!/^\d{3,4}$/.test(securityCode)) {
+            newErrors.securityCode = "CVV inválido";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -32,7 +85,7 @@ const AddPaymentMethod: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setFormError(""); // Limpia error anterior
+        setFormError("");
 
         if (!validateFields()) return;
 
@@ -49,7 +102,7 @@ const AddPaymentMethod: React.FC = () => {
             setSuccessMessage(true);
         } catch (error) {
             console.error("Error al guardar método de pago:", error);
-            setFormError("La tarjeta no es una tarjeta valida"); // 👈 mensaje visual
+            setFormError("Error al guardar método de pago");
         }
     };
 
@@ -83,7 +136,7 @@ const AddPaymentMethod: React.FC = () => {
                     <label className="block text-sm mb-1">Número de tarjeta:</label>
                     <input
                         type="text"
-                        maxLength={16}
+                        maxLength={19}
                         value={number}
                         onChange={(e) => setNumber(e.target.value.replace(/\D/g, ""))}
                         className="border rounded w-full p-2"
@@ -129,7 +182,6 @@ const AddPaymentMethod: React.FC = () => {
                     {errors.securityCode && <p className="text-red-600 text-sm">{errors.securityCode}</p>}
                 </div>
 
-                {/* 🔴 Mostrar error general */}
                 {formError && <p className="text-red-600 text-sm text-center">{formError}</p>}
 
                 <div className="text-center pt-4">
