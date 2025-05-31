@@ -3,10 +3,15 @@ import books from "../Models/Book";
 import users from "../Models/User";
 import orders from "../Models/Order";
 import { Server } from "socket.io";
-import { ObjectId, Types } from "mongoose";
+import mongoose, { ObjectId, Types } from "mongoose";
 import nodemailer from "nodemailer";
 import { Direction } from "../Interfaces/Direction";
 import { Card } from "../Interfaces/Card";
+
+const getServerUrl = () =>
+    process.env.SERVER_URL && process.env.SERVER_URL.trim() !== ""
+        ? process.env.SERVER_URL
+        : "http://localhost:5173";
 
 const REQUIRED_PREVIOUS_STATE: Record<string, string> = {
     "Cancelado": "En Preparación",
@@ -42,7 +47,13 @@ const updateOrderState = async (io: Server, orderId: Types.ObjectId, newState: s
     }
 };
 
-const sendNotificationEmail = async (userEmail: string, orderId: string, subject: string, message: string) => {
+const sendNotificationEmail = async (
+    userEmail: string,
+    orderId: string,
+    subject: string,
+    message: string,
+    state: string = "Pendiente"
+) => {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -52,17 +63,48 @@ const sendNotificationEmail = async (userEmail: string, orderId: string, subject
             },
         });
 
+        const serverUrl = getServerUrl();
+        const orderDetailsUrl = `${serverUrl}/account/history`;
+
+        const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f9f9f9; padding: 40px 0;">
+            <div style="max-width: 520px; margin: auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.07);">
+                <h2 style="text-align:center; color: #820000; margin-bottom: 0.6em; margin-top: 2em;">¡Hola!</h2>
+                <div style="padding: 0 38px 18px 38px;">
+                    <p style="color: #444; font-size: 1.08em; margin-bottom: 1.2em;">
+                        Esperamos que te encuentres bien. Somos la librería <strong>ALEJANDR.IA</strong> y te contactamos para informarte lo siguiente sobre tu pedido:
+                    </p>
+                    <p style="color: #444; font-size: 1.1em; margin-bottom: 1.2em;">
+                        ${message}
+                    </p>
+                    <div style="text-align:center; margin-bottom: 18px;">
+                        <a href="${orderDetailsUrl}" target="_blank"
+                            style="background-color: #820000; color: #fff; padding: 13px 32px; border-radius: 6px; text-decoration: none; font-size: 1em; font-weight: 600; display: inline-block;">
+                            Ver tus pedidos
+                        </a>
+                    </div>
+                    <p style="color: #999; font-size: 0.92em; text-align:center; margin-top:18px;">
+                        Si tienes dudas, contáctanos:<br>
+                        <a href="mailto:${process.env.EMAIL_USER}" style="color: #820000;">${process.env.EMAIL_USER}</a><br>
+                        Gracias por confiar en nosotros.
+                    </p>
+                </div>
+            </div>
+        </div>
+        `;
+
         await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+            from: `"ALEJANDR.IA" <${process.env.EMAIL_USER}>`,
             to: userEmail,
             subject,
-            html: `<p>${message}</p>`,
+            html,
         });
         console.log(`Email sent to ${userEmail} for order ${orderId}`);
     } catch (error) {
         console.error(`Error sending email to ${userEmail} for order ${orderId}: ${error}`);
     }
 };
+
 
 const getUserEmail = async (orderId: string): Promise<string> => {
     const order = await orders.findById(orderId);
@@ -74,16 +116,34 @@ const getUserEmail = async (orderId: string): Promise<string> => {
 const delayAndUpdateState = async (
     io: Server,
     orderId: Types.ObjectId,
-    transitions: { state: string; subject: string; message: (id: string) => string; delay: number }[],
+    transitions: {
+        state: string;
+        subject: string;
+        message: (id: string) => string;
+        delay: number,
+        emailState: string
+    }[],
     userEmail: string
 ) => {
-    for (const { state, subject, message, delay } of transitions) {
+    for (const { state, subject, message, delay, emailState } of transitions) {
         await new Promise<void>((resolve) => {
             setTimeout(async () => {
                 try {
                     const updated = await updateOrderState(io, orderId, state);
+
+                    // ⬇️ Solo cuando el estado es 'Devuelto', reponemos stock
+                    if (updated && state === "Devuelto") {
+                        await restoreOrderBooksStock(orderId);
+                    }
+
                     if (updated) {
-                        await sendNotificationEmail(userEmail, orderId.toString(), subject, message(orderId.toString()));
+                        await sendNotificationEmail(
+                            userEmail,
+                            orderId.toString(),
+                            subject,
+                            message(orderId.toString()),
+                            emailState || state // fallback por si no se define
+                        );
                     }
                 } catch (error) {
                     console.error(`Error actualizando estado a "${state}": ${error}`);
@@ -95,6 +155,8 @@ const delayAndUpdateState = async (
 };
 
 export const newOrder = async (req: Request, res: Response): Promise<void> => {
+    const session = await mongoose.startSession();
+
     try {
         const userId = req.user?.id;
         const { cardId, directionId } = req.body;
@@ -104,7 +166,7 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const user = await users.findById(userId);
+        const user = await users.findById(userId).session(session);
         if (!user) {
             res.status(404).send("User not found");
             return;
@@ -117,71 +179,150 @@ export const newOrder = async (req: Request, res: Response): Promise<void> => {
 
         let total = 0;
         let totalItems = 0;
+        let bookUpdates = [];
 
+        // ** Validar stock **
         for (const cartItem of user.cart.items) {
-            const book = await books.findById(cartItem.bookId);
-            const price = book?.price || 0;
+            const book = await books.findById(cartItem.bookId).session(session);
+            if (!book) {
+                res.status(400).send(`Cannot find the book with Id ${cartItem.bookId}`);
+                return;
+            }
+            const price = book.price || 0;
+            const stock = book.stock || 0;
+            if (cartItem.quantity > stock) {
+                res.status(400).send("Cannot buy more books than the available stock");
+                return;
+            }
             total += cartItem.quantity * price;
             totalItems += cartItem.quantity;
+            bookUpdates.push({ book, newStock: stock - cartItem.quantity });
         }
 
-        const newOrder = await orders.create({
-            date: new Date(),
-            client: userId,
-            card: cardId,
-            direction: directionId,
-            total,
-            state: "Pendiente",
-            items: user.cart.items,
-            noItems: totalItems,
-        });
-
-        user.cart.items = [];
-        user.orders.push(newOrder._id);
-        await user.save();
-
-        const io = req.app.get("socketio");
-        await updateOrderState(io, newOrder._id, "Pendiente");
-
-        res.status(200).json(newOrder);
-
-        setTimeout(async () => {
-            const updated = await updateOrderState(io, newOrder._id, "En Preparación");
-            if (updated) {
-                const userEmail = user.email || "";
-                if (userEmail) {
-                    await sendNotificationEmail(
-                        userEmail,
-                        newOrder._id.toString(),
-                        'Tu pedido está en preparación',
-                        `Tu pedido: ${newOrder._id.toString().slice(-8)} está ahora en <strong>preparación</strong>.`
-                    );
-                }
+        // ** Transacción **
+        await session.withTransaction(async () => {
+            // Actualizar stocks
+            for (const { book, newStock } of bookUpdates) {
+                await books.updateOne(
+                    { _id: book._id, stock: { $gte: book.stock } }, // Checa que nadie más haya cambiado el stock
+                    { $set: { stock: newStock } },
+                    { session }
+                );
             }
-        }, 15 * 1000);
+
+            // Crear la orden
+            const newOrderDoc = await orders.create([{
+                date: new Date(),
+                client: userId,
+                card: cardId,
+                direction: directionId,
+                total,
+                state: "Pendiente",
+                items: user.cart.items,
+                noItems: totalItems,
+            }], { session });
+
+            // Limpiar carrito y vincular orden al usuario
+            user.cart.items = [];
+            user.orders.push(newOrderDoc[0]._id);
+            await user.save({ session });
+
+            // Responder (dentro de la transacción para asegurar que todo fue bien)
+            res.status(200).json(newOrderDoc[0]);
+
+            // Notificar por socket (esto puede ir después de la transacción)
+            const io = req.app.get("socketio");
+            await updateOrderState(io, newOrderDoc[0]._id, "Pendiente");
+
+            // Email
+            await sendNotificationEmail(
+                user.email,
+                newOrderDoc[0]._id.toString(),
+                '¡Hemos recibido tu pedido!',
+                `
+                  <p>Gracias por tu compra. Hemos recibido tu pedido con el ID <strong>${newOrderDoc[0]._id.toString().slice(-8)}</strong> y se encuentra actualmente en estado <strong>Pendiente</strong>.</p>
+                  <p>En breve comenzaremos a prepararlo para su envío. Te notificaremos cualquier actualización sobre su estado.</p>
+                  <p>Puedes revisar los detalles y el estado de tu pedido en tu cuenta.</p>
+                  <p>Gracias por confiar en nosotros.<br/>— El equipo de ALEJANDR.IA</p>
+                `,
+                "Pendiente"
+            );
+
+            // Actualización automática de estado y notificación
+            setTimeout(async () => {
+                const updated = await updateOrderState(io, newOrderDoc[0]._id, "En Preparación");
+                if (updated) {
+                    const userEmail = user.email || "";
+                    if (userEmail) {
+                        await sendNotificationEmail(
+                            userEmail,
+                            newOrderDoc[0]._id.toString(),
+                            '¡Estamos preparando tu pedido!',
+                            `
+                              <p>Tu pedido con el ID <strong>${newOrderDoc[0]._id.toString().slice(-8)}</strong> ya está en <strong>preparación</strong>.</p>
+                              <p>Estamos alistando tus productos con cuidado para enviártelos lo antes posible. Te avisaremos en cuanto esté en camino.</p>
+                              <p>Puedes hacer seguimiento al estado de tu pedido desde tu cuenta.</p>
+                              <p>Gracias por tu confianza.<br/>— El equipo de ALEJANDR.IA</p>
+                            `,
+                            "En Preparación"
+                        );
+                    }
+                }
+            }, 15 * 1000);
+
+        });
 
     } catch (error) {
         console.error(`Error: ${error}`);
+        await session.abortTransaction();
         res.status(500).send(`Server error: ${error}`);
+    } finally {
+        session.endSession();
     }
 };
+
+async function restoreOrderBooksStock(orderId: string | mongoose.Types.ObjectId) {
+    console.log(`Entrado a restoreOrderBooksStock`)
+    const order = await orders.findById(orderId);
+    if (!order) {
+        console.log(`No se ha encontrado la orden: ${orderId}`)
+        return
+    }
+
+    console.log(`order.state: ${order.state}`)
+    if (!["Cancelado", "Devuelto"].includes(order.state)) return;
+
+    for (const item of order.items) {
+        const book = await books.findById(item.bookId)
+        if (!book) {
+            console.log(`No se encontró el libro ${item.bookId}`)
+            return
+        }
+        console.log(`stock: ${book.stock} & cart quantity: ${item.quantity}`)
+        book.stock += item.quantity
+        await book.save()
+    }
+}
 
 export const setCancelledOrder = async (req: Request, res: Response): Promise<void> => {
     try {
         const orderId = req.params.order;
         const io = req.app.get("socketio");
 
+        // Actualiza el estado del pedido a Cancelado
         const updated = await updateOrderState(io, new Types.ObjectId(orderId), "Cancelado");
 
         if (updated === null) {
             res.status(400).send(`El pedido no se puede cancelar porque no está en "En Preparación"`);
             return;
         }
-
         if (!updated) {
             res.status(404).send("Pedido no encontrado o ya cancelado");
             return;
         }
+
+        // ✅ Restaura el stock de los libros
+        await restoreOrderBooksStock(orderId);
 
         res.status(200).json({ orderId, state: "Cancelado" });
 
@@ -190,8 +331,13 @@ export const setCancelledOrder = async (req: Request, res: Response): Promise<vo
             await sendNotificationEmail(
                 userEmail,
                 orderId,
-                'Tu pedido ha sido cancelado',
-                `Tu pedido: ${orderId.slice(-8)} ha sido <strong>cancelado</strong> correctamente.`
+                'Has cancelado tu pedido',
+                `
+                  <p>Hemos recibido tu solicitud y tu pedido con el ID <strong>${orderId.slice(-8)}</strong> ha sido <strong>cancelado</strong> exitosamente.</p>
+                  <p>Gracias por informarnos. Si necesitas realizar un nuevo pedido o tienes alguna duda, estamos aquí para ayudarte.</p>
+                  <p>Saludos cordiales,<br/>— El equipo de ALEJANDR.IA</p>
+                `,
+                "Cancelado"
             );
         }
     } catch (error) {
@@ -221,12 +367,32 @@ export const setReturnOrder = async (req: Request, res: Response): Promise<void>
         const userEmail = await getUserEmail(orderId);
         if (!userEmail) return;
 
+        // ✅ Nuevo correo confirmando que el usuario solicitó la devolución
+        await sendNotificationEmail(
+            userEmail,
+            orderId,
+            'Has solicitado una devolución',
+            `
+                <p>Hemos recibido tu solicitud de devolución para el pedido <strong>${orderId.slice(-8)}</strong>.</p>
+                <p>Tu pedido está ahora en proceso de <strong>devolución</strong>. Te notificaremos cuando se complete.</p>
+                <p>Gracias por confiar en nosotros.</p>
+                <p>Saludos cordiales,<br/>— El equipo de ALEJANDR.IA</p>
+            `,
+            "En Devolución"
+        );
+
+        // ⏳ Transición posterior automática
         const transitions = [
             {
                 state: "Devuelto",
-                subject: "Tu paquete ha sido devuelto",
-                message: (id: string) => `Tu paquete: ${id.slice(-8)} ha sido <strong>devuelto</strong> correctamente.`,
+                subject: "Tu devolución ha sido procesada",
+                message: (id: string) => `
+                    <p>La devolución de tu pedido <strong>${id.slice(-8)}</strong> se ha <strong>completado correctamente</strong>.</p>
+                    <p>Gracias por seguir el proceso de forma adecuada. Si tienes alguna pregunta, no dudes en contactarnos.</p>
+                    <p>Saludos cordiales,<br/>— El equipo de ALEJANDR.IA</p>
+                `,
                 delay: 30 * 1000,
+                emailState: "Devuelto",
             },
         ];
 
@@ -259,18 +425,29 @@ export const setSendOrder = async (req: Request, res: Response): Promise<void> =
         const userEmail = await getUserEmail(orderId);
         if (!userEmail) return;
 
+        // ⏳ Transiciones automáticas con correos mejorados
         const transitions = [
             {
                 state: "En Tránsito",
-                subject: "Tu pedido está en tránsito",
-                message: (id: string) => `Tu paquete: ${id.slice(-8)} está ahora en <strong>tránsito</strong>.`,
+                subject: "Tu pedido está en camino",
+                message: (id: string) => `
+                    <p>Tu pedido <strong>${id.slice(-8)}</strong> ya ha salido de nuestras instalaciones y está <strong>en tránsito</strong>.</p>
+                    <p>Pronto lo recibirás en la dirección indicada. Te avisaremos una vez haya sido entregado.</p>
+                    <p>Gracias por tu compra.<br/>— El equipo de ALEJANDR.IA</p>
+                `,
                 delay: 30 * 1000,
+                emailState: "En Tránsito"
             },
             {
                 state: "Entregado",
-                subject: "Tu paquete ha sido entregado",
-                message: (id: string) => `Tu paquete: ${id.slice(-8)} ha sido <strong>entregado</strong> correctamente.`,
+                subject: "Tu pedido ha sido entregado",
+                message: (id: string) => `
+                    <p>Nos alegra informarte que tu pedido <strong>${id.slice(-8)}</strong> ha sido <strong>entregado</strong> correctamente.</p>
+                    <p>Esperamos que disfrutes de tu compra. Si tienes alguna duda o necesitas ayuda, estamos para ayudarte.</p>
+                    <p>Gracias por confiar en nosotros.<br/>— El equipo de ALEJANDR.IA</p>
+                `,
                 delay: 30 * 1000,
+                emailState: "Entregado"
             },
         ];
 

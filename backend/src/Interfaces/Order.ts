@@ -7,7 +7,7 @@ export interface Order {
     card: mongoose.Types.ObjectId,
     direction: mongoose.Types.ObjectId,
     total: Number,
-    state: String,
+    state: string,
     items: CartItem[],
     noItems: Number,
 }

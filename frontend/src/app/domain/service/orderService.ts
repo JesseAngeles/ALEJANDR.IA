@@ -30,5 +30,17 @@ export const orderService = {
         return response;
     },
 
+    cancelOrder: async (orderId: string): Promise<any> => {
+        const response = await apiFetch(`${API}/cancel/${orderId}`, {
+            method: "POST",
+        });
+        return response;
+    },
 
+    returnOrder: async (orderId: string): Promise<any> => {
+        const response = await apiFetch(`${API}/return/${orderId}`, {
+            method: "POST",
+        });
+        return response;
+    },
 };
