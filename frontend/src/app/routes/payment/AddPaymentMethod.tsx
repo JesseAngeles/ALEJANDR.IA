@@ -30,6 +30,15 @@ const AddPaymentMethod: React.FC = () => {
     return sum % 10 === 0;
   };
 
+  const cleanMonth = (month: string) => String(parseInt(month || "0"));
+  const cleanCVV = (cvv: string) => {
+    let cleaned = cvv.replace(/^0+/, "");
+    while (cleaned.length < 3) {
+      cleaned += "0"; 
+    }
+    return cleaned;
+  };
+
   const validateFields = () => {
     const newErrors: { [key: string]: string } = {};
     const now = new Date();
@@ -50,34 +59,28 @@ const AddPaymentMethod: React.FC = () => {
       newErrors.number = "Número de tarjeta inválido";
     }
 
+    const month = parseInt(cleanMonth(expirationMonth));
     if (!expirationMonth.trim()) {
       newErrors.expirationMonth = "Este campo es obligatorio";
-    } else {
-      const month = parseInt(expirationMonth);
-      if (isNaN(month) || month < 1 || month > 12) {
-        newErrors.expirationMonth = "Mes inválido";
-      }
+    } else if (isNaN(month) || month < 1 || month > 12) {
+      newErrors.expirationMonth = "Mes inválido";
     }
 
+    const year = parseInt(expirationYear);
     if (!expirationYear.trim()) {
       newErrors.expirationYear = "Este campo es obligatorio";
-    } else {
-      const year = parseInt(expirationYear);
-      if (isNaN(year) || year < currentYear) {
-        newErrors.expirationYear = "La tarjeta está expirada";
-      } else if (year > currentYear + 10) {
-        newErrors.expirationYear = `El año no puede ser mayor a ${currentYear + 10}`;
-      } else if (
-        year === currentYear &&
-        parseInt(expirationMonth) < currentMonth
-      ) {
-        newErrors.expirationMonth = "La tarjeta está expirada";
-      }
+    } else if (isNaN(year) || year < currentYear) {
+      newErrors.expirationYear = "La tarjeta está expirada";
+    } else if (year > currentYear + 10) {
+      newErrors.expirationYear = `El año no puede ser mayor a ${currentYear + 10}`;
+    } else if (year === currentYear && month < currentMonth) {
+      newErrors.expirationMonth = "La tarjeta está expirada";
     }
 
+    const cleanedCVV = cleanCVV(securityCode);
     if (!securityCode.trim()) {
       newErrors.securityCode = "Este campo es obligatorio";
-    } else if (!/^\d{4}$/.test(securityCode)) {
+    } else if (!/^\d{3}$/.test(cleanedCVV)) {
       newErrors.securityCode = "CVV inválido. Debe tener 3 dígitos.";
     }
 
@@ -94,9 +97,9 @@ const AddPaymentMethod: React.FC = () => {
     const newMethod = {
       titular,
       number,
-      expirationMonth: parseInt(expirationMonth),
+      expirationMonth: parseInt(cleanMonth(expirationMonth)),
       expirationYear: parseInt(expirationYear),
-      securityCode,
+      securityCode: cleanCVV(securityCode),
     };
 
     try {

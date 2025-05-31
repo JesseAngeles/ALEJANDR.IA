@@ -16,23 +16,33 @@ const AddDeliveryAddress: React.FC = () => {
 
   const navigate = useNavigate();
 
+  const cleanZipCode = (zip: string) => {
+    let cleaned = zip.replace(/^0+/, "");
+    while (cleaned.length < 5) {
+      cleaned += "0";
+    }
+    return cleaned;
+  };
+
   const validateFields = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!name.trim()) newErrors.name = "Este campo es obligatorio.";
-    if (!number.trim()) {
-      newErrors.number = "Este campo es obligatorio.";
-    } else if (!/^\d+$/.test(number)) {
-      newErrors.number = "Debe ser un número entero válido.";
-    }
+   if (!number.trim()) {
+    newErrors.number = "Este campo es obligatorio.";
+  } else if (!/^\d+$/.test(number)) {
+    newErrors.number = "Debe ser un número entero válido.";
+  } else if (parseInt(number) <= 0) {
+    newErrors.number = "Debe ser un número mayor a 0.";
+  }
 
     if (!street.trim()) newErrors.street = "Este campo es obligatorio.";
     if (!state.trim()) newErrors.state = "Este campo es obligatorio.";
     if (!city.trim()) newErrors.city = "Este campo es obligatorio.";
 
+    const cleanedZip = cleanZipCode(zip_code);
     if (!zip_code.trim()) {
       newErrors.zip_code = "Este campo es obligatorio.";
-    } else if (!/^\d{5}$/.test(zip_code)) {
+    } else if (!/^\d{5}$/.test(cleanedZip)) {
       newErrors.zip_code = "Debe ser un código postal válido de 5 dígitos.";
     }
 
@@ -50,7 +60,7 @@ const AddDeliveryAddress: React.FC = () => {
       number,
       street,
       city,
-      zip_code: parseInt(zip_code),
+      zip_code: parseInt(cleanZipCode(zip_code)),
       state,
     };
 
@@ -161,7 +171,6 @@ const AddDeliveryAddress: React.FC = () => {
         </div>
       </form>
 
-      {/* Modal de éxito */}
       {success && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-md text-center max-w-sm w-full">
@@ -185,3 +194,4 @@ const AddDeliveryAddress: React.FC = () => {
 };
 
 export { AddDeliveryAddress };
+
