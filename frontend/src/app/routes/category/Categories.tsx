@@ -18,10 +18,10 @@ const CategoriasDestacadas: React.FC = () => {
   // actualizar cuando se coloquen las categorías en español
   const categoriasConIcono: { nombre: string; imagen: string; filtro: string }[] = [
     { nombre: 'ROMANCE', imagen: corazon, filtro: 'Romance' },
-    { nombre: 'MISTERIO', imagen: misterio, filtro: '' },
-    { nombre: 'FANTASÍA', imagen: fantasia, filtro: 'Fiction' },
-    { nombre: 'HISTORIA', imagen: historia, filtro: 'History' },
-    { nombre: 'ACADÉMICO', imagen: academico, filtro: 'Education' },
+    { nombre: 'MISTERIO', imagen: misterio, filtro: 'Misterio' },
+    { nombre: 'FANTASÍA', imagen: fantasia, filtro: 'Ficción' },
+    { nombre: 'HISTORIA', imagen: historia, filtro: 'Historia' },
+    { nombre: 'ACADÉMICO', imagen: academico, filtro: 'Educación' },
   ];
 
   useEffect(() => {

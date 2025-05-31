@@ -8,6 +8,7 @@ import type { Book } from "@/assets/types/book";
 interface BookConCantidad extends Book {
   cantidad: number;
   id: string;
+  stock: number;
 }
 
 interface CartItem {
@@ -24,6 +25,7 @@ function adaptarLibro(raw: any, cantidad: number): BookConCantidad {
     imagen: raw.image,
     cantidad,
     ISBN: raw.ISBN,
+    stock: raw.stock,
   };
 }
 
@@ -210,12 +212,19 @@ const ShoppingCart: React.FC = () => {
                     <FaMinus className="text-xs" />
                   </button>
                   <span className="w-4 text-center">{book.cantidad}</span>
+                  <p className="text-[10px] text-gray-500 mt-1">
+  Disponible: {book.stock}
+</p>
+
                   <button
                     onClick={() => updateQuantity(book.ISBN, 1)}
-                    className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
+                    disabled={book.cantidad >= book.stock} 
+                    className={`w-6 h-6 flex items-center justify-center rounded-full 
+    ${book.cantidad >= book.stock ? 'bg-gray-100 cursor-not-allowed text-gray-400' : 'bg-gray-200 hover:bg-gray-300'}`}
                   >
                     <FaPlus className="text-xs" />
                   </button>
+
                 </div>
 
                 <div className="text-[#007B83] font-semibold text-center">

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { cartService } from "@/app/domain/service/cartService";
+import { useAuth } from "./AuthContext";
 
 interface CartItem {
   bookId: string;
@@ -22,6 +23,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const fetchCart = async () => {
     try {
@@ -45,6 +47,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
 
+  useEffect(() => {
+    if (!user) {
+      setCart([]);
+      return;
+    }
+  
+    const fetch = async () => {
+      await fetchCart();
+    };
+  
+    fetch();
+  }, [user]);
+  
+
   const addToCart = async (isbn: string) => {
     await cartService.addToCart(isbn);
     await fetchCart(); // esto ya está bien
@@ -55,8 +71,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await fetchCart();
   };
 
+
   return (
-    <CartContext.Provider value={{ cart, loading, fetchCart, isInCart, addToCart, removeFromCart }}>
+    <CartContext.Provider value={{ cart, loading, fetchCart, isInCart, addToCart, removeFromCart}}>
       {children}
     </CartContext.Provider>
   );
