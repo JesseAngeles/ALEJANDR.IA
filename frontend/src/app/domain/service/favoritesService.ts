@@ -185,5 +185,13 @@ export const favoritesService = {
     if (!res.ok) throw new Error("Error al eliminar de favoritos");
     return await res.json();
   },
+
+
+  clearCache: () => {
+    cachedCollectionId = null;
+    isCreating = false;
+    console.log("🧹 Caché de favoritos limpiada");
+  },
+
 };
 
