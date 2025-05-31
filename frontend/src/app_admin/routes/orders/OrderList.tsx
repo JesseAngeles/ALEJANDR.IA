@@ -138,7 +138,10 @@ const OrderList = () => {
     }
   };
 
-  const { activos, transporte, finalizados } = categorizeOrders(orders);
+  const sortedOrders = [...orders].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  const { activos, transporte, finalizados } = categorizeOrders(sortedOrders);
 
   const renderOrdersSection = (title: any, orderList: any[]) => (
     <section className="mb-8">

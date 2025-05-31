@@ -152,9 +152,13 @@ const OrderHistory: React.FC = () => {
         </div>
     );
 
-    const activeOrders = orders.filter((o) => o.state !== "Entregado" && o.state !== "Cancelado" && o.state !== "Devuelto");
-    const deliveredOrders = orders.filter((o) => o.state === "Entregado");
-    const canceledOrders = orders.filter((o) => o.state === "Cancelado" || o.state === "Devuelto");
+    const sortedOrders = [...orders].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    const activeOrders = sortedOrders.filter((o) => o.state !== "Entregado" && o.state !== "Cancelado" && o.state !== "Devuelto");
+    const deliveredOrders = sortedOrders.filter((o) => o.state === "Entregado");
+    const canceledOrders = sortedOrders.filter((o) => o.state === "Cancelado" || o.state === "Devuelto");
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8 relative">
