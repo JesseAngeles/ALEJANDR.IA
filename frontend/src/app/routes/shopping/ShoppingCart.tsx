@@ -8,6 +8,7 @@ import type { Book } from "@/assets/types/book";
 interface BookConCantidad extends Book {
   cantidad: number;
   id: string;
+  stock: number;
 }
 
 interface CartItem {
@@ -24,6 +25,7 @@ function adaptarLibro(raw: any, cantidad: number): BookConCantidad {
     imagen: raw.image,
     cantidad,
     ISBN: raw.ISBN,
+    stock: raw.stock,
   };
 }
 
@@ -202,21 +204,32 @@ const ShoppingCart: React.FC = () => {
 
                 <div className="text-center font-medium">${book.precio.toFixed(2)}</div>
 
-                <div className="flex items-center justify-center space-x-2">
-                  <button
-                    onClick={() => updateQuantity(book.ISBN, -1)}
-                    className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
-                  >
-                    <FaMinus className="text-xs" />
-                  </button>
-                  <span className="w-4 text-center">{book.cantidad}</span>
-                  <button
-                    onClick={() => updateQuantity(book.ISBN, 1)}
-                    className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
-                  >
-                    <FaPlus className="text-xs" />
-                  </button>
-                </div>
+                <div className="flex flex-col items-center justify-center">
+  <div className="flex items-center space-x-2">
+    <button
+      onClick={() => updateQuantity(book.ISBN, -1)}
+      className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
+    >
+      <FaMinus className="text-xs" />
+    </button>
+
+    <span className="w-4 text-center">{book.cantidad}</span>
+
+    <button
+      onClick={() => updateQuantity(book.ISBN, 1)}
+      disabled={book.cantidad >= book.stock}
+      className={`w-6 h-6 flex items-center justify-center rounded-full 
+        ${book.cantidad >= book.stock ? 'bg-gray-100 cursor-not-allowed text-gray-400' : 'bg-gray-200 hover:bg-gray-300'}`}
+    >
+      <FaPlus className="text-xs" />
+    </button>
+  </div>
+
+  <p className="text-[10px] text-gray-500 mt-1">
+    Disponible: {book.stock}
+  </p>
+</div>
+
 
                 <div className="text-[#007B83] font-semibold text-center">
                   ${(book.precio * book.cantidad).toFixed(2)}
