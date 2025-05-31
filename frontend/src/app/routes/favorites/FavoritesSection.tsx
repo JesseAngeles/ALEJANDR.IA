@@ -103,7 +103,7 @@ const Favorites: React.FC<Props> = ({ libros }) => {
 
     <section className="my-8 px-6">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
         className="flex items-center text-sm text-black hover:underline mb-4"
       >
         <FaArrowLeft className="mr-2 text-black" />

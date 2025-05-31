@@ -52,7 +52,7 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
         className="flex items-center text-sm text-black mb-6 hover:underline"
       >
         <FaArrowLeft className="mr-2" />
-        Back
+        Regresar
       </button>
 
       {/* Title */}

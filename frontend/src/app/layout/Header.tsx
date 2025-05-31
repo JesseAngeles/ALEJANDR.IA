@@ -4,6 +4,8 @@ import { MdMenu } from "react-icons/md";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { searchService } from "../domain/service/searchService";
+import { FaHome } from "react-icons/fa";
+
 
 const Header: React.FC = () => {
   const [mostrarMenu, setMostrarMenu] = useState(false);
@@ -202,44 +204,52 @@ const Header: React.FC = () => {
       </div>
 
       {/* Botones de cuenta */}
-      <div className="flex items-center gap-2 text-sm divide-x divide-gray-300 relative" ref={cuentaRef}>
-        <button
-          className="flex items-center gap-1 px-3 hover:text-blue-600"
-          onClick={() => {
-            if (estaLogueado) {
-              navigate("/account/profile");
-            } else {
-              navigate("/login");
-            }
-          }}
-        >
-          <FaUser />
-          <span className="hidden sm:inline">Mi cuenta</span>
-        </button>
-        <button
-          className="flex items-center gap-1 px-3 hover:text-blue-600"
-          onClick={() => navigate(estaLogueado ? "/mis-favoritos" : "/login")}
-        >
-          <FaHeart />
-          <span className="hidden sm:inline">Favoritos</span>
-        </button>
+<div className="flex items-center gap-2 text-sm divide-x divide-gray-300 relative" ref={cuentaRef}>
+  <button
+    className="flex items-center gap-1 px-3 hover:text-blue-600"
+    onClick={() => navigate("/")}
+  >
+    <FaHome />
+    <span className="hidden sm:inline">Inicio</span>
+  </button>
 
+  <button
+    className="flex items-center gap-1 px-3 hover:text-blue-600"
+    onClick={() => {
+      if (estaLogueado) {
+        navigate("/account/profile");
+      } else {
+        navigate("/login");
+      }
+    }}
+  >
+    <FaUser />
+    <span className="hidden sm:inline">Mi cuenta</span>
+  </button>
 
-        <button className="flex items-center gap-1 px-3 hover:text-blue-600"
-          onClick={() => {
-            if (estaLogueado) {
-              navigate("/cart");
-            } else {
-              navigate("/login");
-            }
-          }}
-        >
-          <FaShoppingCart />
-          <span className="hidden sm:inline">Carrito</span>
-        </button>
+  <button
+    className="flex items-center gap-1 px-3 hover:text-blue-600"
+    onClick={() => navigate(estaLogueado ? "/mis-favoritos" : "/login")}
+  >
+    <FaHeart />
+    <span className="hidden sm:inline">Favoritos</span>
+  </button>
 
+  <button
+    className="flex items-center gap-1 px-3 hover:text-blue-600"
+    onClick={() => {
+      if (estaLogueado) {
+        navigate("/cart");
+      } else {
+        navigate("/login");
+      }
+    }}
+  >
+    <FaShoppingCart />
+    <span className="hidden sm:inline">Carrito</span>
+  </button>
+</div>
 
-      </div>
 
     </header>
   );

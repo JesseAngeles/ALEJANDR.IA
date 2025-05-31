@@ -4,7 +4,7 @@ export const ValUserSchema = z.object({
     name: z
         .string()
         .min(1, 'El nombre es un campo obligatorio')
-        .regex(/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/, 'Nombre inválido'),
+        .regex(/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/, 'Formato inválido.Utilice letras para el nombre.'),
 
     email: z
         .string()
