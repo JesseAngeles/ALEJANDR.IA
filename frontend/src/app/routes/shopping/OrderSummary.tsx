@@ -25,10 +25,8 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
       })),
     };
 
-    console.log(orderData);
     try {
-
-      await orderService.sendOrder({
+      const response = await orderService.sendOrder({
         cart,
         address,
         paymentMethod,
@@ -36,8 +34,13 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
         total,
         ...orderData,
       });
+
+      const orderId = response?._id; // <- Asegúrate de que tu backend retorne el _id
+
       resetPurchase();
-      navigate("/confirmation");
+
+      // Navegar a /confirmation con el ID como parámetro de estado
+      navigate("/confirmation", { state: { orderId } });
     } catch (error) {
       console.error(error);
       alert("Ocurrió un error al procesar tu compra.");
