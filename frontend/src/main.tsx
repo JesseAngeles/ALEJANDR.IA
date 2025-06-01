@@ -9,6 +9,7 @@ import { FavoritesProvider } from "./app/domain/context/FavoritesContext";
 import { ToastProvider } from './app/domain/context/ToastContext';
 import './assets/styles/global.css';
 import { OrderProvider } from './app/domain/context/OrderContext';
+import { CartBackupProvider } from './app/domain/context/CartBackupContext';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -18,7 +19,9 @@ createRoot(document.getElementById('root')!).render(
         <CartProvider>
           <PurchaseProvider>
             <OrderProvider>
-              <RouterProvider router={router} />
+              <CartBackupProvider>
+                <RouterProvider router={router} />
+              </CartBackupProvider>
             </OrderProvider>
           </PurchaseProvider>
         </CartProvider>

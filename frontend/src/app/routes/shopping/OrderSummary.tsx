@@ -4,7 +4,10 @@ import { OrderSummaryProps } from "@/assets/types/summary";
 import { useNavigate } from "react-router-dom";
 import { getCardLogo } from "@/app/utils/getCardLogo";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
+import { useCartBackup } from "@/app/domain/context/CartBackupContext";
 import { orderService } from "@/app/domain/service/orderService";
+import { cartService } from "@/app/domain/service/cartService";
+import { useCart } from "@/app/domain/context/CartContext"; // ✅
 
 type Props = {
   summary: OrderSummaryProps;
@@ -13,6 +16,8 @@ type Props = {
 const OrderSummary: React.FC<Props> = ({ summary }) => {
   const { cart, address, paymentMethod, totalItems, total } = summary;
   const { resetPurchase } = usePurchase();
+  const { backup, clearBackup } = useCartBackup();
+  const { fetchCart } = useCart(); // ✅ actualizar carrito
   const navigate = useNavigate();
 
   const handleConfirm = async () => {
@@ -25,9 +30,7 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
       })),
     };
 
-    console.log(orderData);
     try {
-
       await orderService.sendOrder({
         cart,
         address,
@@ -36,17 +39,29 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
         total,
         ...orderData,
       });
+
+      // ✅ Restaurar carrito desde el contexto
+      if (backup && backup.length > 0) {
+        await cartService.emptyCart(); // limpia carrito actual
+
+        for (const item of backup) {
+          await cartService.addToCart(item.isbn, item.quantity); // repuebla carrito
+        }
+
+        await fetchCart(); // ✅ actualiza visualmente
+        clearBackup(); // limpia backup en memoria
+      }
+
       resetPurchase();
       navigate("/confirmation");
     } catch (error) {
-      console.error(error);
+      console.error("❌ Error al procesar compra:", error);
       alert("Ocurrió un error al procesar tu compra.");
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Back */}
       <button
         onClick={() => navigate(-1)}
         className="flex items-center text-sm text-black mb-6 hover:underline"
@@ -55,12 +70,10 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
         Regresar
       </button>
 
-      {/* Title */}
       <h2 className="text-center text-[#820000] text-lg font-semibold mb-6">
         Resumen del pedido
       </h2>
 
-      {/* Order Info */}
       <div className="space-y-4 text-sm">
         <div className="flex justify-between">
           <span className="font-semibold">Total de productos:</span>
@@ -88,7 +101,6 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
           </div>
         </div>
 
-        {/* Product list */}
         <div className="border-t pt-4">
           <h3 className="font-semibold text-base mb-2">Productos:</h3>
           <ul className="space-y-4">
@@ -122,7 +134,6 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
           </ul>
         </div>
 
-        {/* Total */}
         <div className="border-t pt-2 flex justify-between mt-4">
           <span className="font-semibold text-base">Total:</span>
           <span className="text-[#007B83] font-semibold text-base">
@@ -131,7 +142,6 @@ const OrderSummary: React.FC<Props> = ({ summary }) => {
         </div>
       </div>
 
-      {/* Confirm Button */}
       <div className="text-center mt-6">
         <button
           onClick={handleConfirm}

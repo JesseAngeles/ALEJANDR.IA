@@ -152,6 +152,12 @@ const Header: React.FC = () => {
             onChange={(e) => setBuscar(e.target.value)}
             onFocus={() => setMostrarSugerencias(true)}
             className="w-full p-2 outline-none"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault(); // Previene que un formulario se envíe, si aplica
+                irAResultados(buscar);
+              }
+            }}
           />
           <button className="text-cyan-700 px-4" onClick={() => irAResultados(buscar)}>
             Buscar
