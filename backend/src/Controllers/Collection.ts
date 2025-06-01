@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import users from "../Models/User"
 import mongoose from "mongoose"
 import Book from "../Models/Book"
+import { updateUserRecommendations } from "../Middleware/UpdateRecommendations"
 
 export const addCollection = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -132,32 +133,46 @@ export const deleteCollection = async (req: Request, res: Response): Promise<voi
 
 export const addBookToCollection = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.user?.id
-        const ISBN = req.params.ISBN
-        const collectionId = req.params.collection
+        const userId = req.user?.id;
+        const ISBN = req.params.ISBN;
+        const collectionId = req.params.collection;
 
-        const user = await users.findById(userId)
+        if (!userId) {
+            res.status(400).send("User ID is required");
+            return;
+        }
+
+        console.time("findUser");
+        const user = await users.findById(userId).select("collections");
+        console.timeEnd("findUser");
+
         if (!user) {
-            res.status(404).send(`User not found`)
-            return
+            res.status(404).send("User not found");
+            return;
         }
 
-        const book = await Book.findOne({"ISBN" : ISBN})
+        void updateUserRecommendations(userId);
+
+        console.time("findBook");
+        const book = await Book.findOne({ ISBN });
+        console.timeEnd("findBook");
+
         if (!book) {
-            res.status(404).send(`Book not found`)
-            return
+            res.status(404).send("Book not found");
+            return;
         }
 
-        const collection = (user?.collections as mongoose.Types.DocumentArray<any>).id(collectionId)
-        collection.books.push(String(book._id))
-        await user.save()
+        const collection = (user.collections as mongoose.Types.DocumentArray<any>).id(collectionId);
+        collection.books.push(String(book._id));
+        await user.save();
 
-        res.status(200).json(collection)
+        res.status(200).json(collection);
     } catch (error) {
         console.log(`Error: ${error}`);
-        res.status(500).send(`Error del servidor: ${error}`)
+        res.status(500).send(`Error del servidor: ${error}`);
     }
-}
+};
+
 
 export const deleteBookFromCollection = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -170,7 +185,10 @@ export const deleteBookFromCollection = async (req: Request, res: Response): Pro
             res.status(404).send("Usuario no encontrado")
             return
         }
-
+        if (!userId) {
+            res.status(400).send("User ID is required");
+            return;
+        }
         const book = await Book.findOne({"ISBN" : ISBN})
         if (!book) {
             res.status(404).send(`Book not found`)
@@ -183,6 +201,7 @@ export const deleteBookFromCollection = async (req: Request, res: Response): Pro
             return
         }
 
+        void updateUserRecommendations(userId);
         collection.books = collection.books.filter((b: mongoose.Types.ObjectId | string) => b.toString() !== String(book._id))
 
         await user.save()
