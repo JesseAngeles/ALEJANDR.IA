@@ -91,7 +91,7 @@ useEffect(() => {
 
               } else {
                 await removeFromFavorites(libro.ISBN);
-                showToast("Libro eliminado del carrito", "error");
+                showToast("Libro eliminado de favoritos", "error");
 
               }
               

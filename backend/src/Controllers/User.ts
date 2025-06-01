@@ -269,3 +269,36 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
         res.status(500).send(`Server error: ${error}`)
     }
 }
+
+export const getUserFavorites = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.params.id;
+
+        const user = await users.findById(userId).populate({
+            path: "collections.books",
+            model: "Book"
+        });
+
+        if (!user) {
+            res.status(404).send("Usuario no encontrado");
+            return;
+        }
+        await updateUserRecommendations(userId);
+        console.log("🧩 Colecciones del usuario:", user.collections);
+
+        const favoritesCollection = user.collections.find(
+            (col: any) => col.name === "favoritos" && col.books
+        );
+
+        if (!favoritesCollection || !favoritesCollection.books) {
+            res.status(404).json({ message: "No se encontró la colección de favoritos." });
+            return;
+        }
+
+        res.status(200).json(favoritesCollection.books);
+
+    } catch (error) {
+        console.error("❌ Error al obtener favoritos:", error);
+        res.status(500).send(`Error del servidor: ${error}`);
+    }
+};

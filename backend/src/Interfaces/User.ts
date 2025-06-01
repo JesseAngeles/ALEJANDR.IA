@@ -3,6 +3,7 @@ import { Card } from "./Card"
 import mongoose, { Collection } from "mongoose"
 import { Cart } from "./Cart"
 import { Order } from "./Order"
+import { UserCollection } from "./UserCollection"; // Asegúrate de importar esto
 
 export enum roles {
     user = "user",
@@ -18,7 +19,7 @@ export interface User {
     role: roles
     directions: Direction[]
     cards: Card[]
-    collections: Collection[]
+    collections: UserCollection[]
     recommendations?: any[] 
     cart: Cart,
     orders: mongoose.Types.ObjectId[],

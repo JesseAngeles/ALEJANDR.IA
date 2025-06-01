@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { tokenService } from "@/app/utils/tokenService";
 import { authService } from "@/app/domain/service/authService";
+import { favoritesService } from "../service/favoritesService";
 
 export type User = {
   id: string;
@@ -21,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
+ 
   useEffect(() => {
     const token = tokenService.getToken();
     if (token) {
@@ -42,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   const login = async (email: string, password: string) => {
+    favoritesService.clearCache();
     const { token, user } = await authService.login(email, password);
     tokenService.setToken(token);
     setUser(user); // ← Ahora guardas directamente el objeto completo
@@ -50,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
 
   const logout = () => {
+    favoritesService.clearCache();
     tokenService.removeToken();
     setUser(null);
   };

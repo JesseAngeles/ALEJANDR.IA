@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { favoritesService } from "@/app/domain/service/favoritesService";
+import { useAuth } from "./AuthContext";
 
 type Libro = {
   id: string;
@@ -24,6 +25,7 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [favoritos, setFavoritos] = useState<Libro[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const fetchFavorites = async () => {
     try {
@@ -59,6 +61,20 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return favoritos.some((libro) => libro.id === bookId);
 
   };
+
+  useEffect(() => {
+    if (!user) {
+      setFavoritos([]);
+      return;
+    }
+  
+    const fetch = async () => {
+      await fetchFavorites();
+    };
+  
+    fetch();
+  }, [user]);
+  
   
 
   const addToFavorites = async (isbn: string) => {
@@ -70,6 +86,8 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     await favoritesService.removeFromFavorites(isbn);
     await fetchFavorites();
   };
+
+
 
   return (
     <FavoritesContext.Provider
