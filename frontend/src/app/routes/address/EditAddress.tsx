@@ -211,7 +211,7 @@ const EditAddress: React.FC = () => {
                             Dirección actualizada correctamente
                         </p>
                         <button
-                            onClick={() => navigate("/account/addresses")}
+                            onClick={() => navigate(-1)}
                             className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
                         >
                             OK
