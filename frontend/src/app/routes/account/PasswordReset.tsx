@@ -10,6 +10,7 @@ const PasswordReset: React.FC = () => {
     const [mostrarContrasena, setMostrarContrasena] = useState({
         old: false,
         new: false,
+        confirm: false,
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -69,7 +70,7 @@ const PasswordReset: React.FC = () => {
             </div>
 
             <h2 className="text-2xl font-semibold text-[#820000] mb-6">
-                Modificar contraseña
+                Recuperación de contraseña
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -125,15 +126,27 @@ const PasswordReset: React.FC = () => {
                     )}
                 </div>
 
-                {/* Confirmar nueva contraseña (sin botón de mostrar/ocultar) */}
-                <div>
+                {/* Confirmar nueva contraseña */}
+                <div className="relative">
                     <label className="block text-sm mb-1">Confirmar contraseña:</label>
                     <input
-                        type="password"
+                        type={mostrarContrasena.confirm ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full mt-1 p-2 border rounded-md"
                     />
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setMostrarContrasena((prev) => ({
+                                ...prev,
+                                confirm: !prev.confirm,
+                            }))
+                        }
+                        className="absolute right-2 top-[38px] text-blue-700 text-sm hover:underline"
+                    >
+                        {mostrarContrasena.confirm ? "Ocultar" : "Mostrar"}
+                    </button>
                     {errors.confirmPassword && (
                         <p className="text-red-600 text-xs">{errors.confirmPassword}</p>
                     )}

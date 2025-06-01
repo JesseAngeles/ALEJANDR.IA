@@ -62,7 +62,6 @@ const PasswordRecovery: React.FC = () => {
 
             setSuccess(true);
             setErrors({});
-            setTimeout(() => navigate("/"), 2000);
         } catch (error) {
             setErrors({ general: "Hubo un error al procesar la recuperación" });
         }
@@ -179,7 +178,7 @@ const PasswordRecovery: React.FC = () => {
                             ¡Contraseña actualizada correctamente!
                         </h3>
                         <button
-                            onClick={() => setSuccess(false)}
+                            onClick={() => navigate("/login")}
                             className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
                         >
                             OK
