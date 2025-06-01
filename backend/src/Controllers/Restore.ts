@@ -66,10 +66,46 @@ export const generateRestoreToken = async (req: Request, res: Response): Promise
         });
 
         await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+            from: `"ALEJANDR.IA" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: "Código de recuperación",
-            html: `<p>Tu código de recuperación es: <strong>${token}</strong></p>`,
+            subject: "Recupera el acceso a tu cuenta | ALEJANDR.IA",
+            html: `
+            <div style="font-family:'Segoe UI', Arial, sans-serif; background:#f9f9f9; padding:38px 0;">
+                <div style="max-width: 480px; margin:auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.07);">
+                    <h2 style="text-align:center; color:#820000; margin-bottom:0.7em; margin-top:2em;">
+                        Recupera el acceso a tu cuenta
+                    </h2>
+                    <div style="padding:0 36px 18px 36px;">
+                        <p style="color:#444; font-size:1.08em;">
+                            Recibimos una solicitud para restablecer la contraseña de tu cuenta en <strong>ALEJANDR.IA</strong>.
+                        </p>
+                        <p style="color:#444; font-size:1.10em; margin:1.5em 0; text-align:center;">
+                            <span style="display:inline-block; background:#f5eded; color:#820000; border-radius:8px; padding:15px 38px; font-size:1.3em; font-weight:600; letter-spacing:2px;">
+                                ${token}
+                            </span>
+                        </p>
+                        <p style="color:#444; font-size:1.02em;">
+                            Ingresa este código en la pantalla de recuperación para crear una nueva contraseña. Este código es válido por <strong>15 minutos</strong>.
+                        </p>
+                        <p style="color:#999; font-size:0.95em; margin:1.5em 0 0 0;">
+                            <strong>¿No solicitaste este cambio?</strong><br>
+                            Ignora este mensaje y tu contraseña seguirá siendo la misma.
+                        </p>
+                        <div style="text-align:center; margin:2em 0 1em 0;">
+                            <a href="${process.env.SERVER_URL || 'http://localhost:5173'}/password-recovery" 
+                                target="_blank"
+                                style="background:#820000; color:#fff; padding:12px 32px; border-radius:6px; text-decoration:none; font-size:1em; font-weight:600;">
+                                Recuperar mi cuenta
+                            </a>
+                        </div>
+                        <p style="color:#999; font-size:0.93em; text-align:center;">
+                            Si tienes dudas, contáctanos:<br>
+                            <a href="mailto:${process.env.EMAIL_USER}" style="color: #820000;">${process.env.EMAIL_USER}</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            `
         });
 
         res.status(200).json({ message: "Restore token sent to your email." });
