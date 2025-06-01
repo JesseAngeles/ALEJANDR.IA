@@ -43,17 +43,19 @@ export const getRecommendedBook = async (req: Request, res: Response): Promise<v
 		const books = await Book.aggregate([
 			{ $match: { stock: { $gt: 10 } } },
 			{ $sample: { size: 1 } }
-		])
+		]);
 
 		if (books.length > 0) {
-			res.status(200).json(books[0])
+			res.status(200).json(books[0]);
 		} else {
-			res.status(404).json({ message: 'No se encontró un libro con stock mayor a 10' })
+			res.status(404).json({ message: 'No se encontró un libro con stock mayor a 10' });
 		}
 	} catch (error) {
-		res.status(500).json({ error: 'Error al obtener el libro recomendado' })
+		console.error('Error al obtener el libro recomendado:', error);
+		res.status(500).json({ error: 'Error al obtener el libro recomendado' });
 	}
-}
+};
+
 
 
 
