@@ -29,7 +29,7 @@ const PaymentMethodsAccount: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
         className="flex items-center text-sm text-black mb-6 hover:underline"
       >
         <FaArrowLeft className="mr-2" />
