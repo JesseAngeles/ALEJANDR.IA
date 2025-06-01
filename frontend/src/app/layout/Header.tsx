@@ -5,6 +5,10 @@ import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { searchService } from "../domain/service/searchService";
 import { FaHome } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
+import { useCart } from "../domain/context/CartContext";
+import { cartService } from "../domain/service/cartService";
+import { useCartBackup } from "../domain/context/CartBackupContext";
 
 
 const Header: React.FC = () => {
@@ -20,6 +24,9 @@ const Header: React.FC = () => {
   const sugerenciasRef = useRef<HTMLDivElement>(null);
   const cuentaRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { fetchCart } = useCart();
+  const { backup, clearBackup } = useCartBackup();
 
   const estaLogueado = !!localStorage.getItem("token");
 
@@ -88,6 +95,29 @@ const Header: React.FC = () => {
   }, []);
   
   
+  
+useEffect(() => {
+  const rutasCompra = ["/address","/address/add", "/payment", "/payment/add", "/cvc", "/summary", "/confirmation"];
+  const estaEnCompra = rutasCompra.some((ruta) => location.pathname.startsWith(ruta));
+
+  if (!estaEnCompra && backup.length > 0) {
+    const restaurar = async () => {
+      try {
+        await cartService.emptyCart();
+        for (const item of backup) {
+          await cartService.addToCart(item.isbn, item.quantity);
+        }
+        await fetchCart();
+        clearBackup();
+        console.log("✅ Carrito restaurado desde backup del contexto");
+      } catch (error) {
+        console.error("❌ Error al restaurar carrito desde backup:", error);
+      }
+    };
+
+    restaurar();
+  }
+}, [location]);
 
 
   const irAResultados = (termino: string, filtro?: string) => {
@@ -152,6 +182,12 @@ const Header: React.FC = () => {
             onChange={(e) => setBuscar(e.target.value)}
             onFocus={() => setMostrarSugerencias(true)}
             className="w-full p-2 outline-none"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault(); // Previene que un formulario se envíe, si aplica
+                irAResultados(buscar);
+              }
+            }}
           />
           <button className="text-cyan-700 px-4" onClick={() => irAResultados(buscar)}>
             Buscar
