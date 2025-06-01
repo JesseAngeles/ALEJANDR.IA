@@ -24,6 +24,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { OrderDetails } from "./routes/account/OrderDetails";
 import { Review } from "./routes/book/Review";
 import { NotFound } from "@/Errors/NotFound";
+import { EditAddress } from "./routes/address/EditAddress";
 
 export const router = createBrowserRouter([
   {
@@ -159,6 +160,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Review />
+          </ProtectedRoute >
+
+        ),
+      },
+      {
+        path: "/address/edit/:id",
+        element: (
+          <ProtectedRoute>
+            <EditAddress />
           </ProtectedRoute >
 
         ),

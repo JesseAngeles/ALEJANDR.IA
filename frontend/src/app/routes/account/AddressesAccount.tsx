@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaArrowLeft, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { AccountSidebar } from "@/app/routes/account/AccountSideBar";
 import { addressService } from "@/app/domain/service/addressService";
@@ -54,12 +54,20 @@ const AddressesAccount: React.FC = () => {
                   <p className="text-sm text-gray-700">{`${addr.street} ${addr.number}, ${addr.zip_code}, ${addr.city}, ${addr.state}`}</p>
                 </div>
 
-                <button
-                  onClick={() => handleRemove(addr._id)}
-                  className="text-red-600 text-sm flex items-center gap-1 hover:underline"
-                >
-                  <FaTrash className="text-xs" /> Eliminar
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => navigate(`/address/edit/${addr._id}`)}
+                    className="text-[#007B83] text-sm flex items-center gap-1 hover:underline"
+                  >
+                    <FaEdit className="text-xs" /> Editar
+                  </button>
+                  <button
+                    onClick={() => handleRemove(addr._id)}
+                    className="text-red-600 text-sm flex items-center gap-1 hover:underline"
+                  >
+                    <FaTrash className="text-xs" /> Eliminar
+                  </button>
+                </div>
               </div>
             ))}
           </div>
