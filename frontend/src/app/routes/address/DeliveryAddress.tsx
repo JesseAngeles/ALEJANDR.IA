@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaEdit } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePurchase } from "@/app/domain/context/PurchaseContext";
 import { AddDeliveryAddress } from "@/app/routes/address/AddDeliveryAddress";
@@ -64,12 +64,20 @@ const DeliveryAddress: React.FC = () => {
                             <p className="font-semibold">{addr.name}</p>
                             <p className="text-gray-700">{`${addr.street} ${addr.number}, ${addr.zip_code}, ${addr.city}, ${addr.state}`}</p>
                         </div>
-                        <button
-                            className="text-[#820000] font-semibold hover:underline"
-                            onClick={() => handleSelect(addr)}
-                        >
-                            Seleccionar
-                        </button>
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={() => navigate(`/address/edit/${addr._id}`)}
+                                className="text-[#007B83] text-sm flex items-center gap-1 hover:underline"
+                            >
+                                <FaEdit className="text-xs" /> Editar
+                            </button>
+                            <button
+                                className="text-[#820000] font-semibold hover:underline"
+                                onClick={() => handleSelect(addr)}
+                            >
+                                Seleccionar
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
