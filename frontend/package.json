@@ -16,6 +16,9 @@
     "react-icons": "^4.12.0",
     "react-router-dom": "^7.5.0",
     "recharts": "^2.15.2",
+    "socket": "^0.15.43",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "zod": "^3.24.4"
   },
   "devDependencies": {
