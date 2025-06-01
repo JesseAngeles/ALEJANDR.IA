@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createBook, getBooks, getBookById, updateBook, deleteBook, getBookByObjectId } from '../Controllers/Book'
+import { createBook, getBooks, getBookById, updateBook, deleteBook, getBookByObjectId, getRecommendedBook } from '../Controllers/Book'
 import { authenticateToken, authorizeRole } from '../Middleware/jwt'
 import { validateRequest } from '../Middleware/ValidateRequest'
 import { ValBookSchema } from '../Validations/Book'
@@ -14,6 +14,8 @@ routerBook.get('/:ISBN', getBookById)
 routerBook.put('/:ISBN', authenticateToken, authorizeRole("admin"), validateRequest(ValBookSchema), updateBook)
 routerBook.delete('/:ISBN', authenticateToken, authorizeRole("admin"), deleteBook)
 routerBook.get('/id/:id', getBookByObjectId);
+routerBook.get('/recomendation', getRecommendedBook);
+
 
 // OPINIONES (comment, rating)
 routerBook.get('/user-has-review/:ISBN', authenticateToken, authorizeRole("user"), getUserBookReview)
