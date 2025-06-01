@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { userService } from "@/app/domain/service/userService"; // Asegúrate de importar el servicio
+import { userService } from "@/app/domain/service/userService";
 import { FaArrowLeft } from "react-icons/fa";
 
 const PasswordReset: React.FC = () => {
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [mostrarContrasena, setMostrarContrasena] = useState({
+        old: false,
+        new: false,
+    });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // Estado para el modal
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const navigate = useNavigate();
 
     const validateFields = () => {
@@ -35,16 +39,15 @@ const PasswordReset: React.FC = () => {
         }
 
         try {
-            // Llamada al servicio para actualizar la contraseña
             const response = await userService.updatePassword({
                 password: oldPassword,
                 newPassword: newPassword,
             });
 
             if (response) {
-                setErrors({}); // Limpiar errores
-                setShowSuccessModal(true); // Mostrar modal de éxito
-                setTimeout(() => navigate("/"), 2000); // Redirigir después de 2 segundos
+                setErrors({});
+                setShowSuccessModal(true);
+                setTimeout(() => navigate("/"), 2000);
             }
         } catch (error) {
             console.error("Error al recuperar la contraseña:", error);
@@ -56,43 +59,73 @@ const PasswordReset: React.FC = () => {
         <div className="max-w-md mx-auto px-4 py-8">
             {/* Regresar */}
             <div className="mb-4">
-               <button
-                      onClick={() => navigate(-1)} 
-                      className="flex items-center text-sm text-black hover:underline mb-4"
-                    >
-                      <FaArrowLeft className="mr-2 text-black" />
-                              Regresar
-                    </button>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center text-sm text-black hover:underline mb-4"
+                >
+                    <FaArrowLeft className="mr-2 text-black" />
+                    Regresar
+                </button>
             </div>
 
-            <h2 className="text-2xl font-semibold text-[#820000] mb-6">Recuperación de contraseña</h2>
+            <h2 className="text-2xl font-semibold text-[#820000] mb-6">
+                Modificar contraseña
+            </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Contraseña actual */}
-                <div>
+                <div className="relative">
                     <label className="block text-sm mb-1">Contraseña actual:</label>
                     <input
-                        type="password"
+                        type={mostrarContrasena.old ? "text" : "password"}
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
                         className="w-full mt-1 p-2 border rounded-md"
                     />
-                    {errors.oldPassword && <p className="text-red-600 text-xs">{errors.oldPassword}</p>}
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setMostrarContrasena((prev) => ({
+                                ...prev,
+                                old: !prev.old,
+                            }))
+                        }
+                        className="absolute right-2 top-[38px] text-blue-700 text-sm hover:underline"
+                    >
+                        {mostrarContrasena.old ? "Ocultar" : "Mostrar"}
+                    </button>
+                    {errors.oldPassword && (
+                        <p className="text-red-600 text-xs">{errors.oldPassword}</p>
+                    )}
                 </div>
 
                 {/* Nueva contraseña */}
-                <div>
+                <div className="relative">
                     <label className="block text-sm mb-1">Nueva contraseña:</label>
                     <input
-                        type="password"
+                        type={mostrarContrasena.new ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full mt-1 p-2 border rounded-md"
                     />
-                    {errors.newPassword && <p className="text-red-600 text-xs">{errors.newPassword}</p>}
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setMostrarContrasena((prev) => ({
+                                ...prev,
+                                new: !prev.new,
+                            }))
+                        }
+                        className="absolute right-2 top-[38px] text-blue-700 text-sm hover:underline"
+                    >
+                        {mostrarContrasena.new ? "Ocultar" : "Mostrar"}
+                    </button>
+                    {errors.newPassword && (
+                        <p className="text-red-600 text-xs">{errors.newPassword}</p>
+                    )}
                 </div>
 
-                {/* Confirmar nueva contraseña */}
+                {/* Confirmar nueva contraseña (sin botón de mostrar/ocultar) */}
                 <div>
                     <label className="block text-sm mb-1">Confirmar contraseña:</label>
                     <input
@@ -101,10 +134,11 @@ const PasswordReset: React.FC = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full mt-1 p-2 border rounded-md"
                     />
-                    {errors.confirmPassword && <p className="text-red-600 text-xs">{errors.confirmPassword}</p>}
+                    {errors.confirmPassword && (
+                        <p className="text-red-600 text-xs">{errors.confirmPassword}</p>
+                    )}
                 </div>
 
-                {/* Error general */}
                 {errors.general && (
                     <p className="text-red-600 text-xs mt-2">{errors.general}</p>
                 )}
