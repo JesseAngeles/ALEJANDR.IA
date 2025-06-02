@@ -20,8 +20,6 @@ export function updateRating(book: Book): number {
 //     return book.reviewSumary
 // }
 
-// Este método ahora es asíncrono porque usa `fetch`
-
 const SUMMARY_SERVICE_URL = process.env.SUMMARY_SERVICE_URL!
 
 export async function updateSummary(book: Book): Promise<string> {
