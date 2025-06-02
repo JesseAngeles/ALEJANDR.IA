@@ -32,7 +32,7 @@ const Recomendacion: React.FC<RecomendacionProps> = ({ book }) => {
           className="w-24 h-auto shadow-lg"
         />
         <div className="text-center">
-          <p className="text-lg font-semibold">Recomendación de la semana:</p>
+          <p className="text-lg font-semibold">Te recomendamos leer:</p>
           <p className="text-2xl font-bold">{book.title}</p>
           <p className="text-sm mt-1">Autor: {book.author}</p>
         </div>

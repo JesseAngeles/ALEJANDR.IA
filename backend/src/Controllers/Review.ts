@@ -26,7 +26,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
 
         book.reviews.push(review)
         book.rating = updateRating(book)
-        book.reviewSumary = updateSummary(book)
+        book.reviewSumary = await updateSummary(book)
 
         const savedBook = await book.save()
         
@@ -88,8 +88,8 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
 
         book.reviews = book.reviews.filter(dir => dir._id.toString() !== reviewId)
         book.rating = updateRating(book)
-        book.reviewSumary = updateSummary(book)
-
+        book.reviewSumary = await updateSummary(book)
+        
         await book.save()
 
         res.status(200).json(book)

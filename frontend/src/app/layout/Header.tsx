@@ -97,7 +97,7 @@ const Header: React.FC = () => {
   
   
 useEffect(() => {
-  const rutasCompra = ["/address","/address/add", "/payment", "/payment/add", "/cvc", "/summary", "/confirmation"];
+  const rutasCompra = ["/address","/address/add", "/payment", "/payment/add", "/cvc", "/summary", "/confirmation", "/address/edit"];
   const estaEnCompra = rutasCompra.some((ruta) => location.pathname.startsWith(ruta));
 
   if (!estaEnCompra && backup.length > 0) {
