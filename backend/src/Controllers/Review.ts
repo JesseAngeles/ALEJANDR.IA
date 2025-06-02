@@ -34,7 +34,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
         
         res.status(200).json(savedBook)
     } catch (error) {
-        console.log(`Error: ${error}`)
+        console.log(`Error: $error}`)
         res.status(500).send(`Server error ${error}`)
     }
 }

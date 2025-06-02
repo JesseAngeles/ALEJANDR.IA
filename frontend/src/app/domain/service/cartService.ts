@@ -114,4 +114,19 @@ export const cartService = {
     return await res.json();
   },
 
+  restoreBackup: async () => {
+    const backup = localStorage.getItem("temp_cart_backup");
+    if (!backup) return;
+  
+    const { items }: { items: { bookId: string; quantity: number }[] } = JSON.parse(backup);
+  
+    await cartService.emptyCart(); // Limpia el carrito actual
+  
+    for (const item of items) {
+      await cartService.addToCart(item.bookId, item.quantity); // Usa el método ya probado
+    }
+  
+    localStorage.removeItem("temp_cart_backup"); // Limpia el backup
+  }
+  
 };

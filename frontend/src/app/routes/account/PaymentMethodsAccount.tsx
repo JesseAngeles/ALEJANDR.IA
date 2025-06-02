@@ -29,7 +29,7 @@ const PaymentMethodsAccount: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
         className="flex items-center text-sm text-black mb-6 hover:underline"
       >
         <FaArrowLeft className="mr-2" />
@@ -51,17 +51,14 @@ const PaymentMethodsAccount: React.FC = () => {
                 className="flex justify-between items-center bg-gray-50 border rounded px-4 py-3 text-sm"
               >
                 <div className="flex items-center gap-4">
-                  <img
-                    src={getCardLogo(card.type)}
-                    alt={card.type}
-                    className="w-10 h-6"
-                  />
+                  <img src={getCardLogo(card.type)} alt={card.type} className="w-10 h-6" />
                   <div>
                     <p>
-                      Terminada en{" "}
-                      <span className="font-semibold">{card.last4}</span>
+                      Terminada en <span className="font-semibold">{card.last4}</span>
                     </p>
-                    <p className="text-xs text-gray-600">{card.type}</p>
+                    <p className="text-xs text-gray-600">
+                      {card.titular} — expira {card.expirationMonth}/{card.expirationYear}
+                    </p>
                   </div>
                 </div>
 

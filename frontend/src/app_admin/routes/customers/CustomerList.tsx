@@ -43,7 +43,7 @@ const CustomerList: React.FC = () => {
           <tr>
             <th className="p-2">Nombre</th>
             <th className="p-2">Email</th>
-            <th className="p-2">Activo</th>
+           
           </tr>
         </thead>
         <tbody>
@@ -51,7 +51,7 @@ const CustomerList: React.FC = () => {
             <tr key={user._id} className="border-t">
               <td className="p-2">{user.name}</td>
               <td className="p-2">{user.email}</td>
-              <td className="p-2">{user.active ? "Sí" : "No"}</td>
+           
 
             </tr>
           ))}
