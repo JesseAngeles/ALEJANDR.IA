@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import Book from '../Models/Book'
 import { Category } from '../Models/Category'
+import Order from '../Models/Order'
 
 export const createBook = async (req: Request, res: Response): Promise<void> => {
 	try {
@@ -40,23 +41,53 @@ export const getBooks = async (req: Request, res: Response): Promise<void> => {
 
 export const getRecommendedBook = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const books = await Book.aggregate([
-			{ $match: { stock: { $gt: 10 } } },
-			{ $sample: { size: 1 } }
+		const topBooks = await Order.aggregate([
+			{ $unwind: "$items" },
+			{
+				$group: {
+					_id: "$items.bookId",
+					totalSold: { $sum: "$items.quantity" }
+				}
+			},
+			{
+				$lookup: {
+					from: "books",
+					localField: "_id",
+					foreignField: "_id",
+					as: "bookData"
+				}
+			},
+			{ $unwind: "$bookData" },
+			{ $sort: { totalSold: -1 } },
+			{ $limit: 3 }, // Solo los 3 más vendidos
+			{
+				$project: {
+					_id: 0,
+					title: "$bookData.title",
+					author: "$bookData.author",
+					ISBN: "$bookData.ISBN",
+					image: "$bookData.image",
+					stock: "$bookData.stock",
+					totalSold: 1
+				}
+			}
 		]);
 
-		if (books.length > 0) {
-			res.status(200).json(books[0]);
-		} else {
-			res.status(404).json({ message: 'No se encontró un libro con stock mayor a 10' });
+		if (topBooks.length === 0) {
+			res.status(404).json({ message: 'No se encontraron libros vendidos' });
+			return;
 		}
+
+		// Elegir uno aleatoriamente entre los top 3
+		const randomIndex = Math.floor(Math.random() * topBooks.length);
+		const recommended = topBooks[randomIndex];
+
+		res.status(200).json(recommended);
 	} catch (error) {
 		console.error('Error al obtener el libro recomendado:', error);
 		res.status(500).json({ error: 'Error al obtener el libro recomendado' });
 	}
 };
-
-
 
 
 
