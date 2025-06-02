@@ -10,6 +10,11 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
         const ISBN = req.params.ISBN
         const review = req.body
         const userId = req.user?.id
+        
+        if (!userId) {
+            res.status(400).send("User ID is required");
+            return;
+        }
 
         review.userId = userId
 
@@ -24,10 +29,9 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
         book.reviewSumary = updateSummary(book)
 
         const savedBook = await book.save()
-        if (review.rating >= 4 && userId) {
-            await updateUserRecommendations(userId);
-        }
-
+        
+        void updateUserRecommendations(userId);
+        
         res.status(200).json(savedBook)
     } catch (error) {
         console.log(`Error: ${error}`)
