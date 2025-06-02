@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import type { Address } from "@/assets/types/address";
 import { addressService } from "@/app/domain/service/addressService";
+
 
 const AddDeliveryAddress: React.FC = () => {
   const [name, setName] = useState("");
@@ -13,6 +14,8 @@ const AddDeliveryAddress: React.FC = () => {
   const [zip_code, setZipCode] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [success, setSuccess] = useState(false);
+  const location = useLocation();
+  const returnTo = location.state?.returnTo || "/account/addresses";
 
   const navigate = useNavigate();
 
@@ -180,7 +183,7 @@ const AddDeliveryAddress: React.FC = () => {
             <button
               onClick={() => {
                 setSuccess(false);
-                navigate("/account/addresses");
+                navigate(returnTo);
               }}
               className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
             >

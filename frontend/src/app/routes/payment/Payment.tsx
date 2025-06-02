@@ -50,6 +50,7 @@ const Payment: React.FC = () => {
             <div className="text-center mt-6">
                 <Link
                     to="/payment/add"
+                    state={{ returnTo: "/payment" }}
                     className="bg-[#007B83] hover:bg-[#00666e] text-white px-6 py-2 rounded inline-block"
                 >
                     Agregar método de pago

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { paymentService } from "@/app/domain/service/paymentService";
 
 const AddPaymentMethod: React.FC = () => {
@@ -12,6 +12,8 @@ const AddPaymentMethod: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formError, setFormError] = useState("");
+  const location = useLocation();
+  const returnTo = location.state?.returnTo || "/account/payment";
 
   const navigate = useNavigate();
 
@@ -233,7 +235,7 @@ const AddPaymentMethod: React.FC = () => {
             <button
               onClick={() => {
                 setSuccessMessage(false);
-                navigate("/account/payment");
+                navigate(returnTo);
               }}
               className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
             >

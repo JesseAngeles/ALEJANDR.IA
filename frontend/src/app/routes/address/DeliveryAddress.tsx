@@ -85,7 +85,7 @@ const DeliveryAddress: React.FC = () => {
             {/* Botón agregar dirección */}
             <div className="mt-8 text-center">
                 <button
-                    onClick={() => navigate("/address/add")}
+                    onClick={() => navigate("/address/add", { state: { returnTo: "/address" } })}
                     className="bg-[#007B83] hover:bg-[#00666e] text-white px-6 py-2 rounded"
                 >
                     Agregar dirección
