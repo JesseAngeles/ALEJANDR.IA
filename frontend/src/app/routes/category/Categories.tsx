@@ -18,32 +18,32 @@ const CategoriasDestacadas: React.FC = () => {
   // actualizar cuando se coloquen las categorías en español
   const categoriasConIcono: { nombre: string; imagen: string; filtro: string }[] = [
     { nombre: 'ROMANCE', imagen: corazon, filtro: 'Romance' },
-    { nombre: 'MISTERIO', imagen: misterio, filtro: 'Misterio' },
-    { nombre: 'FANTASÍA', imagen: fantasia, filtro: 'Ficción' },
-    { nombre: 'HISTORIA', imagen: historia, filtro: 'Historia' },
-    { nombre: 'ACADÉMICO', imagen: academico, filtro: 'Educación' },
+    { nombre: 'MISTERIO', imagen: misterio, filtro: 'Arte, Literatura y Humanidades' },
+    { nombre: 'FANTASÍA', imagen: fantasia, filtro: 'Arte, Literatura y Humanidades' },
+    { nombre: 'HISTORIA', imagen: historia, filtro: 'Arte, Literatura y Humanidades' },
+    { nombre: 'ACADÉMICO', imagen: academico, filtro: 'Educación y Aprendizaje' },
   ];
 
   useEffect(() => {
-      const cargarCategorias = async () => {
-        try {
-          const libros: {
-            categoria: string;
-          }[] = await searchService.buscarTodos();
-    
-          const todasCategorias: string[] = libros.map((l) => l.categoria).filter(Boolean);
-          const unicas: string[] = Array.from(new Set(todasCategorias)).sort((a, b) =>
-            a.localeCompare(b)
-          );
-    
-          setTodasCategorias(unicas);
-        } catch (error) {
-          console.error("Error al cargar categorías:", error);
-        }
-      };
-    
-      cargarCategorias();
-    }, []);
+    const cargarCategorias = async () => {
+      try {
+        const libros: {
+          categoria: string;
+        }[] = await searchService.buscarTodos();
+
+        const todasCategorias: string[] = libros.map((l) => l.categoria).filter(Boolean);
+        const unicas: string[] = Array.from(new Set(todasCategorias)).sort((a, b) =>
+          a.localeCompare(b)
+        );
+
+        setTodasCategorias(unicas);
+      } catch (error) {
+        console.error("Error al cargar categorías:", error);
+      }
+    };
+
+    cargarCategorias();
+  }, []);
 
   const handleClickCategoria = (nombre: string) => {
     navigate(`/busqueda?query=${encodeURIComponent(nombre)}&filtro=categoria`);
