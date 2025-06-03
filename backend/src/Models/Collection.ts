@@ -10,7 +10,7 @@ export const collectionSchema = new Schema<Collection>({
     },
     books: [{
         type: Schema.Types.ObjectId,
-        ref: "books1"  // Cambiar de "Book" a "books1"
+        ref: "books"  // Cambiar de "Book" a "books1"
     }],
 });
 

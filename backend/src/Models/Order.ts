@@ -8,7 +8,7 @@ export const OrderSchema = new Schema<Order>({
         required: true,
     },
     client: {
-        type: Schema.Types.ObjectId, ref: "users1",
+        type: Schema.Types.ObjectId, ref: "users",
         required: true,
     },
     card: {
@@ -37,4 +37,4 @@ export const OrderSchema = new Schema<Order>({
     },
 })
 
-export default model<Order>('orders1', OrderSchema)
+export default model<Order>('orders', OrderSchema)

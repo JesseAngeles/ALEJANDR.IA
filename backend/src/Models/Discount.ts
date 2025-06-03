@@ -10,7 +10,7 @@ export const DiscountSchema = new Schema<Discount>({
     },
     bookIds: [{
         type: Schema.Types.ObjectId,
-        ref: "books1",  // Cambiar de "Book" a "books1"
+        ref: "books",  // Cambiar de "Book" a "books1"
         required: false
     }],
     discount: {

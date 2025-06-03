@@ -98,7 +98,7 @@ export const Books = async (req: Request, res: Response): Promise<void> => {
             },
             {
                 $lookup: {
-                    from: "books1",           // Cambiar de "books" a "books1"
+                    from: "books",
                     localField: "_id",
                     foreignField: "_id",
                     as: "bookData"
@@ -135,7 +135,7 @@ export const Clients = async (req: Request, res: Response): Promise<void> => {
             },
             {
                 $lookup: {
-                    from: "users1",
+                    from: "users",
                     localField: "_id",
                     foreignField: "_id",
                     as: "userData"
