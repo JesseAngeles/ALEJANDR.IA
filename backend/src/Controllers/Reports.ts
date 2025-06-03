@@ -151,7 +151,7 @@ export const Clients = async (req: Request, res: Response): Promise<void> => {
                     totalSpent: 1
                 }
             },
-            { $sort: { totalSpent: -1 } }
+            { $sort: { orders: -1 } }
         ])
 
         res.status(200).json({ clients })

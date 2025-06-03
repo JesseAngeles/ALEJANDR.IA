@@ -51,7 +51,7 @@ export const bookService = {
   },
 
   obtenerUnoRecomendado: async () => {
-    const res = await fetch(`${API_URL}/9780547739465`);
+    const res = await fetch(`${API_URL}/recommendation`);
     if (!res.ok) throw new Error("Error al obtener libro recomendado");
     return await res.json();
   },
