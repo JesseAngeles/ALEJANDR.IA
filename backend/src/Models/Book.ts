@@ -68,7 +68,7 @@ BookSchema.pre('save', function (next) {
   next()
 })
 
-export default model<Book>('Book', BookSchema)
+export default model<Book>('Books1', BookSchema)
 
 
 

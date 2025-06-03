@@ -4,7 +4,6 @@ import { Collection } from "../Interfaces/Collection"
 import { Direction } from "../Interfaces/Direction"
 import { Order } from "../Interfaces/Order"
 import { getCardBrand } from "./GetCardBrand"
-import users from "../Models/User"
 
 export function returnCard(card: Card | undefined): any {
     if (!card)

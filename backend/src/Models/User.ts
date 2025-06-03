@@ -57,7 +57,7 @@ const userSchema = new Schema<UserDocument>({
         required: false
     },
     recommendations: {
-        type: [Object], 
+        type: [Object],
         default: []
     }
 })
@@ -85,4 +85,4 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
     return await bcrypt.compare(candidatePassword, this.password)
 };
 
-export default mongoose.model<UserDocument>("users", userSchema);
+export default mongoose.model<UserDocument>("users1", userSchema);
