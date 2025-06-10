@@ -4,6 +4,7 @@ import { generateJWT } from "../Middleware/jwt"
 import { returnUser, returnFullUser } from "../Middleware/ReturnFunctions"
 import Collection from "../Models/Collection"
 import { updateUserRecommendations } from "../Middleware/UpdateRecommendations"
+import { sendNow } from "../Middleware/Mailer";
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -28,54 +29,128 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 
 export const getCachedRecommendations = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.params.id;
-      let user = await users.findById(userId);
-  
-      if (!user) {
-        res.status(404).send("Usuario no encontrado");
-        return;
-      }
-  
-      // Si no tiene recomendaciones, generarlas
-      if (!user.recommendations || user.recommendations.length === 0) {
-        await updateUserRecommendations(userId);
-        user = await users.findById(userId);
-  
-        if (!user) {
-          res.status(500).send("Error al recargar usuario tras actualizar recomendaciones");
-          return;
-        }
-      }
-  
-      res.status(200).json(user.recommendations || []);
-    } catch (error) {
-      console.error("❌ Error al obtener recomendaciones cacheadas:", error);
-      res.status(500).send(`Error del servidor: ${error}`);
-    }
-  };
+        const userId = req.params.id;
+        let user = await users.findById(userId);
 
+        if (!user) {
+            res.status(404).send("Usuario no encontrado");
+            return;
+        }
+
+        // Si no tiene recomendaciones, generarlas
+        if (!user.recommendations || user.recommendations.length === 0) {
+            await updateUserRecommendations(userId);
+            user = await users.findById(userId);
+
+            if (!user) {
+                res.status(500).send("Error al recargar usuario tras actualizar recomendaciones");
+                return;
+            }
+        }
+
+        res.status(200).json(user.recommendations || []);
+    } catch (error) {
+        console.error("❌ Error al obtener recomendaciones cacheadas:", error);
+        res.status(500).send(`Error del servidor: ${error}`);
+    }
+};
+
+
+const getServerUrl = () =>
+    process.env.SERVER_URL && process.env.SERVER_URL.trim() !== ""
+        ? process.env.SERVER_URL
+        : "http://localhost:5173";
+
+function getWelcomeEmailHtml(name: string) {
+    const serverUrl = getServerUrl();
+    const loginUrl = `${serverUrl}/login`;
+
+    return `
+    <div style="font-family: 'Inter', Arial, sans-serif; background: #FFFFFF; padding: 40px 0;">
+        <div style="max-width: 520px; margin: auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.07);">
+            <h2 style="text-align:center; color: #830000; font-family: 'Cardo', serif; margin-bottom: 0.6em; margin-top: 2em;">
+                Bienvenido/a a ALEJANDR.IA
+            </h2>
+            <div style="padding: 0 38px 18px 38px;">
+                <p style="color: #007B83; font-size: 1.12em; margin-bottom: 1.2em; font-family: 'Inter', Arial, sans-serif;">
+                    ¡Hola${name ? " " + name : ""}!
+                </p>
+                <p style="color: #444; font-size: 1.05em; font-family: 'Inter', Arial, sans-serif;">
+                    Tu cuenta ha sido creada exitosamente en nuestra plataforma. Ya puedes acceder con tus credenciales y empezar a disfrutar de todas las funciones de ALEJANDR.IA.
+                </p>
+                <div style="text-align:center; margin-top: 28px; margin-bottom: 18px;">
+                    <a href="${loginUrl}" target="_blank"
+                        style="background-color: #830000; color: #fff; padding: 13px 32px; border-radius: 6px; text-decoration: none; font-size: 1em; font-weight: 600; display: inline-block;">
+                        Iniciar sesión
+                    </a>
+                </div>
+                <p style="color: #999; font-size: 0.92em; text-align:center; margin-top:18px;">
+                    Si tienes dudas, contáctanos:<br>
+                    <a href="mailto:${process.env.EMAIL_USER}" style="color: #830000;">${process.env.EMAIL_USER}</a><br>
+                    ¡Gracias por unirte a ALEJANDR.IA!
+                </p>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+function getPasswordChangedEmailHtml(name?: string) {
+    return `
+    <div style="font-family: 'Inter', Arial, sans-serif; background: #FFFFFF; padding: 40px 0;">
+        <div style="max-width: 520px; margin: auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.07);">
+            <h2 style="text-align:center; color: #830000; font-family: 'Cardo', serif; margin-bottom: 0.6em; margin-top: 2em;">
+                Contraseña actualizada
+            </h2>
+            <div style="padding: 0 38px 18px 38px;">
+                <p style="color: #007B83; font-size: 1.12em; margin-bottom: 1.2em; font-family: 'Inter', Arial, sans-serif;">
+                    ¡Hola${name ? " " + name : ""}!
+                </p>
+                <p style="color: #444; font-size: 1.04em; font-family: 'Inter', Arial, sans-serif;">
+                    Te informamos que la contraseña de tu cuenta en <strong>ALEJANDR.IA</strong> se ha cambiado correctamente.<br>
+                    Si tú realizaste este cambio, no es necesario hacer nada más.<br>
+                    <b>Si no fuiste tú</b>, por favor restablece tu contraseña cuanto antes y contacta al soporte.
+                </p>
+                <p style="color: #999; font-size: 0.92em; text-align:center; margin-top:18px;">
+                    ¿Tienes dudas o problemas?<br>
+                    <a href="mailto:${process.env.EMAIL_USER}" style="color: #830000;">${process.env.EMAIL_USER}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    `;
+}
 
 export const addUser = async (req: Request, res: Response): Promise<void> => {
     try {
-        const user = req.body
-        user.directions = []
-        user.cards = []
-        user.cart = {}
-        user.active = true
-        user.orders = []
+        const user = req.body;
+        user.directions = [];
+        user.cards = [];
+        user.cart = {};
+        user.active = true;
+        user.orders = [];
 
-        const seeLaterCollection = new Collection({ name: "Ver más tarde" })
-        user.collections = [seeLaterCollection]
+        const seeLaterCollection = new Collection({ name: "Ver más tarde" });
+        user.collections = [seeLaterCollection];
 
-        const newUser = await new users(user)
-        const addUser = await newUser.save()
+        const newUser = new users(user);
+        const addUser = await newUser.save();
 
-        res.status(200).json(returnUser(addUser))
+        // ENVÍA EL CORREO DE BIENVENIDA
+        if (addUser.email) {
+            await sendNow(
+                addUser.email,
+                "¡Bienvenido/a a ALEJANDR.IA!",
+                getWelcomeEmailHtml(addUser.name || "")
+            );
+        }
+
+        res.status(200).json(returnUser(addUser));
     } catch (error) {
-        console.log(`Error: ${error}`)
-        res.status(500).send(`Server error: ${error}`)
+        console.log(`Error: ${error}`);
+        res.status(500).send(`Server error: ${error}`);
     }
-}
+};
 
 export const getUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -132,8 +207,16 @@ export const updateUserPassword = async (req: Request, res: Response): Promise<v
         }
 
         user.password = newPassword;
-
         const updatedUser = await user.save();
+
+        // ENVÍA EL CORREO DE CONFIRMACIÓN
+        if (user.email) {
+            await sendNow(
+                user.email,
+                "Tu contraseña ha sido cambiada",
+                getPasswordChangedEmailHtml(user.name)
+            );
+        }
 
         res.status(200).json(returnUser(updatedUser));
     } catch (error) {
