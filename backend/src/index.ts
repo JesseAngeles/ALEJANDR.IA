@@ -18,6 +18,7 @@ import routerSearch from "./Routes/Search";
 import routerCategory from "./Routes/Category";
 import routerReport from "./Routes/Reports";
 import routerRestore from "./Routes/Restore";
+import routerVerification from "./Routes/Verification";
 
 dotenv.config();
 connectDB();
@@ -52,6 +53,7 @@ app.use("/search", routerSearch);
 app.use("/category", routerCategory);
 app.use("/report", routerReport);
 app.use("/restore", routerRestore);
+app.use("/verify", routerVerification);
 
 // Start the server
 server.listen(port, () => {

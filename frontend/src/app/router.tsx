@@ -25,6 +25,7 @@ import { OrderDetails } from "./routes/account/OrderDetails";
 import { Review } from "./routes/book/Review";
 import { NotFound } from "@/Errors/NotFound";
 import { EditAddress } from "./routes/address/EditAddress";
+import VerifyAccount from "./routes/account/Verify";
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: "busqueda", element: <Search /> },
       { path: "mis-favoritos", element: <Favoritos /> },
       { path: "password-recovery", element: <PasswordRecovery /> },
+      { path: "verify-account", element: <VerifyAccount /> },
 
       {
         path: "cart",
