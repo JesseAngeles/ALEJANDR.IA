@@ -27,7 +27,18 @@ const Login: React.FC = () => {
         await login(email, contrasena);
         navigate("/");
       } catch (error: any) {
-        setErrorMsg(error.message || "Error al iniciar sesión");
+        console.log(`Error: ${error}`)
+        if (error.response && error.response.status) {
+          if (error.response.status === 403) {
+            setErrorMsg(error.message || "La cuenta no está verificada");
+          } else if (error.response.status === 404) {
+            setErrorMsg(error.message || "Correo o contraseña incorrectas");
+          } else {
+            setErrorMsg(error.message || "Error al iniciar sesión");
+          }
+        } else {
+          setErrorMsg(error.message || "Error al iniciar sesión");
+        }
       }
     }
   };
@@ -107,6 +118,16 @@ const Login: React.FC = () => {
             className="text-cyan-700 font-semibold hover:underline"
           >
             Regístrate
+          </button>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm font-medium">Verificar mi cuenta</p>
+          <button
+            onClick={() => navigate("/verify-account")}
+            className="text-cyan-700 font-semibold hover:underline"
+          >
+            Verificala
           </button>
         </div>
       </div>

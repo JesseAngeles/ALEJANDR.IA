@@ -40,7 +40,7 @@ const Registro = () => {
         email: correo,
         password: contrasena,
       });
-      setSuccess(true);
+      navigate(`/verify-account?email=${encodeURIComponent(correo)}`);
     } catch (err: any) {
       if (err.response?.status === 400 || err.response?.status === 409) {
         setCorreoExistente("Este correo ya está registrado");
