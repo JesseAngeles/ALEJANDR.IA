@@ -3,7 +3,7 @@ import { Cart, CartItem } from "../Interfaces/Cart"
 import { Schema } from "mongoose"
 
 export const cartItemSchema = new Schema<CartItem>({
-    bookId: { type: Schema.Types.ObjectId, ref: "Book", required: true },
+    bookId: { type: Schema.Types.ObjectId, ref: "Books", required: true },
     quantity: { type: Number, min: 1, required: true },
 })
 
