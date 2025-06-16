@@ -243,7 +243,7 @@ export const updateUserPassword = async (req: Request, res: Response): Promise<v
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
-            res.status(401).send("Unauthorized: No user found in token");
+            res.status(401).json({ error: "Unauthorized", message: "No user found in token" });
             return;
         }
 
@@ -252,20 +252,20 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 
         // Validaciones mínimas
         if (!password || !name || !email) {
-            res.status(400).send("Missing required fields");
+            res.status(400).json({ error: "Missing fields", message: "Nombre, correo o contraseña inválido" });
             return;
         }
 
         const user: any = await users.findById(id);
         if (!user) {
-            res.status(404).send("User not found");
+            res.status(404).json({ error: "Not found", message: "Usuario no encontrado" });
             return;
         }
 
         // Validar contraseña ingresada
         const isPasswordCorrect = await user.comparePassword(password);
         if (!isPasswordCorrect) {
-            res.status(401).send("Incorrect password");
+            res.status(401).json({ error: "Incorrect password", message: "La contraseña es incorrecta" });
             return;
         }
 
@@ -275,12 +275,20 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 
         const updatedUser = await user.save();
 
-        res.status(200).json(returnUser(updatedUser));
-    } catch (error) {
+        res.status(200).json({ success: true, user: returnUser(updatedUser) });
+    } catch (error: unknown) {  // Aquí cambiamos el tipo de 'error' a 'unknown'
         console.error(`Error (Controllers/user/update): ${error}`);
-        res.status(500).send(`Server error: ${error}`);
+
+        // Verificamos si el error es una instancia de Error antes de acceder a sus propiedades
+        if (error instanceof Error) {
+            res.status(500).send(`Server error: ${error.message}`);
+        } else {
+            // Si no es una instancia de Error, enviar un mensaje genérico
+            res.status(500).send("Server error");
+        }
     }
 };
+
 
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {
