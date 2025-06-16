@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from "@/app/domain/context/CartContext";
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
 import { useToast } from '@/app/domain/context/ToastContext';
+import { bookService } from '@/app/domain/service/bookService';
 
 type Libro = {
   id: string;
@@ -12,6 +13,7 @@ type Libro = {
   precio: number;
   imagen: string;
   ISBN: string;
+  stock?: number;
 };
 
 type Props = {
@@ -21,7 +23,7 @@ type Props = {
 const Favorites: React.FC<Props> = ({ libros }) => {
   const navigate = useNavigate();
   const { removeFromFavorites } = useFavorites();
-   const { cart, addToCart, removeFromCart, fetchCart } = useCart();
+  const { cart, addToCart, removeFromCart, fetchCart } = useCart();
   const [librosActuales, setLibrosActuales] = useState<Libro[]>(libros);
   const [eliminados, setEliminados] = useState<{
     libro: Libro;
@@ -30,9 +32,8 @@ const Favorites: React.FC<Props> = ({ libros }) => {
     timeoutId: NodeJS.Timeout;
   }[]>([]);
   const [contador, setContador] = useState(5);
-  const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const { showToast } = useToast();
+  const [stockFetched, setStockFetched] = useState<{ [isbn: string]: number }>({});
 
   const handleEliminar = async (libro: Libro) => {
     setLibrosActuales(prev => prev.filter(l => l.id !== libro.id));
@@ -58,7 +59,6 @@ const Favorites: React.FC<Props> = ({ libros }) => {
     ]);
   };
 
-
   const handleDeshacer = (id: string) => {
     const eliminado = eliminados.find(e => e.libro.id === id);
     if (!eliminado) return;
@@ -70,24 +70,31 @@ const Favorites: React.FC<Props> = ({ libros }) => {
     setEliminados(prev => prev.filter(e => e.libro.id !== id));
   };
 
-
-
-  // Limpiar intervalo al desaparecer el mensaje
+  // Fetch stock for each book
   useEffect(() => {
-    if (contador === 0 && intervalId) {
-      clearInterval(intervalId);
+    libros.forEach(libro => {
+      fetchBookStock(libro.ISBN);
+    });
+  }, [libros]);
+
+  const fetchBookStock = async (isbn: string) => {
+    try {
+      const book = await bookService.obtenerPorISBN(isbn);
+      setStockFetched(prev => ({ ...prev, [isbn]: book.stock }));
+    } catch (error) {
+      console.error("Error al obtener el stock del libro", error);
     }
-  }, [contador, intervalId]);
+  };
 
   const handleLibroClick = (libro: Libro) => {
-    navigate(`/book/${libro.ISBN}`); // ← antes usabas `libro.id`
+    navigate(`/book/${libro.ISBN}`);
   };
 
   const handleToggleCarrito = async (libro: Libro, enCarrito: boolean) => {
     try {
       if (!enCarrito) {
         await addToCart(libro.ISBN);
-        showToast("Libro añadido a carrito", "success");
+        showToast("Libro añadido al carrito", "success");
       } else {
         await removeFromCart(libro.ISBN);
         showToast("Libro eliminado del carrito", "error");
@@ -96,11 +103,8 @@ const Favorites: React.FC<Props> = ({ libros }) => {
       console.error("Error al modificar el carrito:", error);
     }
   };
-  
-  
 
   return (
-
     <section className="my-8 px-6">
       <button
         onClick={() => navigate("/")}
@@ -131,58 +135,58 @@ const Favorites: React.FC<Props> = ({ libros }) => {
         </div>
       ))}
 
-
       {librosActuales.length === 0 && eliminados.length === 0 && (
         <p className="text-center text-gray-500 italic mt-8">
           Aún no has añadido ningún libro a favoritos.
         </p>
       )}
 
-
       <div className="flex flex-wrap gap-4">
         {librosActuales.map((libro) => {
           const enCarrito = cart.some(item => item.bookId === libro.id);
+          const stock = stockFetched[libro.ISBN] || 0; // obtiene el stock
 
-          return(          <div
-            key={libro.id}
-            className="group relative w-44 border rounded-lg shadow-sm overflow-hidden pb-7"
-          >
-            <button
-              onClick={() => handleLibroClick(libro)}
-              className="w-full text-left"
+          return (
+            <div
+              key={libro.id}
+              className="group relative w-44 border rounded-lg shadow-sm overflow-hidden pb-7"
             >
-              <img
-                src={libro.imagen}
-                alt={libro.titulo}
-                className="w-full h-60 object-cover"
-              />
-              <div className="p-2">
-                <h3 className="text-sm font-semibold truncate">{libro.titulo}</h3>
-                <p className="text-xs text-gray-500 truncate">{libro.autor}</p>
-                <p className="text-sm font-medium mt-1">${libro.precio.toFixed(2)}</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleEliminar(libro)}
-              className="absolute top-2 right-2 w-9 h-9 flex items-center justify-center rounded-full bg-white/70 backdrop-blur-sm shadow text-cyan-500 hover:text-cyan-700"
-              title="Eliminar de favoritos"
-            >
-              <FaHeart />
-            </button>
-            <div className="absolute bottom-2 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
               <button
-                onClick={() => handleToggleCarrito(libro, enCarrito)}
-                className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${enCarrito ? 'bg-red-600' : 'bg-cyan-600'
-                  }`}
+                onClick={() => handleLibroClick(libro)}
+                className="w-full text-left"
               >
-                {enCarrito ? 'Eliminar del carrito' : 'Añadir al carrito'}
-                <FaShoppingCart className="ml-2" />
+                <img
+                  src={libro.imagen}
+                  alt={libro.titulo}
+                  className="w-full h-60 object-cover"
+                />
+                <div className="p-2">
+                  <h3 className="text-sm font-semibold truncate">{libro.titulo}</h3>
+                  <p className="text-xs text-gray-500 truncate">{libro.autor}</p>
+                  <p className="text-sm font-medium mt-1">${libro.precio.toFixed(2)}</p>
+                </div>
               </button>
-            </div>
-          </div>);
 
-})}
+              <button
+                onClick={() => handleEliminar(libro)}
+                className="absolute top-2 right-2 w-9 h-9 flex items-center justify-center rounded-full bg-white/70 backdrop-blur-sm shadow text-cyan-500 hover:text-cyan-700"
+                title="Eliminar de favoritos"
+              >
+                <FaHeart />
+              </button>
+              <div className="absolute bottom-2 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
+                <button
+                  onClick={() => handleToggleCarrito(libro, enCarrito)}
+                  className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${enCarrito ? 'bg-red-600 hover:bg-red-700' : (stock === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-600 hover:bg-cyan-700')}`}
+                  disabled={stock === 0} // Deshabilitar si no hay stock
+                >
+                  {enCarrito ? 'Eliminar del carrito' : (stock === 0 ? 'No disponible' : 'Añadir al carrito')}
+                  <FaShoppingCart className="ml-2" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

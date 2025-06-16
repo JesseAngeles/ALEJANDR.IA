@@ -25,7 +25,7 @@ const Login: React.FC = () => {
     if (!erroresActuales.email && !erroresActuales.contrasena) {
       try {
         await login(email, contrasena);
-        navigate("/");
+        navigate("/", { state: { welcomeMessage: `Bienvenido` } });
       } catch (error: any) {
         console.log(`Error: ${error}`)
         if (error.response && error.response.status) {

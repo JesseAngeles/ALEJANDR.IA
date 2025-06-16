@@ -8,6 +8,8 @@ import type { Address } from "@/assets/types/address";
 const AddressesAccount: React.FC = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false); 
+  const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,10 +21,23 @@ const AddressesAccount: React.FC = () => {
     setAddresses(data);
   };
 
-  const handleRemove = async (id: string) => {
-    await addressService.remove(id);
-    loadAddresses();
-    setShowDeleteSuccess(true);
+  const handleRemove = (id: string) => {
+    setAddressToDelete(id); // Guardar el ID de la dirección a eliminar
+    setShowConfirmDelete(true); // Mostrar el modal de confirmación
+  };
+
+  const confirmRemove = async () => {
+    if (addressToDelete) {
+      await addressService.remove(addressToDelete);
+      loadAddresses();
+      setShowDeleteSuccess(true);
+      setShowConfirmDelete(false); // Cerrar el modal de confirmación
+    }
+  };
+
+  const cancelRemove = () => {
+    setShowConfirmDelete(false); // Cerrar el modal sin eliminar
+    setAddressToDelete(null);
   };
 
   return (
@@ -84,6 +99,31 @@ const AddressesAccount: React.FC = () => {
       </div>
 
       {/* Modal de confirmación */}
+      {showConfirmDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center">
+            <p className="text-lg font-semibold text-[#000000] mb-4">
+              ¿Estás seguro de que quieres eliminar esta dirección?
+            </p>
+            <div className="flex justify-between gap-4">
+              <button
+                onClick={cancelRemove}
+                className="bg-[#007B83] hover:bg-[#00666e] text-white px-6 py-2 rounded"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmRemove}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de éxito */}
       {showDeleteSuccess && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center">

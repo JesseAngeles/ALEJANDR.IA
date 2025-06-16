@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { FaHeart, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from "@/app/domain/context/CartContext";
@@ -19,21 +19,19 @@ interface Book {
   sinopsis: string;
   numOpiniones: number;
 }
- 
+
 interface BookSectionProps {
   tituloSeccion?: string;
   books: Book[];
 }
- 
-const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books}) => {
+
+const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) => {
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart, fetchCart } = useCart();
   const { favoritos, addToFavorites, removeFromFavorites } = useFavorites();
   const { showToast } = useToast();
 
-
   const estaLogueado = !!localStorage.getItem("token");
-  
 
   const renderStars = (rating: number) => {
     const rounded = Math.round(rating);
@@ -49,12 +47,10 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books}) =
     );
   };
 
-  
-const location = useLocation(); 
-useEffect(() => {
-  fetchCart(); 
-}, [location]);
-
+  const location = useLocation(); 
+  useEffect(() => {
+    fetchCart(); 
+  }, [location]);
 
   const handleLibroClick = (libro: Book) => {
     navigate(`/book/${libro.ISBN}`);
@@ -66,17 +62,9 @@ useEffect(() => {
         <h2 className="text-xl font-bold border-b pb-1 mb-4">{tituloSeccion}</h2>
       )}
       <div className="flex gap-4 overflow-x-auto">
-        {books.filter(libro => libro.stock > 0).map((libro) => {
+        {books.map((libro) => {
           const enFavoritos = favoritos.some(fav => fav.ISBN === libro.ISBN);
-          const enCarrito = cart.some(item => {
-            const esIgual = item.bookId === libro._id;
-            console.log("🔍 Comparando:", item.bookId, "===", libro._id, "→", esIgual);
-            return esIgual;
-          });
-
-
-
-
+          const enCarrito = cart.some(item => item.bookId === libro._id);
 
           const toggleFavorito = async () => {
             if (!estaLogueado) {
@@ -88,14 +76,10 @@ useEffect(() => {
               if (!enFavoritos) {
                 await addToFavorites(libro.ISBN);
                 showToast("Libro añadido a favoritos", "success");
-
               } else {
                 await removeFromFavorites(libro.ISBN);
                 showToast("Libro eliminado de favoritos", "error");
-
               }
-              
-              
             } catch (error) {
               console.error("Error al modificar favoritos:", error);
             }
@@ -105,24 +89,23 @@ useEffect(() => {
             if (!estaLogueado) return navigate("/login");
 
             try {
+              if (libro.stock <1) {
+                showToast("No hay stock disponible", "error");
+                return; // No agregar al carrito si no hay stock
+              }
+
               if (!enCarrito) {
                 await addToCart(libro.ISBN);
                 showToast("Libro añadido a carrito", "success");
-
               } else {
                 await removeFromCart(libro.ISBN);
                 showToast(`Libro eliminado del carrito`, "error");
               }
-              
-              
-              // No necesitas setActualizador aquí
             } catch (error) {
               console.error("Error al modificar el carrito:", error);
             }
           };
 
-
- 
           return (
             <div
               key={libro._id}
@@ -145,14 +128,12 @@ useEffect(() => {
                   </div>
 
                   <p className="text-sm font-medium mt-1">${libro.price.toFixed(2)}</p>
-
                 </div>
               </button>
 
               <button
                 onClick={toggleFavorito}
-                className={`absolute top-2 right-2 text-lg ${enFavoritos ? 'text-cyan-500' : 'text-gray-400 hover:text-cyan-500'
-                  }`}
+                className={`absolute top-2 right-2 text-lg ${enFavoritos ? 'text-cyan-500' : 'text-gray-400 hover:text-cyan-500'}`}
                 title="Favorito"
               >
                 <FaHeart />
@@ -161,10 +142,10 @@ useEffect(() => {
               <div className="absolute bottom-2 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition">
                 <button
                   onClick={handleToggleCarrito}
-                  className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${enCarrito ? 'bg-red-600' : 'bg-cyan-600'
-                    }`}
+                  disabled={libro.stock <= 0} // Deshabilitar si no hay stock
+                  className={`text-white text-xs px-3 py-1 rounded-md flex items-center ${enCarrito ? 'bg-red-600' : 'bg-cyan-600'} ${libro.stock <= 0 ? 'bg-gray-400 cursor-not-allowed' : ''}`}
                 >
-                  {enCarrito ? 'Eliminar del carrito' : 'Añadir al carrito'}
+                  {enCarrito ? 'Eliminar del carrito' : libro.stock > 0 ? 'Añadir al carrito' : 'No disponible'}
                   <FaShoppingCart className="ml-2" />
                 </button>
               </div>
@@ -175,5 +156,5 @@ useEffect(() => {
     </section>
   );
 };
-  
+
 export default BookSection;

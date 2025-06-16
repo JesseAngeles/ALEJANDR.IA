@@ -46,17 +46,26 @@ const getStatusColor = (state: string) => {
     }
 };
 
-const Modal = ({ message, onClose }: { message: string; onClose: () => void }) => (
+
+const Modal = ({ message, onClose, onConfirm }: { message: string; onClose: () => void, onConfirm: () => void }) => (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
-            <h3 className="text-lg font-semibold text-[#007B83] mb-4">¡Acción completada!</h3>
+            <h3 className="text-lg font-semibold text-[#007B83] mb-4">Confirmar Acción</h3>
             <p className="text-gray-700 mb-4">{message}</p>
-            <button
-                onClick={onClose}
-                className="bg-[#007B83] hover:bg-[#005f6b] text-white px-4 py-2 rounded"
-            >
-                Cerrar
-            </button>
+            <div className="flex justify-around">
+                <button
+                    onClick={onClose}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                    Cancelar
+                </button>
+                <button
+                    onClick={onConfirm}
+                    className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#005f6b]"
+                >
+                    Confirmar
+                </button>
+            </div>
         </div>
     </div>
 );
@@ -69,7 +78,8 @@ const OrderDetails: React.FC = () => {
     const [items, setItems] = useState<any[]>([]);
     const [reviewStatus, setReviewStatus] = useState<{ [key: string]: boolean }>({});
     const [isLoading, setIsLoading] = useState(true);
-
+    const [showConfirmModal, setShowConfirmModal] = useState(false); // Modal de confirmación
+    const [actionToConfirm, setActionToConfirm] = useState<"cancel" | "return" | null>(null); 
     const [modalMessage, setModalMessage] = useState<string | null>(null);
 
     const navigate = useNavigate();
@@ -153,13 +163,25 @@ const OrderDetails: React.FC = () => {
         setTimeout(() => setModalMessage(null), 3000); // auto-close after 3s
     };
 
+    
+
+    // CONFIRMAR ACCIÓN: CANCELAR O DEVOLVER
+    const handleActionConfirm = async () => {
+        if (actionToConfirm === "cancel") {
+            await handleCancelOrder();
+        } else if (actionToConfirm === "return") {
+            await handleReturnOrder();
+        }
+        setShowConfirmModal(false); // Cerrar el modal de confirmación
+    };
+
     const handleCancelOrder = async () => {
         try {
             await orderService.cancelOrder(selectedOrder._id);
             setSelectedOrder((prev: any) => (prev ? { ...prev, state: "Cancelado" } : prev));
-            showModal("Tu pedido ha sido cancelado con éxito.");
+            setModalMessage("Tu pedido ha sido cancelado con éxito.");
         } catch {
-            alert("No se pudo cancelar el pedido.");
+            setModalMessage("No se pudo cancelar el pedido.");
         }
     };
 
@@ -167,11 +189,21 @@ const OrderDetails: React.FC = () => {
         try {
             await orderService.returnOrder(selectedOrder._id);
             setSelectedOrder((prev: any) => (prev ? { ...prev, state: "En Devolución" } : prev));
-            showModal("Tu pedido ha sido marcado para devolución.");
+            setModalMessage("Tu pedido ha sido marcado para devolución.");
         } catch {
-            alert("No se pudo devolver el pedido.");
+            setModalMessage("No se pudo devolver el pedido.");
         }
     };
+
+    const showConfirmationModal = (action: "cancel" | "return") => {
+        setActionToConfirm(action);
+        const message = action === "cancel"
+            ? "¿Estás seguro de que quieres cancelar este pedido?"
+            : "¿Estás seguro de que quieres devolver este pedido?";
+        setModalMessage(message);
+        setShowConfirmModal(true);
+    };
+    
 
     if (isLoading) return <div>Cargando...</div>;
     if (!selectedOrder || !card || !address) return <div>Error al cargar los detalles de la pedido.</div>;
@@ -211,8 +243,8 @@ const OrderDetails: React.FC = () => {
                 </div>
 
                 <div className="flex gap-4 mt-4">
-                    <button
-                        onClick={handleCancelOrder}
+                <button
+                        onClick={() => showConfirmationModal("cancel")}
                         disabled={selectedOrder.state !== "En Preparación"}
                         className={`px-4 py-2 rounded-lg text-white font-semibold ${selectedOrder.state !== "En Preparación"
                             ? "bg-gray-400 cursor-not-allowed"
@@ -223,7 +255,7 @@ const OrderDetails: React.FC = () => {
                     </button>
 
                     <button
-                        onClick={handleReturnOrder}
+                        onClick={() => showConfirmationModal("return")}
                         disabled={selectedOrder.state !== "Entregado"}
                         className={`px-4 py-2 rounded-lg text-white font-semibold ${selectedOrder.state !== "Entregado"
                             ? "bg-gray-400 cursor-not-allowed"
@@ -305,7 +337,10 @@ const OrderDetails: React.FC = () => {
                 </div>
             </div>
 
-            {modalMessage && <Modal message={modalMessage} onClose={() => setModalMessage(null)} />}
+            {/* Modal de Confirmación */}
+            {showConfirmModal && (
+                    <Modal message={modalMessage!} onClose={() => setShowConfirmModal(false)} onConfirm={handleActionConfirm} />
+                )}
         </>
     );
 };

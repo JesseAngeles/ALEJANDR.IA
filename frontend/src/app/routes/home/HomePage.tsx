@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import BookSection from '../book/BookSection'
 import Recomendacion from '../book/Recomendation_week'
 import CategoriasDestacadas from '../category/Categories'
 import { useCart } from "@/app/domain/context/CartContext";
 import { bookService } from '@/app/domain/service/bookService'
 import { useAuth } from "@/app/domain/context/AuthContext";
-
+import { useToast } from '@/app/domain/context/ToastContext'
 
 interface Book {
     _id: string;
@@ -27,10 +27,16 @@ interface Book {
  
  
   function HomePage() {
+    const { state } = useLocation();
+    const { welcomeMessage } = state || {};  
+    const { showToast } = useToast(); 
+
+
     const [collections, setCollections] = useState<{ nombre: string; libros: Book[] }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [recommendedBook, setRecommendedBook] = useState<Book | null>(null);
+    const [toastShown, setToastShown] = useState(false);
     const { fetchCart } = useCart();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -43,6 +49,12 @@ interface Book {
       return new Date(timestamp).toISOString();
     }
     
+    useEffect(() => {
+      if (welcomeMessage && !sessionStorage.getItem('toastShown')) {
+        showToast(welcomeMessage, "success");
+        sessionStorage.setItem('toastShown', 'true');  // Marca que el toast ya se mostró en esta sesión
+      }
+    }, [welcomeMessage, showToast]);
 
     useEffect(() => {
       const fetchAllCollections = async () => {
@@ -114,7 +126,7 @@ interface Book {
   
       fetchRecomendado();
     }, []);
-  
+
     if (error) {
       return (
         <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded relative text-center max-w-xl mx-auto mt-10 shadow-md">
