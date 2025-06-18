@@ -122,7 +122,7 @@ const EditAddress: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm mb-1">Nombre de referencia:</label>
+                    <label className="block text-sm mb-1">Alías de la dirección:</label>
                     <input
                         type="text"
                         value={name}

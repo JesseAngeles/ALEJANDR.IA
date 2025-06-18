@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaHeart, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from "@/app/domain/context/CartContext";
@@ -33,6 +33,9 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) 
 
   const estaLogueado = !!localStorage.getItem("token");
 
+  const [showModal, setShowModal] = useState(false); // Estado para mostrar el modal
+  const [actionType, setActionType] = useState<'cart' | 'favorites' | null>(null); // Tipo de acción
+
   const renderStars = (rating: number) => {
     const rounded = Math.round(rating);
     return (
@@ -56,6 +59,22 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) 
     navigate(`/book/${libro.ISBN}`);
   };
 
+
+    // Función para manejar la respuesta del modal
+    const handleModalResponse = (response: boolean) => {
+      if (response) {
+        // Redirigir a la página de login si el usuario no está logueado
+        navigate("/login");
+      }
+      setShowModal(false);
+    };
+  
+    // Función para abrir el modal y establecer la acción
+    const openModal = (type: 'cart' | 'favorites') => {
+      setActionType(type);
+      setShowModal(true);
+    };
+
   return (
     <section className="my-8">
       {tituloSeccion && (
@@ -68,7 +87,7 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) 
 
           const toggleFavorito = async () => {
             if (!estaLogueado) {
-              navigate("/login");
+              openModal('favorites');
               return;
             }
 
@@ -86,7 +105,10 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) 
           };
 
           const handleToggleCarrito = async () => {
-            if (!estaLogueado) return navigate("/login");
+            if (!estaLogueado) {
+              openModal('cart');
+              return;
+            }
 
             try {
               if (libro.stock <1) {
@@ -153,6 +175,29 @@ const BookSection: React.FC<BookSectionProps> = ({ tituloSeccion = '', books }) 
           );
         })}
       </div>
+
+      {/* Modal de confirmación */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">¿Deseas iniciar sesión para continuar?</h3>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => handleModalResponse(true)} // Confirmar
+                className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+              >
+                Sí
+              </button>
+              <button
+                onClick={() => handleModalResponse(false)} // Cancelar
+                className="bg-[#f44336] text-white px-4 py-2 rounded hover:bg-[#d32f2f]"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+        )}
     </section>
   );
 };

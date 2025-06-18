@@ -9,7 +9,7 @@ import { useLocation } from "react-router-dom";
 import { useCart } from "../domain/context/CartContext";
 import { cartService } from "../domain/service/cartService";
 import { useCartBackup } from "../domain/context/CartBackupContext";
-
+import { useToast } from "../domain/context/ToastContext";
 
 const Header: React.FC = () => {
   const [mostrarMenu, setMostrarMenu] = useState(false);
@@ -18,7 +18,9 @@ const Header: React.FC = () => {
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const [mostrarOpcionesCuenta, setMostrarOpcionesCuenta] = useState(false);
   const [categorias, setCategorias] = useState<string[]>([]);
-
+  const [showModal, setShowModal] = useState(false); // Estado para mostrar el modal de confirmación
+  const [redirectPath, setRedirectPath] = useState(""); // Para guardar la ruta de redirección (Carrito o Favoritos)
+  
 
   const contenedorRef = useRef<HTMLDivElement>(null);
   const sugerenciasRef = useRef<HTMLDivElement>(null);
@@ -30,6 +32,17 @@ const Header: React.FC = () => {
 
   const estaLogueado = !!localStorage.getItem("token");
 
+  const { showToast } = useToast();  // Usamos el contexto de toast
+  const { state } = useLocation();
+  const { welcomeMessage } = state || {}; 
+
+
+  useEffect(() => {
+    if (welcomeMessage && !sessionStorage.getItem('toastShown')) {
+      showToast(welcomeMessage, "success");
+      sessionStorage.setItem('toastShown', 'true');  // Aseguramos que el toast solo se muestre una vez
+    }
+  }, [welcomeMessage, showToast]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -128,6 +141,24 @@ useEffect(() => {
     }
   };
 
+
+  const handleRedirect = (path: string) => {
+    if (!estaLogueado) {
+      setRedirectPath(path);
+      setShowModal(true); // Muestra el modal de confirmación
+    } else {
+      navigate(path); // Si está logueado, redirige directamente
+    }
+  };
+
+  const handleModalResponse = (response: boolean) => {
+    setShowModal(false); // Cierra el modal
+    if (response && !estaLogueado) {
+      navigate("/login"); // Redirige al login
+    } else if (response && estaLogueado) {
+      navigate(redirectPath); // Redirige a la ruta de destino
+    }
+  };
 
   return (
     <header className="flex flex-wrap items-center justify-between p-4 border-b bg-white shadow-md relative z-10">
@@ -250,41 +281,59 @@ useEffect(() => {
   </button>
 
   <button
-    className="flex items-center gap-1 px-3 hover:text-blue-600"
-    onClick={() => {
-      if (estaLogueado) {
-        navigate("/account/profile");
-      } else {
-        navigate("/login");
-      }
-    }}
-  >
+          className="flex items-center gap-1 px-3 hover:text-blue-600"
+          onClick={() => {
+            if (estaLogueado) {
+              navigate("/account/profile");
+            } else {
+              handleRedirect("/account/profile"); // Muestra el modal si no está logueado
+            }
+          }}
+        >
     <FaUser />
     <span className="hidden sm:inline">Mi cuenta</span>
   </button>
 
   <button
-    className="flex items-center gap-1 px-3 hover:text-blue-600"
-    onClick={() => navigate(estaLogueado ? "/mis-favoritos" : "/login")}
-  >
-    <FaHeart />
-    <span className="hidden sm:inline">Favoritos</span>
-  </button>
+          className="flex items-center gap-1 px-3 hover:text-blue-600"
+          onClick={() => handleRedirect("/mis-favoritos")} // Muestra el modal si no está logueado
+        >
+          <FaHeart />
+          <span className="hidden sm:inline">Favoritos</span>
+        </button>
 
-  <button
-    className="flex items-center gap-1 px-3 hover:text-blue-600"
-    onClick={() => {
-      if (estaLogueado) {
-        navigate("/cart");
-      } else {
-        navigate("/login");
-      }
-    }}
-  >
-    <FaShoppingCart />
-    <span className="hidden sm:inline">Carrito</span>
-  </button>
+        <button
+          className="flex items-center gap-1 px-3 hover:text-blue-600"
+          onClick={() => handleRedirect("/cart")} // Muestra el modal si no está logueado
+        >
+          <FaShoppingCart />
+          <span className="hidden sm:inline">Carrito</span>
+        </button>
 </div>
+
+          {/* Modal de confirmación */}
+{showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+      <h3 className="text-lg font-semibold mb-4">¿Deseas iniciar sesión para continuar?</h3>
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={() => handleModalResponse(true)} // Confirmar
+          className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+        >
+          Sí
+        </button>
+        <button
+          onClick={() => handleModalResponse(false)} // Cancelar
+          className="bg-[#f44336] text-white px-4 py-2 rounded hover:bg-[#d32f2f]"
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
 
     </header>

@@ -13,6 +13,7 @@ const Registro = () => {
   const [verConfirmar, setVerConfirmar] = useState(false);
   const [success, setSuccess] = useState(false);
   const [correoExistente, setCorreoExistente] = useState('');
+  const [errors, setErrors] = useState<string[]>([]); // Para almacenar los errores de validación
 
   const navigate = useNavigate();
 
@@ -26,13 +27,20 @@ const Registro = () => {
   const campoVacio = (valor: string) => valor.trim() === '';
 
   const handleSubmit = async () => {
-    if (
-      campoVacio(nombre) || !nombreValido ||
-      campoVacio(apellidos) || !apellidosValido ||
-      campoVacio(correo) || !correoValido ||
-      campoVacio(confirmar) || !contrasenaCoincide ||
-      !tieneMayuscula || !tieneEspecial || !tieneLongitud
-    ) return;
+    const validationErrors: string[] = [];
+
+    if (campoVacio(nombre) || !nombreValido) validationErrors.push("Nombre inválido.");
+    if (campoVacio(apellidos) || !apellidosValido) validationErrors.push("Apellidos inválidos.");
+    if (campoVacio(correo) || !correoValido) validationErrors.push("Correo electrónico inválido.");
+    if (campoVacio(confirmar) || !contrasenaCoincide) validationErrors.push("Las contraseñas no coinciden.");
+    if (!tieneMayuscula) validationErrors.push("La contraseña debe tener al menos una mayúscula.");
+    if (!tieneEspecial) validationErrors.push("La contraseña debe tener al menos un carácter especial.");
+    if (!tieneLongitud) validationErrors.push("La contraseña debe tener al menos 8 caracteres.");
+
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);  // Muestra los errores en el modal
+      return; // Si hay errores, no continuamos con el registro
+    }
 
     try {
       await userService.post({
@@ -43,9 +51,11 @@ const Registro = () => {
       navigate(`/verify-account?email=${encodeURIComponent(correo)}`);
     } catch (err: any) {
       if (err.response?.status === 400 || err.response?.status === 409) {
-        setCorreoExistente("Este correo ya está registrado");
+        setCorreoExistente("Este correo ya está registrado"); // Mostrar el error de correo duplicado
+        setErrors((prevErrors) => [...prevErrors, "Correo electrónico ya está registrado."]);
       } else {
-        setCorreoExistente("Este correo ya está registrado.intente con uno diferente");
+        setCorreoExistente("Este correo ya está registrado. Intente con uno diferente");
+        setErrors((prevErrors) => [...prevErrors, "Error inesperado. Intente de nuevo"]);
         console.error("Error inesperado:", err);
       }
     }
@@ -73,7 +83,7 @@ const Registro = () => {
         />
         {campoVacio(nombre) && <p className="text-sm text-red-600 mt-1">Campo requerido</p>}
         {!campoVacio(nombre) && !nombreValido && (
-          <p className="text-sm text-red-600 mt-1">Formato inválido.Utilice letras para el nombre.</p>
+          <p className="text-sm text-red-600 mt-1">Formato inválido. Utilice letras para el nombre.</p>
         )}
       </div>
 
@@ -87,7 +97,7 @@ const Registro = () => {
         />
         {campoVacio(apellidos) && <p className="text-sm text-red-600 mt-1">Campo requerido</p>}
         {!campoVacio(apellidos) && !apellidosValido && (
-          <p className="text-sm text-red-600 mt-1">Formato inválido.Utilice letras para el apellido.</p>
+          <p className="text-sm text-red-600 mt-1">Formato inválido. Utilice letras para el apellido.</p>
         )}
       </div>
 
@@ -98,7 +108,7 @@ const Registro = () => {
           value={correo}
           onChange={(e) => {
             setCorreo(e.target.value);
-            setCorreoExistente('');
+            setCorreoExistente(''); // Limpia el error de correo existente cuando se cambia el valor
           }}
           className="w-full border rounded p-2"
         />
@@ -171,15 +181,40 @@ const Registro = () => {
         </button>
       </div>
 
-      {success && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center">
-            <p className="text-lg font-semibold text-[#007B83] mb-4">Cuenta creada con éxito</p>
+      {/* Modal de error */}
+      {errors.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-[#00000] mb-4">
+              Se han encontrado errores:
+            </h3>
+            <ul className="list-disc text-left pl-5">
+              {errors.map((error, index) => (
+                <li key={index} className="text-sm text-red-600">{error}</li>
+              ))}
+            </ul>
             <button
-              onClick={() => navigate("/login")}
-              className="bg-[#007B83] hover:bg-[#00666e] text-white px-6 py-2 rounded"
+              onClick={() => setErrors([])} // Cerrar el modal de errores
+              className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
             >
-              Iniciar sesión
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de correo ya registrado */}
+      {correoExistente && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-red-600 mb-4">
+              {correoExistente}
+            </h3>
+            <button
+              onClick={() => setCorreoExistente('')} // Cerrar el modal de correo
+              className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+            >
+              OK
             </button>
           </div>
         </div>

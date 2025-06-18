@@ -3,8 +3,8 @@ import { FaArrowLeft, FaStar, FaHeart, FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/app/domain/context/CartContext";
 import { useFavorites } from "@/app/domain/context/FavoritesContext";
-import { useLocation } from 'react-router-dom'; 
-import { useToast } from '@/app/domain/context/ToastContext';
+import { useLocation } from "react-router-dom"; 
+import { useToast } from "@/app/domain/context/ToastContext";
 
 type Libro = {
   id: string;
@@ -16,7 +16,7 @@ type Libro = {
   portada: string;
   isbn: string;
   numOpiniones: number;
-  stock: number; // Añadido stock
+  stock: number;
 };
 
 type Filtro = {
@@ -59,6 +59,28 @@ const SearchResults: React.FC<Props> = ({
   useEffect(() => {
     fetchCart(); 
   }, [location]);
+
+  const handleRedirect = (path: string) => {
+    if (!estaLogueado) {
+    setRedirectPath(path + location.search);  // location.search contiene los parámetros de búsqueda
+    setShowModal(true); // Mostrar el modal de login
+    } else {
+      navigate(path); // Redirigir si ya está logueado
+    }
+  };
+
+  const [showModal, setShowModal] = useState(false); // Para mostrar el modal
+  const [redirectPath, setRedirectPath] = useState(""); // Para almacenar la ruta de redirección
+
+   // Función para manejar la respuesta del modal
+   const handleModalResponse = (response: boolean) => {
+    setShowModal(false); // Cerrar el modal
+    if (response) {
+      navigate("/login", { state: { from: location.pathname + location.search } }); // Redirigir a login con parámetros de búsqueda
+    } else if (response && estaLogueado && redirectPath) {
+      navigate(redirectPath); // Redirigir a la ruta que se guarda antes de mostrar el modal
+    }
+  };
 
   // Aplica el filtro automático solo una vez
   useEffect(() => {
@@ -270,7 +292,7 @@ const SearchResults: React.FC<Props> = ({
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
-                      if (!estaLogueado) return navigate("/login");
+                      if (!estaLogueado) return handleRedirect("/cart");
                       const enCarrito = cart.some(c => c.bookId === libro.id);
                       try {
                         if (enCarrito) {
@@ -292,11 +314,58 @@ const SearchResults: React.FC<Props> = ({
                     <FaShoppingCart className="ml-2" />
                   </button>
                 </div>
+
+                {/* Botón de favoritos */}
+                <div className="absolute top-2 right-2 text-lg">
+                <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!estaLogueado) return handleRedirect("/mis-favoritos");
+                      const enFavoritos = favoritos.some(fav => fav.ISBN === libro.isbn);
+                      try {
+                        if (enFavoritos) {
+                          await removeFromFavorites(libro.isbn);
+                          showToast("Libro eliminado de favoritos", "error");
+                        } else {
+                          await addToFavorites(libro.isbn);
+                          showToast("Libro añadido a favoritos", "success");
+                        }
+                      } catch (error) {
+                        console.error("Error al modificar favoritos:", error);
+                      }
+                    }}
+                    className={`absolute top-2 right-2 text-lg ${favoritos.some(fav => fav.ISBN === libro.isbn) ? 'text-cyan-500' : 'text-gray-400 hover:text-cyan-500'}`}
+                  >
+                    <FaHeart />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </main>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">¿Deseas iniciar sesión para continuar?</h3>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => handleModalResponse(true)} // Confirmar
+                className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+              >
+                Sí
+              </button>
+              <button
+                onClick={() => handleModalResponse(false)} // Cancelar
+                className="bg-[#f44336] text-white px-4 py-2 rounded hover:bg-[#d32f2f]"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

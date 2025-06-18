@@ -26,7 +26,8 @@ const PaymentMethods: React.FC<Props> = ({ methods, onSelect }) => {
             {methods.map((card) => (
                 <div
                     key={card._id}
-                    className="border rounded bg-gray-50 p-4 flex justify-between items-center text-sm"
+                    className="border rounded bg-gray-50 p-4 flex justify-between items-center text-sm cursor-pointer hover:bg-gray-100"
+                    onClick={() => onSelect(card)}
                 >
                     <div className="flex items-center gap-4">
                         <img src={getCardLogo(card.type)} alt={card.type} className="w-10 h-6" />
@@ -39,13 +40,6 @@ const PaymentMethods: React.FC<Props> = ({ methods, onSelect }) => {
                             </p>
                         </div>
                     </div>
-
-                    <button
-                        className="text-[#820000] font-semibold hover:underline"
-                        onClick={() => onSelect(card)}
-                    >
-                        Seleccionar
-                    </button>
                 </div>
             ))}
         </div>

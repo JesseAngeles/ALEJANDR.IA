@@ -58,7 +58,8 @@ const DeliveryAddress: React.FC = () => {
                 {addressList.map((addr) => (
                     <div
                         key={addr._id}
-                        className="border rounded bg-gray-50 p-4 flex justify-between items-start text-sm"
+                        className="border rounded bg-gray-50 p-4 flex justify-between items-start text-sm text-sm cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSelect(addr)} // Todo el cuadro es clickeable
                     >
                         <div>
                             <p className="font-semibold">{addr.name}</p>
@@ -66,16 +67,13 @@ const DeliveryAddress: React.FC = () => {
                         </div>
                         <div className="flex flex-col gap-2">
                             <button
-                                onClick={() => navigate(`/address/edit/${addr._id}`)}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Evita que el clic en "Editar" active el onClick del div
+                                    navigate(`/address/edit/${addr._id}`);
+                                }}
                                 className="text-[#007B83] text-sm flex items-center gap-1 hover:underline"
                             >
                                 <FaEdit className="text-xs" /> Editar
-                            </button>
-                            <button
-                                className="text-[#820000] font-semibold hover:underline"
-                                onClick={() => handleSelect(addr)}
-                            >
-                                Seleccionar
                             </button>
                         </div>
                     </div>

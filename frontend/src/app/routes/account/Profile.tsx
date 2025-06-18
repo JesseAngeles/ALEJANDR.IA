@@ -117,6 +117,10 @@ const Profile: React.FC = () => {
                 value={name}
                 disabled={!editMode}
                 onChange={(e) => setName(e.target.value)}
+                style={{
+                  backgroundColor: editMode ? "white" : "#d3d3d3", // Gris claro si está en modo edición
+                  cursor: editMode ? "text"  : "not-allowed", // Cambiar el cursor a un 'no permitido' si está deshabilitado
+                }}
               />
               {errors.name && (
                 <p className="text-sm text-red-600 mt-1">{errors.name}</p>
@@ -129,11 +133,11 @@ const Profile: React.FC = () => {
                 type="email"
                 className="w-full border border-black rounded px-3 py-2 mt-1"
                 value={email}
-                disabled={editMode}  // Deshabilitar el campo cuando está en modo edición
+                disabled={true}  // Deshabilitar el campo cuando está en modo edición
                 onChange={(e) => setEmail(e.target.value)}
                 style={{
-                  backgroundColor: editMode ? "#d3d3d3" : "white", // Gris claro si está en modo edición
-                  cursor: editMode ? "not-allowed" : "text", // Cambiar el cursor a un 'no permitido' si está deshabilitado
+                  backgroundColor: "#d3d3d3" , // Gris claro si está en modo edición
+                  cursor:  "not-allowed" , // Cambiar el cursor a un 'no permitido' si está deshabilitado
                 }}
               />
               {errors.email && (

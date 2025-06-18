@@ -49,12 +49,6 @@ interface Book {
       return new Date(timestamp).toISOString();
     }
     
-    useEffect(() => {
-      if (welcomeMessage && !sessionStorage.getItem('toastShown')) {
-        showToast(welcomeMessage, "success");
-        sessionStorage.setItem('toastShown', 'true');  // Marca que el toast ya se mostró en esta sesión
-      }
-    }, [welcomeMessage, showToast]);
 
     useEffect(() => {
       const fetchAllCollections = async () => {

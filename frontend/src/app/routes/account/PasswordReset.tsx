@@ -14,28 +14,38 @@ const PasswordReset: React.FC = () => {
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false); // Modal de errores
+    const [errorMessages, setErrorMessages] = useState<string[]>([]); // Errores a mostrar en el modal
     const navigate = useNavigate();
+
+    const tieneMayuscula = /[A-Z]/.test(newPassword);
+    const tieneEspecial = /[.\-_+#+@\$?&]/.test(newPassword);
+    const tieneLongitud = newPassword.length >= 8;
+    const contrasenaCoincide = newPassword === confirmPassword;
+    const contrasenaActualIgual = oldPassword === newPassword;
+
 
     const validateFields = () => {
         const newErrors: { [key: string]: string } = {};
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?])(?=.{8,})/;
-
         if (!oldPassword.trim()) newErrors.oldPassword = "Este campo es obligatorio";
         if (!newPassword.trim()) newErrors.newPassword = "Este campo es obligatorio";
-        else if (!passwordRegex.test(newPassword))
-            newErrors.newPassword =
-                "La contraseña debe tener al menos 8 caracteres, una mayúscula y un carácter especial";
+        else if (!tieneMayuscula) newErrors.newPassword = "La contraseña debe tener al menos una mayúscula";
+        else if (!tieneEspecial) newErrors.newPassword = "La contraseña debe tener al menos un carácter especial";
+        else if (!tieneLongitud) newErrors.newPassword = "La contraseña debe tener al menos 8 caracteres";
+        if (!confirmPassword.trim()) newErrors.confirmPassword = "Este campo es obligatorio";
         if (newPassword !== confirmPassword) newErrors.confirmPassword = "La contraseña no coincide";
-
+        if (contrasenaActualIgual) newErrors.newPassword = "La contraseña nueva no puede ser la misma que la actual";
+        
         return newErrors;
     };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors = validateFields();
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            setErrorMessages(Object.values(newErrors)); // Actualizamos los mensajes de error
+            setShowErrorModal(true); // Mostramos el modal de errores
             return;
         }
 
@@ -70,7 +80,7 @@ const PasswordReset: React.FC = () => {
             </div>
 
             <h2 className="text-2xl font-semibold text-[#820000] mb-6">
-                Recuperación de contraseña
+                Cambio de contraseña
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,6 +134,11 @@ const PasswordReset: React.FC = () => {
                     {errors.newPassword && (
                         <p className="text-red-600 text-xs">{errors.newPassword}</p>
                     )}
+                    <ul className="text-xs mt-1 space-y-1">
+                        <li className={tieneMayuscula ? 'text-green-600 font-semibold' : 'text-gray-600'}>Aa Mayúscula</li>
+                        <li className={tieneLongitud ? 'text-green-600 font-semibold' : 'text-gray-600'}>8 caracteres mínimo</li>
+                        <li className={tieneEspecial ? 'text-green-600 font-semibold' : 'text-gray-600'}>Caracter especial</li>
+                    </ul>
                 </div>
 
                 {/* Confirmar nueva contraseña */}
@@ -166,6 +181,30 @@ const PasswordReset: React.FC = () => {
                     </button>
                 </div>
             </form>
+
+
+            {/* Modal de errores */}
+            {showErrorModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+                        <h3 className="text-lg font-semibold text-[#000000] mb-4">
+                            Errores encontrados:
+                        </h3>
+                        <ul className="list-disc text-left pl-5">
+                            {errorMessages.map((error, index) => (
+                                <li key={index} className="text-sm text-red-600">{error}</li>
+                            ))}
+                        </ul>
+                        <button
+                            onClick={() => setShowErrorModal(false)} // Cerrar el modal de errores
+                            className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
 
             {/* Modal de éxito */}
             {showSuccessModal && (

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaArrowLeft, FaHeart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from "@/app/domain/context/CartContext";
@@ -29,6 +29,8 @@ type Props = {
 };
 
 const CompraLibro: React.FC<Props> = ({ book }) => {
+  const [showModal, setShowModal] = useState(false); // Estado para mostrar el modal
+  const [actionType, setActionType] = useState<'carrito' | 'favoritos' | 'comprar' | null>(null);
   const disponible = book.stock > 0;
   const navigate = useNavigate();
   const estaLogueado = !!localStorage.getItem("token");
@@ -44,9 +46,24 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
     fetchCart();
   }, []);
 
+  // Función para manejar la respuesta del modal
+  const handleModalResponse = (response: boolean) => {
+    if (response) {
+      // Redirigir a la página de login si el usuario no está logueado
+      navigate("/login", { state: { from: `/book/${book.ISBN}` } });
+    }
+    setShowModal(false);
+  };
+
+  // Función para abrir el modal y establecer la acción
+  const openModal = (type: 'carrito' | 'favoritos' | 'comprar') => {
+    setActionType(type);
+    setShowModal(true);
+  };
+
   const handleToggleCarrito = async () => {
     if (!estaLogueado) {
-      navigate("/login");
+      openModal('carrito');
       return;
     }
 
@@ -66,7 +83,7 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
 
   const handleToggleFavorito = async () => {
     if (!estaLogueado) {
-      navigate("/login");
+      openModal('favoritos');
       return;
     }
 
@@ -86,7 +103,7 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
 
   const handleComprar = async () => {
     if (!estaLogueado) {
-      navigate("/login");
+      openModal('comprar');
       return;
     }
 
@@ -175,7 +192,7 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
 
               <button
                 onClick={handleToggleCarrito}
-                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white ${enCarrito || book.stock === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-600 hover:bg-cyan-700'}`}
+                className={`mt-4 px-4 py-2 rounded-md font-semibold text-white ${enCarrito ? 'bg-red-600' : book.stock === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-cyan-600 hover:bg-cyan-700'}`}
                 disabled={book.stock === 0} // Deshabilitar el botón si no hay stock
               >
                 {enCarrito ? 'Eliminar del carrito' : book.stock === 0 ? 'No disponible' : 'Añadir al carrito'}
@@ -204,6 +221,30 @@ const CompraLibro: React.FC<Props> = ({ book }) => {
           </div>
         )}
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">¿Deseas iniciar sesión para continuar?</h3>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => handleModalResponse(true)} // Confirmar
+                className="bg-[#007B83] text-white px-4 py-2 rounded hover:bg-[#00666e]"
+              >
+                Sí
+              </button>
+              <button
+                onClick={() => handleModalResponse(false)} // Cancelar
+                className="bg-[#f44336] text-white px-4 py-2 rounded hover:bg-[#d32f2f]"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };

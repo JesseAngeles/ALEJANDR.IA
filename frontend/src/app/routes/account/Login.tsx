@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation} from "react-router-dom";
 import { useAuth } from "@/app/domain/context/AuthContext";
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -11,7 +11,10 @@ const Login: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  const redirectPath = location.state?.from || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +28,7 @@ const Login: React.FC = () => {
     if (!erroresActuales.email && !erroresActuales.contrasena) {
       try {
         await login(email, contrasena);
-        navigate("/", { state: { welcomeMessage: `Bienvenido` } });
+        navigate(redirectPath, { state: { welcomeMessage: `¡Bienvenido!` } });
       } catch (error: any) {
         console.log(`Error: ${error}`)
         if (error.response && error.response.status) {
